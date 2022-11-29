@@ -28,11 +28,8 @@ async fn main() {
 fn using_serve_dir() -> Router {
     let serve_dir = ServeDir::new("web/dist").fallback(ServeFile::new("web/dist/index.html"));
     let serve_dir = get_service(serve_dir).handle_error(handle_error);
-    //let serve_dir_from_assets = get_service(ServeDir::new("web/dist/assets")).handle_error(handle_error);
-    //let serve_dir_from_favicon = get_service(ServeDir::new("web/dist/assets/favicon.svg")).handle_error(handle_error);
 
     Router::new()
-        //.nest_service("/favicon.ico", serve_dir_from_favicon.clone())
 	.nest_service("/", serve_dir.clone())
         .fallback_service(serve_dir)
 }
