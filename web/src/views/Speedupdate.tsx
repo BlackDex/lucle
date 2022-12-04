@@ -1,9 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import {
-    createConnectTransport,
-    createPromiseClient,
-} from '@bufbuild/connect-web';
-import { Repo } from 'gen/speedupdate_connectweb';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import TableRow from '@mui/material/TableRow'
@@ -20,6 +15,9 @@ import { DropzoneArea, DropzoneDialog } from "mui-file-dropzone";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 
+//api
+import {init, unregister_version, register_package} from 'utils/rpc'
+
 const Speedupdate = () => {
   const [repoInit, setRepoInit] = useState<boolean>(false);
   const [url, setUrl] = useState<string>(localStorage.getItem('url') || "");
@@ -31,87 +29,6 @@ const Speedupdate = () => {
   const [path, setPath] = useState<string>(localStorage.getItem('path') || "");
   const [client, setClient] = useState<any>();
   const [fileObjects, setFileObjects] = useState();
-
-  const init = async(client: any, path: string) => {
-    const call = client.init({
-      path: path
-    });
-    const status = await call.status;
-    if (status.code === "OK" ) {
-      setRepoInit(true);
-    }
-  }
-
-  const status = async(client: any, path: string) => {  
-  const call = client.status({
-      path: path
-    });
-    //TODO : Delete this
-    setRepoInit(true);
-    //const status = await call.status;
-    //if (status.code === "OK") {
-      //const trailers = await call.responses;
-      for await (let response of call.responses) {
-        if (response.repoinit) {
-          setRepoInit(true);
-          setCurrentVersion(response.currentVersion);
-          setListVersions(response.versions);
-	  setListPackages(response.packages);
-        }
-      }
-   // }
-  }
- 
-  const set_current_version = async(client: any, path: string, version: string) => {
-    const call = client.setCurrentVersion({
-      path: path,
-      version: version
-    });
-    const response = await call.response;
-  }
-
-  const register_version = async(client: any, path: string, version: string) => {
-    const call = client.registerVersion({
-      path: path,
-      version: version,
-    });
-    const response = await call.response;
-  }
-
-  const unregister_version = async(client: any, path: string, version: string) => { 
-    const call = client.unregisterVersion({
-      path: path,
-      version: version,
-    });
-    const response = await call.response;
-  }
-
-  const register_package = async(client: any, path: string, name: string) => { 
-    const call = client.registerPackage({
-      path: path,
-      name: name,
-    });
-    const response = await call.response;
-  }
-
-  const unregister_package = async(client: any, path: string, name: string) => {
-    const call = client.unregisterPackage({
-      path: path,
-      name: name,
-    });
-    const response = await call.response;
-  }
-
-  useEffect(() => {
-    const client = createPromiseClient(
-        Repo,
-        createConnectTransport({
-            baseUrl: 'https://127.0.0.1:3000',
-        })
-    )
-    setClient(client);
-    status(client, path);
-  }, [listVersions, listPackages]);
 
   return(
     <div>

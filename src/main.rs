@@ -12,17 +12,23 @@ use axum::{
 
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+mod rpc;
+mod database;
+mod database_errors;
+mod query_helper;
+
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::registry()
+    /*tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG")
                 .unwrap_or_else(|_| "example_static_file_server=debug,tower_http=debug".into()),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
-
-	tokio::join!(serve(using_serve_dir(), 3001));
+*/
+	//tokio::join!(serve(using_serve_dir(), 3001));
+	tokio::join!(rpc::start_rpc_server());
 }
 
 fn using_serve_dir() -> Router {

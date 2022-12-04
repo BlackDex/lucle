@@ -5,7 +5,7 @@ import Index from 'views/Index';
 import OnlineEditor from 'views/Editor';
 import Tables from 'views/Tables';
 import Login from 'views/Login';
-import Install from 'views/Install';
+import Setup from 'views/Install';
 import Speedupdate from 'views/Speedupdate';
 
 const routes = (isLogged: boolean, isInstalled: boolean) => [
@@ -23,7 +23,7 @@ const routes = (isLogged: boolean, isInstalled: boolean) => [
   },
   {  
     path: '/install',
-    element: <Install />,
+    element: <Setup />,
   },
   {
     path: '/',

@@ -1,12 +1,30 @@
+import { useState, useEffect } from 'react';
+import {
+    createConnectTransport,
+    createPromiseClient,
+} from '@bufbuild/connect-web';
+import { Lucle } from 'gen/lucle_connectweb';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { get } from 'utils/Api';
+import { install, connect  } from 'utils/rpc';
 
-const Install = () => {
+const Setup = () => {
+  const [client, setClient] = useState<any>();
+
+  useEffect(() => {
+    const client = createPromiseClient(
+        Lucle,
+        createConnectTransport({
+            baseUrl: 'http://127.0.0.1:3000',
+        })
+    )
+    setClient(client);
+  }, []);
+
   return(
     <Box sx={{ minWidth: 120 }}>
       <FormControl>
@@ -24,10 +42,10 @@ const Install = () => {
       </FormControl>
       <Button
         variant="contained"
-	onClick={() => get("/api") }
+	onClick={() => install(client, "sqlite") }
       >Ok</Button>
     </Box>
   );
 }
 
-export default Install;
+export default Setup;

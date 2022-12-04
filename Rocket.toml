@@ -1,6 +1,0 @@
-[default.databases.diesel]
-url = "db/diesel/db.sqlite"
-
-[default]
-local = false
-key = "a default app-key"

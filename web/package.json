@@ -3,7 +3,7 @@
   "name": "dozecms",
   "version": "0.0.0",
   "scripts": {
-    "buf:generate": "buf generate proto/speedupdate.proto",
+    "buf:generate": "buf generate ../proto/lucle.proto",
     "dev": "yarn buf:generate && vite",
     "build": "tsc && vite build",
     "serve": "protobuf && vite preview"
