@@ -41,8 +41,15 @@ message Package {
   string name = 2;
 }
 
+enum DatabaseType {
+  MYSQL = 0 ;
+  POSTGRESQL = 1 ;
+  SQLITE = 2 ;
+}
+
 message Database {
-  string path = 1;
+  DatabaseType db_type = 1;
+  optional string migration_path = 2;
 }
 
 message Empty {}

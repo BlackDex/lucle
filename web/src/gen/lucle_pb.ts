@@ -7,6 +7,32 @@ import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialM
 import { Message, proto3 } from "@bufbuild/protobuf";
 
 /**
+ * @generated from enum luclerpc.DatabaseType
+ */
+export enum DatabaseType {
+  /**
+   * @generated from enum value: MYSQL = 0;
+   */
+  MYSQL = 0,
+
+  /**
+   * @generated from enum value: POSTGRESQL = 1;
+   */
+  POSTGRESQL = 1,
+
+  /**
+   * @generated from enum value: SQLITE = 2;
+   */
+  SQLITE = 2,
+}
+// Retrieve enum metadata with: proto3.getEnumType(DatabaseType)
+proto3.util.setEnumType(DatabaseType, "luclerpc.DatabaseType", [
+  { no: 0, name: "MYSQL" },
+  { no: 1, name: "POSTGRESQL" },
+  { no: 2, name: "SQLITE" },
+]);
+
+/**
  * @generated from message luclerpc.RepositoryPath
  */
 export class RepositoryPath extends Message<RepositoryPath> {
@@ -226,9 +252,14 @@ export class Package extends Message<Package> {
  */
 export class Database extends Message<Database> {
   /**
-   * @generated from field: string path = 1;
+   * @generated from field: luclerpc.DatabaseType db_type = 1;
    */
-  path = "";
+  dbType = DatabaseType.MYSQL;
+
+  /**
+   * @generated from field: optional string migration_path = 2;
+   */
+  migrationPath?: string;
 
   constructor(data?: PartialMessage<Database>) {
     super();
@@ -238,7 +269,8 @@ export class Database extends Message<Database> {
   static readonly runtime = proto3;
   static readonly typeName = "luclerpc.Database";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "db_type", kind: "enum", T: proto3.getEnumType(DatabaseType) },
+    { no: 2, name: "migration_path", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Database {

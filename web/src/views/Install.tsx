@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-    createConnectTransport,
+    createGrpcWebTransport,
     createPromiseClient,
 } from '@bufbuild/connect-web';
 import { Lucle } from 'gen/lucle_connectweb';
@@ -14,15 +14,10 @@ import { install, connect  } from 'utils/rpc';
 
 const Setup = () => {
   const [client, setClient] = useState<any>();
-
+  const [selectedDB, setSelectedDB] = useState(2);
   useEffect(() => {
-    const client = createPromiseClient(
-        Lucle,
-        createConnectTransport({
-            baseUrl: 'http://127.0.0.1:3000',
-        })
-    )
-    setClient(client);
+    let newclient = connect("127.0.0.1", "3000");
+    setClient(newclient);
   }, []);
 
   return(
@@ -31,18 +26,18 @@ const Setup = () => {
         <Select
           labelId="select-database"
           id="select-database"
-          value={0}
+          value={selectedDB}
           label="Database"
-          //onChange={handleChange}
+          onChange={event => setSelectedDB(event.target.value) }
         >
-          <MenuItem value={0}>SQLite</MenuItem>
-	  <MenuItem value={1}>MySQL</MenuItem>
-	  <MenuItem value={2}>PostgreSQL</MenuItem>
+          <MenuItem value={0}>Mysql</MenuItem>
+	  <MenuItem value={1}>PostgreSQL</MenuItem>
+	  <MenuItem value={2}>Sqlite</MenuItem>
         </Select>
       </FormControl>
       <Button
         variant="contained"
-	onClick={() => install(client, "sqlite") }
+	onClick={() => install(client, selectedDB) }
       >Ok</Button>
     </Box>
   );

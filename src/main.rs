@@ -19,6 +19,7 @@ mod query_helper;
 
 #[tokio::main]
 async fn main() {
+  //database::setup_database("sqlite");
     /*tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG")

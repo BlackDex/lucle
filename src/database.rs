@@ -1,4 +1,11 @@
-use std::path::Path;
+use std::{
+  path::Path,
+  io::Write,
+  fs::{
+    File,
+    self,
+  },
+};
 use diesel::{
   pg::PgConnection,
   sqlite::SqliteConnection,
@@ -19,7 +26,6 @@ pub enum Backend {
 
 impl Backend {
     pub fn for_url(database_url: &str) -> Self {
-	println!("{}", database_url);
 	let mut available_schemes: Vec<&str> = Vec::new();
         match database_url {
             _ if database_url.starts_with("postgres://")
@@ -39,7 +45,6 @@ impl Backend {
 }
 
 pub fn setup_database(database_url: &str/*, migrations_dir: &Path*/) -> DatabaseResult<()> {
-    println!("allo");
     create_database_if_needed(&database_url)?;
 //    create_default_migration_if_needed(&database_url, migrations_dir)?;
 //    create_schema_table_and_run_migrations_if_needed(&database_url, migrations_dir)?;
@@ -47,7 +52,6 @@ pub fn setup_database(database_url: &str/*, migrations_dir: &Path*/) -> Database
 }
 
 fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
-    println!("12 {}", database_url);
     match Backend::for_url(database_url) {
         Backend::Pg => {
             if PgConnection::establish(database_url).is_err() {
@@ -73,6 +77,29 @@ fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
         }
+    }
+
+    Ok(())
+}
+
+fn create_default_migration_if_needed(
+    database_url: &str,
+    migrations_dir: &Path,
+) -> DatabaseResult<()> {
+    let initial_migration_path = migrations_dir.join("diesel_initial_setup");
+    if initial_migration_path.exists() {
+        return Ok(());
+    }
+
+    match Backend::for_url(database_url) {
+        Backend::Pg => {
+            fs::create_dir_all(&initial_migration_path)?;
+  //          let mut up_sql = File::create(initial_migration_path.join("up.sql"))?;
+  //          up_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/up.sql"))?;
+  //          let mut down_sql = File::create(initial_migration_path.join("down.sql"))?;
+  //          down_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/down.sql"))?;
+        }
+        _ => {} 
     }
 
     Ok(())

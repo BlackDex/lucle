@@ -4,7 +4,7 @@ use luclerpc::{
     LucleServer,
     Lucle,
   },
-  Database, Empty
+  Database, Empty, DatabaseType
 ,};
 use super:: database;
 use std::fmt::Display;
@@ -24,11 +24,16 @@ pub struct LucleApi {}
 #[tonic::async_trait]
 impl Lucle for LucleApi {
   async fn install(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
-    println!("13");
-    database::setup_database(&request.into_inner().path).unwrap_or_else(handle_error); 
-    let reply = Empty {
-//	result: "12".to_string(),
-    };
+    let inner = request.into_inner();
+    let db_type = inner.db_type;
+    let migration_path = inner.migration_path;
+    println!("{:?}", DatabaseType::from_i32(db_type));
+    match DatabaseType::from_i32(db_type) {
+      Some(DatabaseType::Sqlite) => database::setup_database("lucle.db").unwrap_or_else(handle_error),
+      //Some(DatabaseType::Mysql) => database::setup_database("mysql://").unwrap_or_else(handle_error), 
+      _ => {}
+    }
+    let reply = Empty {};
     Ok(Response::new(reply))
   }
 }

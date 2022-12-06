@@ -1,22 +1,23 @@
 import {
-    createConnectTransport,
+    createGrpcWebTransport,
     createPromiseClient,
 } from '@bufbuild/connect-web';
-import { Repo } from 'gen/speedupdate_connectweb';
+import { Lucle } from 'gen/lucle_connectweb';
+import { DatabaseType } from 'gen/lucle_pb';
 
 export const connect = (url: string, port: string) => { 
   const client = createPromiseClient(
-        Repo,
-        createConnectTransport({
-            baseUrl: 'https://localhost:3000',
+        Lucle,
+        createGrpcWebTransport({
+            baseUrl: 'http://' + url + ':' + port,
         })
     )
     return client;
 }
 
-export const install = async(client: any, path: string) => {
+export const install = async(client: any, db: number) => {
   const call = client.install({
-    path: "12",
+   dbType: db,
   });
   const response = await call.response;
   console.log(JSON.stringify(response));
