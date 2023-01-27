@@ -30,7 +30,7 @@
     "@bufbuild/protobuf": "0.3.0",
     "@bufbuild/protoc-gen-connect-web": "0.3.2",
     "@bufbuild/protoc-gen-es": "1.0.0",
-    "@types/react": "18.0.25",
+    "@types/react": "18.0.27",
     "@types/react-dom": "18.0.3",
     "@typescript-eslint/eslint-plugin": "5.49.0",
     "@typescript-eslint/parser": "5.49.0",
