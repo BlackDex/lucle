@@ -29,7 +29,7 @@ const Setup = () => {
           id="select-database"
           value={selectedDB}
           label="Database"
-          onChange={event => setSelectedDB(event.currentTarget.value) }
+          onChange={event => setSelectedDB(event.target.value) }
         >
           <MenuItem value={0}>Mysql</MenuItem>
 	  <MenuItem value={1}>PostgreSQL</MenuItem>
