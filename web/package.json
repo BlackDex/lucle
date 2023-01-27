@@ -1,6 +1,5 @@
 {
-  "packageManager": "yarn@3.2.4",
-  "name": "dozecms",
+  "name": "lucle",
   "version": "0.0.0",
   "scripts": {
     "buf:generate": "buf generate ../proto/lucle.proto",
