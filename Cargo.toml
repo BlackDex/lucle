@@ -6,8 +6,6 @@ edition = "2021"
 [dependencies]
 axum = "0.6.4"
 ftp = "3.0.1"
-#rocket = { version = "0.5.0-rc.2", features = ["json"] }
-#rocket_cors = { git = "https://github.com/lawliet89/rocket_cors" }
 diesel = { version = "2.0.3", features = ["mysql", "postgres", "sqlite", "r2d2"] }
 diesel_migrations = "2.0.0"
 prost = "0.11"
