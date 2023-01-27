@@ -16,11 +16,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: install deps
+    - name: install protoc
       run: |
         sudo apt-get update
         sudo apt-get install -y protobuf-compiler
-    - name: Build
+    - name: Install dependencies
+      run: cd web && yarn install
+    - name: lint
+      run: yarn lint
+    - name: prettier
+      run: yarn prettier
+    - name: Build frontend (js side)
+      run: yarn build
+    - name: Build backend (rust side)
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
