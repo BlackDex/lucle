@@ -10,6 +10,7 @@
     "serve": "protobuf && vite preview"
   },
   "dependencies": {
+    "@bufbuild/connect-web": "0.6.0",
     "@emotion/react": "11.10.5",
     "@emotion/styled": "11.10.5",
     "@mui/icons-material": "5.11.0",
@@ -26,10 +27,10 @@
     "vite-tsconfig-paths": "4.0.5"
   },
   "devDependencies": {
-    "@bufbuild/connect-web": "0.6.0",
     "@bufbuild/protobuf": "1.0.0",
     "@bufbuild/protoc-gen-connect-web": "0.6.0",
     "@bufbuild/protoc-gen-es": "1.0.0",
+    "@types/prop-types": "^15.7.5",
     "@types/react": "18.0.27",
     "@types/react-dom": "18.0.10",
     "@typescript-eslint/eslint-plugin": "5.49.0",

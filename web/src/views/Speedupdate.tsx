@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import TableRow from '@mui/material/TableRow'
@@ -9,14 +9,14 @@ import TableContainer from '@mui/material/TableContainer';
 import InputAdornment from '@mui/material/InputAdornment';
 import Paper from '@mui/material/Paper';
 import IconButton from '@mui/material/IconButton';
-import { DropzoneArea, DropzoneDialog } from "mui-file-dropzone";
+import { DropzoneArea } from "mui-file-dropzone";
 
 // Icons
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 // api
-import {init, unregister_version, register_package} from 'utils/rpc'
+import {init, unregisterVersion, registerPackage} from 'utils/rpc'
 
 function Speedupdate() {
   const [repoInit, setRepoInit] = useState<boolean>(false);
@@ -84,7 +84,7 @@ function Speedupdate() {
                     </TableCell>
 		    <TableCell>
 		      <IconButton
-		        onClick={() => unregister_version(client, path, version)}
+		        onClick={() => unregisterVersion(client, path, version)}
 		      >
 		        <DeleteIcon />
 		      </IconButton>
@@ -149,7 +149,7 @@ function Speedupdate() {
         InputProps={{
           endAdornment: (
             <InputAdornment
-              onClick={() => register_package(client, path, pack)}
+              onClick={() => registerPackage(client, path, pack)}
               position="end">
               < AddCircleIcon color="success"/>
             </InputAdornment>

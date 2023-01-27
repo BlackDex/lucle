@@ -3,7 +3,6 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Hidden from '@mui/material/Hidden';
@@ -11,13 +10,7 @@ import List from '@mui/material/List';
 import Typography from '@mui/material/Typography'
 
 import {
-  AlertCircle as AlertCircleIcon,
   BarChart as BarChartIcon,
-  Lock as LockIcon,
-  Settings as SettingsIcon,
-  ShoppingBag as ShoppingBagIcon,
-  User as UserIcon,
-  UserPlus as UserPlusIcon,
   Users as UsersIcon
 } from 'react-feather';
 import NavItem from 'components/NavItem';

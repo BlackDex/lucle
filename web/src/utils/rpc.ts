@@ -3,7 +3,6 @@ import {
     createPromiseClient,
 } from '@bufbuild/connect-web';
 import { Lucle } from 'gen/lucle_connectweb';
-import { DatabaseType } from 'gen/lucle_pb';
 
 export const connect = (url: string, port: string) => { 
   const client = createPromiseClient(
@@ -20,7 +19,6 @@ export const install = async(client: any, db: number) => {
    dbType: db,
   });
   const response = await call.response;
-  console.log(JSON.stringify(response));
 };
 
 export const init = async(client: any, path: string) => {
@@ -38,10 +36,6 @@ export const status = async(client: any, path: string) => {
   const call = client.status({
       path
     });
-
-    // const status = await call.status;
-    // if (status.code === "OK") {
-      // const trailers = await call.responses;
       for await (const response of call.responses) {
         if (response.repoinit) {
 	  return({
@@ -52,38 +46,37 @@ export const status = async(client: any, path: string) => {
 	   });
         }
       }
-   // }
   }
 
-export const set_current_version = async(client: any, path: string, version: string) => {
-    const call = client.setCurrentVersion({
+export const setCurrentVersion = async(client: any, path: string, version: string) => {
+    client.setCurrentVersion({
       path,
       version
     });
   }
 
-export const register_version = async(client: any, path: string, version: string) => {
+export const registerVersion = async(client: any, path: string, version: string) => {
     client.registerVersion({
       path,
       version,
     });
   }
 
-export const unregister_version = async(client: any, path: string, version: string) => { 
+export const unregisterVersion = async(client: any, path: string, version: string) => { 
     client.unregisterVersion({
       path,
       version,
     });
   }
 
-export const register_package = async(client: any, path: string, name: string) => { 
+export const registerPackage = async(client: any, path: string, name: string) => { 
     client.registerPackage({
       path,
       name,
     });
   }
 
- export const unregister_package = async(client: any, path: string, name: string) => {
+ export const unregisterPackage = async(client: any, path: string, name: string) => {
     client.unregisterPackage({
       path,
       name,

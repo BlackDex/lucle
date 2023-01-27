@@ -4,7 +4,6 @@ import { useRoutes } from 'react-router-dom';
 import GlobalStyles from 'components/GlobalStyles';
 import theme from 'theme/Index';
 import routes from './routes';
-// import { get } from './utils'
 
 function App() {
   const [isLogged, setIsLogged] = useState<any>(false);

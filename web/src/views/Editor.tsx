@@ -1,7 +1,6 @@
 import Editor from 'components/Editor'
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import { get, post } from 'utils/Api';
 
 function OnlineEditor() {
   return(
@@ -15,7 +14,6 @@ function OnlineEditor() {
     <Editor />
     <Button
       variant="contained"
-//      onClick={get}
     >
     Send
     </Button>

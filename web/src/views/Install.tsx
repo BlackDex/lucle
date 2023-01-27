@@ -1,15 +1,9 @@
 import { useState, useEffect } from 'react';
-import {
-    createGrpcWebTransport,
-    createPromiseClient,
-} from '@bufbuild/connect-web';
-import { Lucle } from 'gen/lucle_connectweb';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import { install, connect  } from 'utils/rpc';
 
 function Setup() {

@@ -10,7 +10,7 @@ import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import IconButton from '@mui/material/IconButton';
 
 // icons
@@ -33,7 +33,6 @@ const CreateData = (id: number, username: string, email: string, role: string, c
 
 function Tables() {
   const [rows, setRows] = useState<Data[]>([]);
-  const [editing, setEditing] = useState<Boolean>(false)
   const [editingIndex, setEditingIndex] = useState<any>(-1);
 
   let newData = { username: "", email: "", role: ""};
@@ -45,12 +44,11 @@ function Tables() {
   useEffect(() => {
    get("/diesel/table")
    .then((value: any) => {
-    for(var i=0; i < value.data.length; i++) {
+    for(let i=0; i < value.data.length; i+1) {
       setRows(state => [...state,  CreateData(value.data[i].id, value.data[i].username, value.data[i].email, value.data[i].role, value.data[i].createdat) ]) ;
     }
    })
    .catch((value) => {
-     alert(`error : ${  value}`);
    });
 },[setRows])
 
@@ -156,7 +154,6 @@ function Tables() {
 			<div>
 			  <IconButton 
 			    aria-label="save"
-			    onClick={() => alert(JSON.stringify(newData) )}
 			  >
                             <SaveIcon />
                           </IconButton>

@@ -3,11 +3,8 @@ import axios from 'axios';
 const host = "http://127.0.0.1";
 const port = "8000";
 
-export const get = (path: any, arg: any = null) => new Promise((resolve, reject) => {
+export const get = (path: any) => new Promise((resolve, reject) => {
 axios.get(`${host  }:${  port  }${path}`, {
-//  params: {
-//      'name': arg
-//    }
   })
   .then((response) => {
     resolve(response);
@@ -35,7 +32,6 @@ export const adelete = (path: any) => new Promise((resolve, reject) => {
     resolve(response);
   })
   .catch((error) => {
-    alert(error);
     reject(error);
   });
 });
