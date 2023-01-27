@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@bufbuild/connect-web": "0.6.0",
-    "@bufbuild/protobuf": "0.3.0",
+    "@bufbuild/protobuf": "1.0.0",
     "@bufbuild/protoc-gen-connect-web": "0.6.0",
     "@bufbuild/protoc-gen-es": "1.0.0",
     "@types/react": "18.0.27",
