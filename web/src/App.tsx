@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
-import { useRoutes } from 'react-router-dom';
-import GlobalStyles from 'components/GlobalStyles';
-import theme from 'theme/Index';
-import routes from './routes';
+import { useState } from "react";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
+import { useRoutes } from "react-router-dom";
+import GlobalStyles from "components/GlobalStyles";
+import theme from "theme/Index";
+import routes from "./routes";
 
 function App() {
   const [isLogged, setIsLogged] = useState<any>(false);
@@ -17,7 +17,7 @@ function App() {
         {content}
       </ThemeProvider>
     </StyledEngineProvider>
-  )
+  );
 }
 
-export default App
+export default App;

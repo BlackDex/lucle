@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
+import { useState } from "react";
+import Button from "@mui/material/Button";
+import CssBaseline from "@mui/material/CssBaseline";
+import TextField from "@mui/material/TextField";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Link from "@mui/material/Link";
+import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
 
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const theme = createTheme();
 
@@ -18,24 +18,24 @@ function Login() {
   const [login, setLogin] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<any>();
- 
+
   const handleLogin = () => {
     if (remember) {
-      localStorage.setItem('username', login);
-      localStorage.setItem('password', password); 
-    } 
-  }
+      localStorage.setItem("username", login);
+      localStorage.setItem("password", password);
+    }
+  };
 
-  return(
+  return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
           sx={{
             marginTop: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           }}
         >
           <Typography component="h1" variant="h5">
@@ -51,8 +51,8 @@ function Login() {
               name="email"
               autoComplete="email"
               autoFocus
-	      value={login}
-	      onChange={(event) => setLogin(event.target.value)}
+              value={login}
+              onChange={(event) => setLogin(event.target.value)}
             />
             <TextField
               margin="normal"
@@ -63,8 +63,8 @@ function Login() {
               type="password"
               id="password"
               autoComplete="current-password"
-	      value={password}
-	      onChange={(event) => setPassword(event.target.value)}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
             />
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
@@ -75,7 +75,7 @@ function Login() {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-	      // onClick={() => get('/user/' + login)}
+              // onClick={() => get('/user/' + login)}
             >
               Sign In
             </Button>

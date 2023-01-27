@@ -3,7 +3,15 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Database, Empty, Package, RepositoryPath, ResponseResult, StatusResult, Version } from "./lucle_pb.js";
+import {
+  Database,
+  Empty,
+  Package,
+  RepositoryPath,
+  ResponseResult,
+  StatusResult,
+  Version,
+} from "./lucle_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -21,7 +29,7 @@ export const Lucle = {
       O: Empty,
       kind: MethodKind.Unary,
     },
-  }
+  },
 } as const;
 
 /**
@@ -93,6 +101,5 @@ export const Repo = {
       O: ResponseResult,
       kind: MethodKind.Unary,
     },
-  }
+  },
 } as const;
-

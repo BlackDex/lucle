@@ -3,8 +3,15 @@
 /* eslint-disable */
 /* @ts-nocheck */
 
-import type {BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage} from "@bufbuild/protobuf";
-import {Message, proto3} from "@bufbuild/protobuf";
+import type {
+  BinaryReadOptions,
+  FieldList,
+  JsonReadOptions,
+  JsonValue,
+  PartialMessage,
+  PlainMessage,
+} from "@bufbuild/protobuf";
+import { Message, proto3 } from "@bufbuild/protobuf";
 
 /**
  * @generated from message speedupdaterpc.RepositoryPath
@@ -26,19 +33,31 @@ export class RepositoryPath extends Message<RepositoryPath> {
     { no: 1, name: "path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RepositoryPath {
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): RepositoryPath {
     return new RepositoryPath().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RepositoryPath {
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): RepositoryPath {
     return new RepositoryPath().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RepositoryPath {
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): RepositoryPath {
     return new RepositoryPath().fromJsonString(jsonString, options);
   }
 
-  static equals(a: RepositoryPath | PlainMessage<RepositoryPath> | undefined, b: RepositoryPath | PlainMessage<RepositoryPath> | undefined): boolean {
+  static equals(
+    a: RepositoryPath | PlainMessage<RepositoryPath> | undefined,
+    b: RepositoryPath | PlainMessage<RepositoryPath> | undefined
+  ): boolean {
     return proto3.util.equals(RepositoryPath, a, b);
   }
 }
@@ -63,19 +82,31 @@ export class ResponseResult extends Message<ResponseResult> {
     { no: 1, name: "error", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ResponseResult {
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): ResponseResult {
     return new ResponseResult().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ResponseResult {
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): ResponseResult {
     return new ResponseResult().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ResponseResult {
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): ResponseResult {
     return new ResponseResult().fromJsonString(jsonString, options);
   }
 
-  static equals(a: ResponseResult | PlainMessage<ResponseResult> | undefined, b: ResponseResult | PlainMessage<ResponseResult> | undefined): boolean {
+  static equals(
+    a: ResponseResult | PlainMessage<ResponseResult> | undefined,
+    b: ResponseResult | PlainMessage<ResponseResult> | undefined
+  ): boolean {
     return proto3.util.equals(ResponseResult, a, b);
   }
 }
@@ -113,24 +144,53 @@ export class StatusResult extends Message<StatusResult> {
   static readonly typeName = "speedupdaterpc.StatusResult";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "repoinit", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 2, name: "current_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "versions", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
-    { no: 4, name: "packages", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    {
+      no: 2,
+      name: "current_version",
+      kind: "scalar",
+      T: 9 /* ScalarType.STRING */,
+    },
+    {
+      no: 3,
+      name: "versions",
+      kind: "scalar",
+      T: 9 /* ScalarType.STRING */,
+      repeated: true,
+    },
+    {
+      no: 4,
+      name: "packages",
+      kind: "scalar",
+      T: 9 /* ScalarType.STRING */,
+      repeated: true,
+    },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): StatusResult {
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): StatusResult {
     return new StatusResult().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): StatusResult {
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): StatusResult {
     return new StatusResult().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): StatusResult {
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): StatusResult {
     return new StatusResult().fromJsonString(jsonString, options);
   }
 
-  static equals(a: StatusResult | PlainMessage<StatusResult> | undefined, b: StatusResult | PlainMessage<StatusResult> | undefined): boolean {
+  static equals(
+    a: StatusResult | PlainMessage<StatusResult> | undefined,
+    b: StatusResult | PlainMessage<StatusResult> | undefined
+  ): boolean {
     return proto3.util.equals(StatusResult, a, b);
   }
 }
@@ -161,19 +221,31 @@ export class Version extends Message<Version> {
     { no: 2, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Version {
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): Version {
     return new Version().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Version {
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): Version {
     return new Version().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Version {
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): Version {
     return new Version().fromJsonString(jsonString, options);
   }
 
-  static equals(a: Version | PlainMessage<Version> | undefined, b: Version | PlainMessage<Version> | undefined): boolean {
+  static equals(
+    a: Version | PlainMessage<Version> | undefined,
+    b: Version | PlainMessage<Version> | undefined
+  ): boolean {
     return proto3.util.equals(Version, a, b);
   }
 }
@@ -204,20 +276,31 @@ export class Package extends Message<Package> {
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Package {
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): Package {
     return new Package().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Package {
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): Package {
     return new Package().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Package {
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): Package {
     return new Package().fromJsonString(jsonString, options);
   }
 
-  static equals(a: Package | PlainMessage<Package> | undefined, b: Package | PlainMessage<Package> | undefined): boolean {
+  static equals(
+    a: Package | PlainMessage<Package> | undefined,
+    b: Package | PlainMessage<Package> | undefined
+  ): boolean {
     return proto3.util.equals(Package, a, b);
   }
 }
-

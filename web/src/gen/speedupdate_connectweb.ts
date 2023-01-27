@@ -3,8 +3,14 @@
 /* eslint-disable */
 /* @ts-nocheck */
 
-import {Package, RepositoryPath, ResponseResult, StatusResult, Version} from "./speedupdate_pb.js";
-import {MethodKind} from "@bufbuild/protobuf";
+import {
+  Package,
+  RepositoryPath,
+  ResponseResult,
+  StatusResult,
+  Version,
+} from "./speedupdate_pb.js";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service speedupdaterpc.Repo
@@ -75,6 +81,5 @@ export const Repo = {
       O: ResponseResult,
       kind: MethodKind.Unary,
     },
-  }
+  },
 } as const;
-

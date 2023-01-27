@@ -1,9 +1,5 @@
 function Editor() {
- 
-  return (
-    <div />
-  );
+  return <div />;
 }
 
 export default Editor;
-

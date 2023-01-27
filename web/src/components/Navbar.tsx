@@ -1,24 +1,21 @@
-import { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import PropTypes from 'prop-types';
-import AppBar from '@mui/material/AppBar';
-import Badge from '@mui/material/Badge';
-import Box from '@mui/material/Box';
-import Hidden from '@mui/material/Hidden';
-import IconButton from '@mui/material/IconButton';
-import Toolbar from '@mui/material/Toolbar';
-import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsIcon from '@mui/icons-material/NotificationsOutlined';
-import InputIcon from '@mui/icons-material/Input';
+import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
+import PropTypes from "prop-types";
+import AppBar from "@mui/material/AppBar";
+import Badge from "@mui/material/Badge";
+import Box from "@mui/material/Box";
+import Hidden from "@mui/material/Hidden";
+import IconButton from "@mui/material/IconButton";
+import Toolbar from "@mui/material/Toolbar";
+import MenuIcon from "@mui/icons-material/Menu";
+import NotificationsIcon from "@mui/icons-material/NotificationsOutlined";
+import InputIcon from "@mui/icons-material/Input";
 
 function Navbar({ onMobileNavOpen, ...rest }: any) {
   const [notifications] = useState([]);
 
   return (
-    <AppBar
-      elevation={0}
-      {...rest}
-    >
+    <AppBar elevation={0} {...rest}>
       <Toolbar>
         <RouterLink to="/" />
         <Box sx={{ flexGrow: 1 }} />
@@ -47,7 +44,7 @@ function Navbar({ onMobileNavOpen, ...rest }: any) {
 }
 
 Navbar.propTypes = {
-  onMobileNavOpen: PropTypes.func
+  onMobileNavOpen: PropTypes.func,
 };
 
 export default Navbar;
