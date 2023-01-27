@@ -23,7 +23,7 @@
     "react-router": "6.4.3",
     "react-router-dom": "6.4.3",
     "sass": "1.56.1",
-    "vite-tsconfig-paths": "3.6.0"
+    "vite-tsconfig-paths": "4.0.5"
   },
   "devDependencies": {
     "@bufbuild/connect-web": "0.3.2",
