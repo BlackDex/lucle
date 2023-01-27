@@ -11,14 +11,14 @@ import Paper from '@mui/material/Paper';
 import IconButton from '@mui/material/IconButton';
 import { DropzoneArea, DropzoneDialog } from "mui-file-dropzone";
 
-//Icons
+// Icons
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-//api
+// api
 import {init, unregister_version, register_package} from 'utils/rpc'
 
-const Speedupdate = () => {
+function Speedupdate() {
   const [repoInit, setRepoInit] = useState<boolean>(false);
   const [url, setUrl] = useState<string>(localStorage.getItem('url') || "");
   const [currentVersion, setCurrentVersion] = useState<string>("");
@@ -74,8 +74,7 @@ const Speedupdate = () => {
                   <TableCell>
 		    Versions
 		  </TableCell>
-		  <TableCell>
-		  </TableCell>
+		  <TableCell />
                 </TableRow>
 	      </TableHead>
 		{listVersions.map((version) => (
@@ -104,7 +103,7 @@ const Speedupdate = () => {
           endAdornment: (
             <InputAdornment 
 	      onClick={() => {
-		//register_version(client, path, version);
+		// register_version(client, path, version);
 		setVersion("");
 		}
 	      } 
@@ -125,8 +124,7 @@ const Speedupdate = () => {
                   <TableCell>
                     Packages
                   </TableCell>
-                  <TableCell>
-                  </TableCell>
+                  <TableCell />
                 </TableRow>
               </TableHead>
                 {listPackages.map((bin) => (

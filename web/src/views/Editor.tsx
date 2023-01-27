@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { get, post } from 'utils/Api';
 
-const OnlineEditor = () => {
+function OnlineEditor() {
   return(
     <div>
     <TextField

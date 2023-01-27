@@ -11,7 +11,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/NotificationsOutlined';
 import InputIcon from '@mui/icons-material/Input';
 
-const Navbar = ({ onMobileNavOpen, ...rest }: any) => {
+function Navbar({ onMobileNavOpen, ...rest }: any) {
   const [notifications] = useState([]);
 
   return (
@@ -20,8 +20,7 @@ const Navbar = ({ onMobileNavOpen, ...rest }: any) => {
       {...rest}
     >
       <Toolbar>
-        <RouterLink to="/">
-        </RouterLink>
+        <RouterLink to="/" />
         <Box sx={{ flexGrow: 1 }} />
         <Hidden xlDown>
           <IconButton color="inherit" size="large">
@@ -45,7 +44,7 @@ const Navbar = ({ onMobileNavOpen, ...rest }: any) => {
       </Toolbar>
     </AppBar>
   );
-};
+}
 
 Navbar.propTypes = {
   onMobileNavOpen: PropTypes.func

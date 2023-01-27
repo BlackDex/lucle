@@ -7,12 +7,12 @@ import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import ListItem from '@mui/material/ListItem';
 
-const NavItem = ({
+function NavItem({
   href,
   icon: Icon,
   title,
   ...rest
-}: any) => {
+}: any) {
   const location = useLocation();
 
   const active = href ? !!matchPath({
@@ -57,7 +57,7 @@ const NavItem = ({
       </Button>
     </ListItem>
   );
-};
+}
 
 NavItem.propTypes = {
   href: PropTypes.string,

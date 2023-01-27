@@ -16,7 +16,7 @@ import { get } from 'utils/Api';
 
 const theme = createTheme();
 
-const Login = () => {
+function Login() {
   const [login, setLogin] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<any>();
@@ -77,7 +77,7 @@ const Login = () => {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-	      //onClick={() => get('/user/' + login)}
+	      // onClick={() => get('/user/' + login)}
             >
               Sign In
             </Button>
@@ -93,6 +93,6 @@ const Login = () => {
       </Container>
     </ThemeProvider>
   );
-};
+}
 
 export default Login;

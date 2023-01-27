@@ -15,11 +15,9 @@ interface Data {
   name: string
 };
 
-const CreateData = (name: string): Data => {
-  return {name}
-};
+const CreateData = (name: string): Data => ({name});
 
-const Index = () => {
+function Index() {
   const [selected, setSelected] = useState<readonly string[]>([]);
   const [rows, setRows] = useState<Data[]>([]);
 
@@ -29,14 +27,14 @@ const Index = () => {
     setRows([ CreateData(value.data)] ) ;
    })
    .catch((value) => {
-     alert("error : " + value);
+     alert(`error : ${  value}`);
    });
 })
  const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
     const selectedIndex = selected.indexOf(name);
-    let newSelected: readonly string[] = [];
+    const newSelected: readonly string[] = [];
     setSelected(newSelected);
 }
 
@@ -48,7 +46,7 @@ const Index = () => {
     <div>
     <Button
         variant="contained"
-        //onClick={Deploy}
+        // onClick={Deploy}
     >
     Create Table
     </Button>
@@ -72,7 +70,7 @@ const Index = () => {
                 return( 
 	          <TableRow
 		    hover
-		    //key={row.name}
+		    // key={row.name}
 		    onClick={(event: any) => handleClick(event, row.name)}
 		    selected={isItemSelected}
 	          >
@@ -95,6 +93,6 @@ const Index = () => {
     </Button>
     </div>
 );
-};
+}
 
 export default Index;

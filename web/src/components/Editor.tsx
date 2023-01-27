@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 
-const Editor = () => {
+function Editor() {
   const [value, setValue] = useState('');
  
   return (
-    <div>
-    </div>
+    <div />
   );
 }
 

@@ -9,7 +9,7 @@ export const connect = (url: string, port: string) => {
   const client = createPromiseClient(
         Lucle,
         createGrpcWebTransport({
-            baseUrl: 'http://' + url + ':' + port,
+            baseUrl: `http://${  url  }:${  port}`,
         })
     )
     return client;
@@ -25,25 +25,24 @@ export const install = async(client: any, db: number) => {
 
 export const init = async(client: any, path: string) => {
     const call = client.init({
-      path: path
+      path
     });
     const status = await call.status;
     if (status.code === "OK" ) {
       return true;
     }
-    else
-      return false;
+    return false;
 }
 
 export const status = async(client: any, path: string) => {  
   const call = client.status({
-      path: path
+      path
     });
 
-    //const status = await call.status;
-    //if (status.code === "OK") {
-      //const trailers = await call.responses;
-      for await (let response of call.responses) {
+    // const status = await call.status;
+    // if (status.code === "OK") {
+      // const trailers = await call.responses;
+      for await (const response of call.responses) {
         if (response.repoinit) {
 	  return({
 	    'repoinit': true,
@@ -58,35 +57,35 @@ export const status = async(client: any, path: string) => {
 
 export const set_current_version = async(client: any, path: string, version: string) => {
     const call = client.setCurrentVersion({
-      path: path,
-      version: version
+      path,
+      version
     });
   }
 
 export const register_version = async(client: any, path: string, version: string) => {
     client.registerVersion({
-      path: path,
-      version: version,
+      path,
+      version,
     });
   }
 
 export const unregister_version = async(client: any, path: string, version: string) => { 
     client.unregisterVersion({
-      path: path,
-      version: version,
+      path,
+      version,
     });
   }
 
 export const register_package = async(client: any, path: string, name: string) => { 
     client.registerPackage({
-      path: path,
-      name: name,
+      path,
+      name,
     });
   }
 
  export const unregister_package = async(client: any, path: string, name: string) => {
     client.unregisterPackage({
-      path: path,
-      name: name,
+      path,
+      name,
     });
   }

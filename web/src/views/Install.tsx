@@ -12,12 +12,12 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { install, connect  } from 'utils/rpc';
 
-const Setup = () => {
+function Setup() {
   const [client, setClient] = useState<any>();
   const [selectedDB, setSelectedDB] = useState(2);
 
   useEffect(() => {
-    let newclient = connect("127.0.0.1", "3000");
+    const newclient = connect("127.0.0.1", "3000");
     setClient(newclient);
   }, []);
 

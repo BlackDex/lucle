@@ -38,7 +38,7 @@ const DashboardLayoutContent = styled('div')({
   overflow: 'auto'
 });
 
-const DashboardLayout = () => {
+function DashboardLayout() {
   const [isMobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
@@ -57,6 +57,6 @@ const DashboardLayout = () => {
       </DashboardLayoutWrapper>
     </DashboardLayoutRoot>
   );
-};
+}
 
 export default DashboardLayout;

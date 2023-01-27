@@ -46,7 +46,7 @@ const items = [
   },
 ];
 
-const Sidebar = ({ onMobileClose, openMobile }: any) => {
+function Sidebar({ onMobileClose, openMobile }: any) {
   const location = useLocation();
 
   useEffect(() => {
@@ -145,7 +145,7 @@ const Sidebar = ({ onMobileClose, openMobile }: any) => {
       </Hidden>
     </>
   );
-};
+}
 
 Sidebar.propTypes = {
   onMobileClose: PropTypes.func,

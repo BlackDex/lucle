@@ -28,10 +28,10 @@ const useStyles = makeStyles(() => createStyles({
   }
 }));
 
-const GlobalStyles = () => {
+function GlobalStyles() {
   useStyles();
 
   return null;
-};
+}
 
 export default GlobalStyles;

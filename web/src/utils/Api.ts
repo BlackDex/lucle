@@ -4,7 +4,7 @@ const host = "http://127.0.0.1";
 const port = "8000";
 
 export const get = (path: any, arg: any = null) => new Promise((resolve, reject) => {
-axios.get(host + ":" + port + path, {
+axios.get(`${host  }:${  port  }${path}`, {
 //  params: {
 //      'name': arg
 //    }
@@ -18,7 +18,7 @@ axios.get(host + ":" + port + path, {
 });
 
 export const post = (path: any, key: any, value: any) => new Promise((resolve, reject) => {
-  axios.post(host + ":" + port + path, {
+  axios.post(`${host  }:${  port  }${path}`, {
     key: value,
   })
   .then((response) => {
@@ -30,7 +30,7 @@ export const post = (path: any, key: any, value: any) => new Promise((resolve, r
 });
 
 export const adelete = (path: any) => new Promise((resolve, reject) => {
-  axios.delete(host + ":" + port + path)
+  axios.delete(`${host  }:${  port  }${path}`)
   .then((response) => {
     resolve(response);
   })

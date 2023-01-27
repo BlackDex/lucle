@@ -1,4 +1,4 @@
-const Index = () => {
+function Index() {
   return(
     <div>
       Welcome to Lucle !

@@ -13,7 +13,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import IconButton from '@mui/material/IconButton';
 
-//icons
+// icons
 import ClearIcon from '@mui/icons-material/Clear';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
@@ -29,11 +29,9 @@ interface Data {
   createdat: string
 };
 
-const CreateData = (id: number, username: string, email: string, role: string, createdat: string): Data => {
-  return {id, username, email, role, createdat}
-};
+const CreateData = (id: number, username: string, email: string, role: string, createdat: string): Data => ({id, username, email, role, createdat});
 
-const Tables = () => {
+function Tables() {
   const [rows, setRows] = useState<Data[]>([]);
   const [editing, setEditing] = useState<Boolean>(false)
   const [editingIndex, setEditingIndex] = useState<any>(-1);
@@ -41,7 +39,7 @@ const Tables = () => {
   let newData = { username: "", email: "", role: ""};
 
   const saveNewRow = () => {
-    alert("value : " + JSON.stringify(newData) );
+    alert(`value : ${  JSON.stringify(newData)}` );
   }
 
   useEffect(() => {
@@ -52,7 +50,7 @@ const Tables = () => {
     }
    })
    .catch((value) => {
-     alert("error : " + value);
+     alert(`error : ${  value}`);
    });
 },[setRows])
 
@@ -142,8 +140,8 @@ const Tables = () => {
 			  label="role"
 			  
 			>
-			  <MenuItem value={"normal"}>normal</MenuItem>
-			  <MenuItem value={"admin"}>admin</MenuItem>
+			  <MenuItem value="normal">normal</MenuItem>
+			  <MenuItem value="admin">admin</MenuItem>
 			</Select>
 		      </FormControl>
 		      </div>
@@ -173,7 +171,7 @@ const Tables = () => {
 			  </IconButton>
 			  <IconButton aria-label="delete">
 			    <DeleteIcon 
-				onClick={() => adelete('/diesel/' + row.id) }
+				onClick={() => adelete(`/diesel/${  row.id}`) }
 			    />
 			  </IconButton>
 			</div>
