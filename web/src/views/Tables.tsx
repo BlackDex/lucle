@@ -41,12 +41,6 @@ function Tables() {
   const [rows, setRows] = useState<Data[]>([]);
   const [editingIndex, setEditingIndex] = useState<any>(-1);
 
-  let newData = { username: "", email: "", role: "" };
-
-  const saveNewRow = () => {
-    alert(`value : ${JSON.stringify(newData)}`);
-  };
-
   useEffect(() => {
     get("/diesel/table")
       .then((value: any) => {
@@ -63,7 +57,7 @@ function Tables() {
           ]);
         }
       })
-      .catch((value) => {});
+      .catch();
   }, [setRows]);
 
   const addRow = (index: any) => {
@@ -103,13 +97,6 @@ function Tables() {
                       margin="dense"
                       fullWidth
                       variant="outlined"
-                      onChange={(event) =>
-                        (newData = {
-                          username: event.target.value,
-                          email: "",
-                          role: "",
-                        })
-                      }
                     />
                   ) : (
                     row.username
@@ -122,13 +109,6 @@ function Tables() {
                       margin="dense"
                       fullWidth
                       variant="outlined"
-                      onChange={(event) =>
-                        (newData = {
-                          username: "",
-                          email: event.target.value,
-                          role: "",
-                        })
-                      }
                     />
                   ) : (
                     row.email

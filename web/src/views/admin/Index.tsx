@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -18,7 +18,6 @@ interface Data {
 const CreateData = (name: string): Data => ({ name });
 
 function Index() {
-  const [selected, setSelected] = useState<readonly string[]>([]);
   const [rows, setRows] = useState<Data[]>([]);
 
   useEffect(() => {
@@ -26,30 +25,12 @@ function Index() {
       .then((value: any) => {
         setRows([CreateData(value.data)]);
       })
-      .catch((value) => {
-        alert(`error : ${value}`);
-      });
+      .catch();
   });
-  const isSelected = (name: string) => selected.indexOf(name) !== -1;
-
-  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
-    const selectedIndex = selected.indexOf(name);
-    const newSelected: readonly string[] = [];
-    setSelected(newSelected);
-  };
-
-  const Deploy = () => {
-    alert("allo");
-  };
 
   return (
     <div>
-      <Button
-        variant="contained"
-        // onClick={Deploy}
-      >
-        Create Table
-      </Button>
+      <Button variant="contained">Create Table</Button>
       <Box sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
           <TableContainer>
@@ -60,27 +41,17 @@ function Index() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.map((row: any) => {
-                  const isItemSelected = isSelected(row.name);
-                  return (
-                    <TableRow
-                      hover
-                      // key={row.name}
-                      onClick={(event: any) => handleClick(event, row.name)}
-                      selected={isItemSelected}
-                    >
-                      <TableCell>{row.name}</TableCell>
-                    </TableRow>
-                  );
-                })}
+                {rows.map((row: any) => (
+                  <TableRow hover key={row.name}>
+                    <TableCell>{row.name}</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
         </Paper>
       </Box>
-      <Button variant="contained" onClick={Deploy}>
-        Deploy
-      </Button>
+      <Button variant="contained">Deploy</Button>
     </div>
   );
 }

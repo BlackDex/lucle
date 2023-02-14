@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import TableRow from "@mui/material/TableRow";
@@ -16,19 +16,33 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 // api
-import { init, unregisterVersion, registerPackage } from "utils/rpc";
+import { connect, init, status, unregisterVersion, registerPackage } from "utils/rpc";
 
 function Speedupdate() {
   const [repoInit, setRepoInit] = useState<boolean>(false);
   const [url, setUrl] = useState<string>(localStorage.getItem("url") || "");
   const [currentVersion, setCurrentVersion] = useState<string>("");
   const [pack, setPack] = useState<any>();
+  const [port, setPort] = useState();
   const [version, setVersion] = useState<any>();
   const [listPackages, setListPackages] = useState<string[]>([]);
   const [listVersions, setListVersions] = useState<string[]>([]);
   const [path, setPath] = useState<string>(localStorage.getItem("path") || "");
   const [client, setClient] = useState<any>();
   const [fileObjects, setFileObjects] = useState();
+
+  useEffect(() => {
+    const newClient = connect(url, port);
+    setClient(newClient);
+    status(newClient, path).then((repo) => {
+      if (repo.repoinit) {
+        setRepoInit(true);
+        setCurrentVersion(repo.currentVersion);
+        setListVersions(repo.listVersion);
+        setListPackages(repo.packages);
+      }
+    });
+  });
 
   return (
     <div>
@@ -39,6 +53,15 @@ function Speedupdate() {
         onChange={(e) => {
           setUrl(e.currentTarget.value);
           localStorage.setItem("url", e.currentTarget.value);
+        }}
+      />
+      <TextField
+        id="outlined-required"
+        label="port"
+        value={port}
+        onChange={(e) => {
+          setPort(e.currentTarget.value);
+          localStorage.setItem("port", e.currentTarget.value);
         }}
       />
       <TextField
@@ -67,9 +90,9 @@ function Speedupdate() {
                     <TableCell />
                   </TableRow>
                 </TableHead>
-                {listVersions.map((version) => (
+                {listVersions.map((current_version) => (
                   <TableRow>
-                    <TableCell>{version}</TableCell>
+                    <TableCell>{current_version}</TableCell>
                     <TableCell>
                       <IconButton
                         onClick={() => unregisterVersion(client, path, version)}

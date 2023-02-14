@@ -25,3 +25,4 @@ rules: {}
 settings:
   import/resolver:
     typescript: []
+ignorePatterns: ["dist", "vite.config.ts"]
