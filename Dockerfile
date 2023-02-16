@@ -26,7 +26,8 @@ RUN mv target/aarch64-unknown-linux-musl/release/lucle target/release/lucle
 FROM node as build-frontend
 
 WORKDIR /opt/lucle
-COPY web . 
+COPY web/ .
+ls 
 RUN yarn && yarn build 
 
 FROM ${ARCH} as build
