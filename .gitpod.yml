@@ -2,9 +2,8 @@ image: gitpod/workspace-full
 checkoutLocation: gitpod-k3s
 tasks:
   - before: |
-      curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v3.21.12/protoc-3.21.12-linux-x86_64.zip
-      ls
-      unzip protoc-3.21.12-linux-x86_64.zip -d $HOME/.local
+      curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-x86_64.zip
+      unzip protoc-21.12-linux-x86_64.zip -d $HOME/.local
       export PATH="$PATH:$HOME/.local/bin"
   - init: cargo build
     command: cargo watch -x run  
