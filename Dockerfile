@@ -1,11 +1,9 @@
 ARG ARCH=amd64
 
 FROM messense/rust-musl-cross:x86_64-musl as amd64
-ENV TZ=Europe/London
-ARG DEBIAN_FRONTEND=noninteractive
 
-RUN sudo apt update && \
-    sudo apt install -y mysql-server sqlite3 postgresql
+RUN sudo apt update
+RUN DEBIAN_FRONTEND=noninteractive sudo apt install -y mysql-server sqlite3 postgresql
 
 WORKDIR /opt/lucle
 
