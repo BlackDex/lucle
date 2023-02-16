@@ -27,7 +27,7 @@ FROM node as build-frontend
 
 WORKDIR /opt/lucle
 COPY web/ .
-ls 
+RUN ls 
 RUN yarn && yarn build 
 
 FROM ${ARCH} as build
