@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { useRoutes } from "react-router-dom";
 import GlobalStyles from "components/GlobalStyles";
@@ -10,6 +10,12 @@ function App() {
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
   const content = useRoutes(routes(isLogged, isInstalled));
 
+  useEffect(() => {
+    // TODO: check if credentials are stored
+    setIsLogged(false);
+    // TODO: Check if cms is installed
+    setIsInstalled(false);
+  }, []);
   return (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import PropTypes from "prop-types";
 import AppBar from "@mui/material/AppBar";
 import Badge from "@mui/material/Badge";
 import Box from "@mui/material/Box";
@@ -42,9 +41,5 @@ function Navbar({ onMobileNavOpen, ...rest }: any) {
     </AppBar>
   );
 }
-
-Navbar.propTypes = {
-  onMobileNavOpen: PropTypes.func,
-};
 
 export default Navbar;

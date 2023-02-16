@@ -67,7 +67,13 @@ function Login() {
               onChange={(event) => setPassword(event.target.value)}
             />
             <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
+              control={
+                <Checkbox
+                  value="remember"
+                  color="primary"
+                  onChange={() => setRemember(true)}
+                />
+              }
               label="Remember me"
             />
             <Button
@@ -75,13 +81,13 @@ function Login() {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              // onClick={() => get('/user/' + login)}
+              onClick={handleLogin}
             >
               Sign In
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="#" variant="body2">
+                <Link href="/" variant="body2">
                   Forgot password?
                 </Link>
               </Grid>

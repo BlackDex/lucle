@@ -16,14 +16,20 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 // api
-import { connect, init, status, unregisterVersion, registerPackage } from "utils/rpc";
+import {
+  connect,
+  init,
+  status,
+  unregisterVersion,
+  registerPackage,
+} from "utils/rpc";
 
 function Speedupdate() {
   const [repoInit, setRepoInit] = useState<boolean>(false);
   const [url, setUrl] = useState<string>(localStorage.getItem("url") || "");
   const [currentVersion, setCurrentVersion] = useState<string>("");
   const [pack, setPack] = useState<any>();
-  const [port, setPort] = useState();
+  const [port, setPort] = useState<any>();
   const [version, setVersion] = useState<any>();
   const [listPackages, setListPackages] = useState<string[]>([]);
   const [listVersions, setListVersions] = useState<string[]>([]);
@@ -34,15 +40,13 @@ function Speedupdate() {
   useEffect(() => {
     const newClient = connect(url, port);
     setClient(newClient);
-    status(newClient, path).then((repo) => {
-      if (repo.repoinit) {
-        setRepoInit(true);
-        setCurrentVersion(repo.currentVersion);
-        setListVersions(repo.listVersion);
-        setListPackages(repo.packages);
-      }
+    status(newClient, path).then((repo: any) => {
+      setRepoInit(true);
+      setCurrentVersion(repo.currentVersion);
+      setListVersions(repo.listVersion);
+      setListPackages(repo.packages);
     });
-  });
+  }, [url, port, path]);
 
   return (
     <div>
@@ -91,7 +95,7 @@ function Speedupdate() {
                   </TableRow>
                 </TableHead>
                 {listVersions.map((current_version) => (
-                  <TableRow>
+                  <TableRow key={current_version}>
                     <TableCell>{current_version}</TableCell>
                     <TableCell>
                       <IconButton
@@ -135,7 +139,7 @@ function Speedupdate() {
                   </TableRow>
                 </TableHead>
                 {listPackages.map((bin) => (
-                  <TableRow>
+                  <TableRow key={bin}>
                     <TableCell>{bin}</TableCell>
                     <TableCell>
                       <IconButton>

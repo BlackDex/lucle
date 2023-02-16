@@ -18,7 +18,7 @@ export const install = async (client: any, db: number) => {
   const call = client.install({
     dbType: db,
   });
-  const response = await call.response;
+  await call.response;
 };
 
 export const init = async (client: any, path: string) => {

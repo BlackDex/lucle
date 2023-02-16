@@ -8,7 +8,7 @@ import { install, connect } from "utils/rpc";
 
 function Setup() {
   const [client, setClient] = useState<any>();
-  const [selectedDB, setSelectedDB] = useState(2);
+  const [selectedDB, setSelectedDB] = useState<any>();
 
   useEffect(() => {
     const newclient = connect("127.0.0.1", "3000");
@@ -23,7 +23,7 @@ function Setup() {
           id="select-database"
           value={selectedDB}
           label="Database"
-          onChange={(event) => setSelectedDB(event.currentTarget.value)}
+          onChange={(event) => setSelectedDB(event.target.value)}
         >
           <MenuItem value={0}>Mysql</MenuItem>
           <MenuItem value={1}>PostgreSQL</MenuItem>
