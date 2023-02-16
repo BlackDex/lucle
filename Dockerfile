@@ -26,8 +26,7 @@ RUN mv target/aarch64-unknown-linux-musl/release/lucle target/release/lucle
 FROM node as build-frontend
 
 WORKDIR /opt/lucle
-COPY web/ .
-RUN ls 
+COPY web/ . 
 RUN yarn && yarn build 
 
 FROM ${ARCH} as build
@@ -39,7 +38,7 @@ RUN apk upgrade
 WORKDIR /opt/lucle
 
 COPY --from=build /opt/lucle/target/release/lucle ./lucle
-COPY --from=build-frontend /opt/lucle/web .
+COPY --from=build-frontend /opt/lucle/ ./web
 EXPOSE 8080
 EXPOSE 3000
 
