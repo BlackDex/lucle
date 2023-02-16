@@ -1,5 +1,3 @@
-image: gitpod/workspace-full
-checkoutLocation: gitpod-k3s
 tasks:
   - before: |
       curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-x86_64.zip
@@ -8,17 +6,5 @@ tasks:
       rm protoc-21.12-linux-x86_64.zip
   - init: cargo build
     command: cargo watch -x run  
-  - name: prepare k3s
-    command: |
-      .gitpod/prepare-k3s.sh
-  - name: kernel dev environment
-    init: |
-      sudo apt update -y
-      sudo apt upgrade -y
-      sudo apt update -y
-      sudo apt install qemu qemu-system-x86 linux-image-generic libguestfs-tools sshpass netcat -y
-      .gitpod/prepare-rootfs.sh
-    command: |
-      sudo .gitpod/qemu.sh
 
 
