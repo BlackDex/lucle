@@ -1,7 +1,7 @@
 ARG ARCH=amd64
 
 FROM messense/rust-musl-cross:x86_64-musl as amd64
-ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/London
 
 RUN sudo apt update && \
     sudo apt install -y mysql-server sqlite3 postgresql
