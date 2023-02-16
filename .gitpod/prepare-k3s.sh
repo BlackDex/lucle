@@ -4,7 +4,7 @@ script_dirname="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 rootfslock="${script_dirname}/_output/rootfs/rootfs-ready.lock"
 k3sreadylock="${script_dirname}/_output/rootfs/k3s-ready.lock"
 
-if test -f "${k3sreadylock}"; then
+if test -f "sudo ${k3sreadylock}"; then
     exit 0
 fi
 

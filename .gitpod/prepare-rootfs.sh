@@ -16,7 +16,7 @@ cd $outdir
 
 tar -xvf rootfs.tar.gz
 
-qemu-img resize --preallocation=off jammy-server-cloudimg-amd64.img +20G
+sudo qemu-img resize --preallocation=off jammy-server-cloudimg-amd64.img +20G
 
 sudo virt-customize -a jammy-server-cloudimg-amd64.img --run-command 'resize2fs /dev/sda'
 
