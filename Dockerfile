@@ -2,7 +2,7 @@ ARG ARCH=amd64
 
 FROM messense/rust-musl-cross:x86_64-musl as amd64
 RUN sudo apt update && \
-    apt install -y libssl-dev protobuf-compiler mysql-server sqlite3 postgresql
+    sudo apt install -y libssl-dev protobuf-compiler mysql-server sqlite3 postgresql
 
 WORKDIR /opt/lucle
 
