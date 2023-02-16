@@ -5,6 +5,4 @@ tasks:
       export PATH="$PATH:$HOME/.local/bin"
       rm protoc-21.12-linux-x86_64.zip
   - init: cargo build
-    command: cargo watch -x run  
-
-
+    command: cargo watch -x run
