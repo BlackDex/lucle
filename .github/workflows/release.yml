@@ -12,6 +12,20 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
+    - name: install deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mysql-server sqlite3 postgresql 
+    - uses: dtolnay/rust-toolchain@stable
+      with: 
+        targets: x86_64-unknown-linux-musl
+    - uses: Swatinem/rust-cache@v2
+    - name: Install react deps
+      run: cd web && yarn install
+    - name: yarn build
+      run: yarn build
+    - name: Build binaries
+      run: cargo build --release   
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
