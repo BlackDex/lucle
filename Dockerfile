@@ -1,6 +1,6 @@
 FROM debian:bullseye as backend 
 RUN apt-get update
-RUN apt-get install -y curl zip bash gcc
+RUN apt-get install -y curl zip bash gcc mysql-server postgresql 
 WORKDIR /opt/lucle
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y 
 ENV PATH="/root/.cargo/bin:${PATH}" 
@@ -8,7 +8,6 @@ RUN mkdir -p /root/.protoc/bin
 RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-x86_64.zip && \
         unzip protoc-21.12-linux-x86_64.zip -d /root/.protoc/
 ENV PATH="/root/.protoc/bin:${PATH}" 
-RUN protoc --help
 COPY . . 
 RUN cargo build --release --verbose 
 
