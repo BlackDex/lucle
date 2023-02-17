@@ -14,8 +14,6 @@ RUN yarn && yarn build
  
 FROM debian:bullseye-slim
 
-RUN sudo apt update
-
 WORKDIR /opt/lucle
 
 COPY --from=backend target/release/lucle . 
