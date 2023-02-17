@@ -7,7 +7,8 @@ COPY . .
 RUN cargo build --release
 
 FROM node as frontend
-COPY ./web .
+WORKDIR /opt/lucle
+COPY ./web ./web
 RUN yarn && yarn build
  
 FROM debian:bullseye-slim
@@ -15,7 +16,7 @@ FROM debian:bullseye-slim
 WORKDIR /opt/lucle
 
 COPY --from=backend target/release/lucle . 
-COPY --from=frontend web web/
+COPY --from=frontend /opt/lucle/web ./web
 
 EXPOSE 8080
 EXPOSE 3000
