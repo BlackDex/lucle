@@ -15,7 +15,7 @@ jobs:
     - name: install deps
       run: |
         sudo apt-get update
-        sudo apt-get install -y mysql-server sqlite3 postgresql 
+        sudo apt-get install -y mysql-server sqlite3 postgresql musl musl-tools
     - name: Install protoc
       run: |
         curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-x86_64.zip
