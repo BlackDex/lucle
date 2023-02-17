@@ -1,11 +1,11 @@
 FROM debian:bullseye-slim
 
-RUN apk upgrade
+RUN sudo apt update && sudo apt dist-upgrade -y
 
 WORKDIR /opt/lucle
 
-COPY target/release/lucle lucle 
-COPY web web
+COPY target/release/lucle . 
+COPY web web/
 
 EXPOSE 8080
 EXPOSE 3000
