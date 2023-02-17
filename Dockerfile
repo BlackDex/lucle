@@ -4,7 +4,7 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.1
         export PATH="$PATH:$HOME/.local/bin"
 
 COPY . . 
-RUN cargo build --release
+RUN cargo build --release --verbose 
 
 FROM node as frontend
 WORKDIR /opt/lucle
