@@ -14,7 +14,7 @@ RUN yarn && yarn build
  
 FROM debian:bullseye-slim
 
-RUN sudo apt update && sudo apt upgrade -y
+RUN sudo apt update
 
 WORKDIR /opt/lucle
 
