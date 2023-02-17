@@ -9,7 +9,7 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.1
         unzip protoc-21.12-linux-x86_64.zip -d /root/.protoc/
 ENV PATH="/root/.protoc/bin:${PATH}" 
 COPY . . 
-RUN RUSTFLAGS='-C target-feature=-crt-static' cargo build --release --verbose 
+RUN cargo build --release --verbose 
 
 FROM node as frontend
 WORKDIR /opt/lucle
