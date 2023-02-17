@@ -5,7 +5,6 @@ RUN apk upgrade
 WORKDIR /opt/lucle
 
 COPY ./target/release/lucle . 
-RUN ls
 COPY ./web . 
 
 EXPOSE 8080
