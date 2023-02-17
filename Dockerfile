@@ -33,13 +33,16 @@ RUN yarn && yarn build
 FROM ${ARCH} as build
 
 FROM alpine:3.17 as final
-ARG TARGETARCH
+#ARG TARGETARCH
 RUN apk upgrade
 
 WORKDIR /opt/lucle
 
-COPY --from=build /opt/lucle/target/release/lucle ./lucle
-COPY --from=build-frontend /opt/lucle/ ./web
+#COPY --from=build /opt/lucle/target/release/lucle ./lucle
+#COPY --from=build-frontend /opt/lucle/ ./web
+COPY ./lucle . 
+COPY web/dist . 
+
 EXPOSE 8080
 EXPOSE 3000
 
