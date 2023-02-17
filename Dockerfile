@@ -1,6 +1,6 @@
 FROM debian:bullseye as backend 
 RUN apt-get update
-RUN apt get install -y rust curl
+RUN apt-get install -y rust curl
 WORKDIR /opt/lucle
 RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-x86_64.zip && \
         unzip protoc-21.12-linux-x86_64.zip -d $HOME/.local && \
