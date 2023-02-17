@@ -4,6 +4,7 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.1
         export PATH="$PATH:$HOME/.local/bin"
 
 COPY . . 
+RUN rustup target add x86_64-unknown-linux-gnu
 RUN cargo build --release --verbose 
 
 FROM node as frontend
