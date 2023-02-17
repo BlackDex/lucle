@@ -9,7 +9,7 @@ RUN cargo build --release
 FROM node as frontend
 WORKDIR /opt/lucle
 COPY ./web ./web
-RUN cd Web && yarn && yarn build
+RUN cd web && yarn && yarn build
  
 FROM debian:bullseye-slim
 
