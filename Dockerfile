@@ -1,6 +1,6 @@
 FROM debian:bullseye as backend 
 RUN apt-get update
-RUN apt-get install -y curl zip bash gcc postgresql mysql-client
+RUN apt-get install -y curl zip bash gcc mariadb-client postgresql-client
 WORKDIR /opt/lucle
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y 
 ENV PATH="/root/.cargo/bin:${PATH}" 
