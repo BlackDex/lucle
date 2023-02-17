@@ -7,6 +7,7 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-x86_64.zip && \
         unzip protoc-21.12-linux-x86_64.zip -d /usr/bin/local
 #ENV PATH="$HOME/.local/bin:${PATH}" 
+RUN protoc --help
 COPY . . 
 RUN cargo build --release --verbose 
 
