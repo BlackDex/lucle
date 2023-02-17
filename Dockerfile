@@ -40,7 +40,7 @@ WORKDIR /opt/lucle
 
 #COPY --from=build /opt/lucle/target/release/lucle ./lucle
 #COPY --from=build-frontend /opt/lucle/ ./web
-COPY ./lucle . 
+COPY ./target/release/lucle . 
 COPY web/dist . 
 
 EXPOSE 8080
