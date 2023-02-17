@@ -3,6 +3,7 @@ RUN apt-get update
 RUN apt-get install -y curl zip
 WORKDIR /opt/lucle
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y 
+RUN source "$HOME/.cargo/env" 
 RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-x86_64.zip && \
         unzip protoc-21.12-linux-x86_64.zip -d $HOME/.local && \
         export PATH="$PATH:$HOME/.local/bin"
