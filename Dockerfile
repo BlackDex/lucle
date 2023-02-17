@@ -1,6 +1,6 @@
 FROM debian:bullseye as backend 
 RUN apt-get update
-RUN apt-get install -y curl zip bash
+RUN apt-get install -y curl zip bash gcc
 WORKDIR /opt/lucle
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y 
 #RUN source "$HOME/.cargo/env"
