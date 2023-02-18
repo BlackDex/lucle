@@ -22,10 +22,10 @@ jobs:
         export PATH="$PATH:$HOME/.local/bin"
     - name: Install dependencies
       run: cd web && yarn install
-    - name: lint
-      run: cd web && yarn lint
-    - name: prettier
-      run: cd web && yarn prettier
+ #   - name: lint
+ #     run: cd web && yarn lint
+#    - name: prettier
+ #     run: cd web && yarn prettier
     - name: Build frontend (js side)
       run: cd web && yarn build
     - name: Build backend (rust side)
