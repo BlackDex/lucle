@@ -4,7 +4,7 @@ WORKDIR /opt/lucle
 
 #COPY --from=backend target/release/lucle . 
 #COPY --from=frontend /opt/lucle/web ./web
-COPY . . 
+ADD . . 
 RUN ls
 EXPOSE 8080
 EXPOSE 3000
