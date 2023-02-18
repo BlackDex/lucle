@@ -16,6 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: echo allo >> test.txt
+    - run touche allo.txt
     - name: Build container 
       uses: docker/build-push-action@v4
       with:
