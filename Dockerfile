@@ -1,6 +1,6 @@
 FROM debian:bullseye as backend 
 RUN apt-get update
-RUN apt-get install -y curl zip bash gcc lsb-release wget
+RUN apt-get install -y curl zip bash gcc lsb-release wget gnupg
 RUN curl -LO https://dev.mysql.com/get/mysql-apt-config_0.8.24-1_all.deb 
 RUN dpkg -i mysql-apt-config_0.8.24-1_all.deb
 RUN apt-get update
