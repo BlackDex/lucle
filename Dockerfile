@@ -4,7 +4,7 @@ RUN apt-get install -y curl zip bash gcc lsb-release wget gnupg
 RUN curl -LO https://dev.mysql.com/get/mysql-apt-config_0.8.24-1_all.deb 
 RUN dpkg -i mysql-apt-config_0.8.24-1_all.deb
 RUN apt-get update
-RUN apt-get install -y postgresql-client libmysqlclient21 
+RUN apt-get install -y postgresql-client mysql-client 
 WORKDIR /opt/lucle
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y 
 ENV PATH="/root/.cargo/bin:${PATH}" 
