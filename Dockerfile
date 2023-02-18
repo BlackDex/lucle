@@ -1,7 +1,7 @@
 FROM debian:bullseye-slim
 
 WORKDIR /opt/lucle
-#COPY . . 
+COPY . . 
 RUN ls
 
 
