@@ -1,6 +1,6 @@
 FROM rust:alpine
 RUN apk update && \
-    apk add mysql mysql-client postgresql
+    apk add mysql mysql-client postgresql musl-dev 
 
 WORKDIR /opt/lucle
 
