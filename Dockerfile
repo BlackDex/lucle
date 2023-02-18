@@ -1,8 +1,6 @@
-FROM debian:bullseye-slim
+FROM rust:alpine
 
 WORKDIR /opt/lucle
 COPY . . 
-RUN ls
+RUN cargo build --release --verbose
 
-
-CMD ["/bin/bash"] 
