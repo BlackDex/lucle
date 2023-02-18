@@ -17,6 +17,7 @@ jobs:
     - uses: actions/checkout@v3
     - run: echo allo >> test.txt
     - run: touch allo.txt
+    - run: ls
     - name: Build container 
       uses: docker/build-push-action@v4
       with:
