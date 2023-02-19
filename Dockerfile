@@ -1,6 +1,6 @@
 FROM debian:bullseye-slim as debian-final
 WORKDIR /opt/lucle
-COPY target/release/lucle . 
+COPY target/release/ . 
 RUN ls
 CMD ["./lucle"]
 
