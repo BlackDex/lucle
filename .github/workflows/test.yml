@@ -23,6 +23,7 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         push: false
+        target: alpine-builder
         tags: |
           ludea/lucle:${{ github.ref_name }}
           ludea/lucle:latest
