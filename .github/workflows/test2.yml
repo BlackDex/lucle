@@ -12,6 +12,7 @@ jobs:
   test2:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
     - run: echo foo >> bar.txt
     - run: touch foo.txt
     - run: ls -l
