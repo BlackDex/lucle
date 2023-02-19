@@ -1,7 +1,7 @@
 FROM debian:bullseye-slim as debian-final
 WORKDIR /opt/lucle
-COPY target/release/lucle . 
-RUN ls
+COPY target/release/lucle .
+COPY web . 
 CMD ["./lucle"]
 
 FROM node as build-frontend 
