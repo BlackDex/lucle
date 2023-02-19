@@ -1,0 +1,25 @@
+name: test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo foo >> bar.txt
+    - run: touch foo.txt
+    - run: ls -l
+    - name: Build container 
+      uses: docker/build-push-action@v4
+      with:
+        context: . 
+        file: Dockerfile
+        push: false
+        tags: foo:latest
+        platforms: linux/amd64
