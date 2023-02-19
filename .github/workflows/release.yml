@@ -36,6 +36,8 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         push: true
+        context: .
+        file: Dockerfile
         tags: |
           ludea/lucle:${{ github.ref_name }}
           ludea/lucle:latest
