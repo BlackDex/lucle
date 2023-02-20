@@ -10,7 +10,7 @@ FROM node as build-frontend
 WORKDIR /opt/lucle
 COPY . . 
 RUN cd web && yarn
-RUN cd web & & yarn build
+RUN cd web && yarn build
 
 FROM rust:alpine3.17 as alpine-builder
 RUN apk add --update mysql mysql-client postgresql sqlite musl-dev protobuf
