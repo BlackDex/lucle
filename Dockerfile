@@ -13,7 +13,7 @@ RUN cd web && yarn
 RUN cd web && yarn build
 
 FROM rust:alpine3.17 as alpine-builder
-RUN apk add --update mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite musl-dev protobuf
+RUN apk add --update mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev protobuf
 
 WORKDIR /opt/lucle
 
