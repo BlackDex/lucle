@@ -28,7 +28,7 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 */
-	tokio::join!(serve(using_serve_dir(), 3001));
+	tokio::join!(serve(using_serve_dir(), 8080));
 	tokio::join!(rpc::start_rpc_server());
 }
 
