@@ -28,5 +28,5 @@ jobs:
         tags: |
           ludea/lucle:${{ github.ref_name }}
           ludea/lucle:latest
-        platforms: linux/amd64 
+        platforms: linux/amd64, linux/arm64
         target: alpine     
