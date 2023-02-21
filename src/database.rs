@@ -1,22 +1,15 @@
-use std::{
-  path::Path,
-  io::Write,
-  fs::{
-    File,
-    self,
-  },
-};
-use diesel::{
-  pg::PgConnection,
-  sqlite::SqliteConnection,
-  mysql::MysqlConnection,
-  Connection,
-  result,
-  RunQueryDsl,
-};
-use url::{Url};
-use crate::database_errors::DatabaseResult;
 use super::query_helper;
+use crate::database_errors::DatabaseResult;
+use diesel::{
+    mysql::MysqlConnection, pg::PgConnection, result, sqlite::SqliteConnection, Connection,
+    RunQueryDsl,
+};
+use std::{
+    fs::{self, File},
+    io::Write,
+    path::Path,
+};
+use url::Url;
 
 pub enum Backend {
     Pg,
@@ -26,28 +19,27 @@ pub enum Backend {
 
 impl Backend {
     pub fn for_url(database_url: &str) -> Self {
-	let mut available_schemes: Vec<&str> = Vec::new();
+        let mut available_schemes: Vec<&str> = Vec::new();
         match database_url {
             _ if database_url.starts_with("postgres://")
                 || database_url.starts_with("postgresql://") =>
             {
-		available_schemes.push("`postgres://`");
-    	        Backend::Pg
+                available_schemes.push("`postgres://`");
+                Backend::Pg
             }
-            _ if database_url.starts_with("mysql://") =>
-            {
-		available_schemes.push("`mysql://`");
+            _ if database_url.starts_with("mysql://") => {
+                available_schemes.push("`mysql://`");
                 Backend::Mysql
             }
-            _ => Backend::Sqlite
+            _ => Backend::Sqlite,
         }
     }
 }
 
-pub fn setup_database(database_url: &str/*, migrations_dir: &Path*/) -> DatabaseResult<()> {
+pub fn setup_database(database_url: &str /*, migrations_dir: &Path*/) -> DatabaseResult<()> {
     create_database_if_needed(&database_url)?;
-//    create_default_migration_if_needed(&database_url, migrations_dir)?;
-//    create_schema_table_and_run_migrations_if_needed(&database_url, migrations_dir)?;
+    //    create_default_migration_if_needed(&database_url, migrations_dir)?;
+    //    create_schema_table_and_run_migrations_if_needed(&database_url, migrations_dir)?;
     Ok(())
 }
 
@@ -94,12 +86,12 @@ fn create_default_migration_if_needed(
     match Backend::for_url(database_url) {
         Backend::Pg => {
             fs::create_dir_all(&initial_migration_path)?;
-  //          let mut up_sql = File::create(initial_migration_path.join("up.sql"))?;
-  //          up_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/up.sql"))?;
-  //          let mut down_sql = File::create(initial_migration_path.join("down.sql"))?;
-  //          down_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/down.sql"))?;
+            //          let mut up_sql = File::create(initial_migration_path.join("up.sql"))?;
+            //          up_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/up.sql"))?;
+            //          let mut down_sql = File::create(initial_migration_path.join("down.sql"))?;
+            //          down_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/down.sql"))?;
         }
-        _ => {} 
+        _ => {}
     }
 
     Ok(())

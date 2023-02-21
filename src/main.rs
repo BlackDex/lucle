@@ -1,38 +1,35 @@
-use tower_http::{
-  services::{ServeDir, ServeFile},
-  trace::TraceLayer,  
-};
+use axum::{http::StatusCode, response::IntoResponse, routing::get_service, Router};
 use std::{io, net::SocketAddr};
-use axum::{
-  routing::{get_service},
-  response::IntoResponse,
-  http::{StatusCode},
-  Router,
+use tower_http::{
+    services::{ServeDir, ServeFile},
+    trace::TraceLayer,
 };
-
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod rpc;
 mod database;
 mod database_errors;
 mod query_helper;
+mod rpc;
 
 #[tokio::main]
 async fn main() {
-  //database::setup_database("sqlite");
+    //database::setup_database("sqlite");
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG")
-                .unwrap_or_else(|_| "info".into()),
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
         ))
-        .with(tracing_subscriber::fmt::layer()
-          .with_writer(std::io::stdout)
-          .pretty()
-      )
+        .with(
+            tracing_subscriber::fmt::layer()
+                .pretty()
+                .with_writer(std::io::stdout)
+                .with_target(false)
+                .with_ansi(true)
+                .with_line_number(false)
+                .with_file(false)
+        )
         .init();
 
-	tokio::join!(serve(using_serve_dir(), 8080));
-	tokio::join!(rpc::start_rpc_server());
+        tokio::join!(serve(using_serve_dir(), 8080), rpc::start_rpc_server());
 }
 
 fn using_serve_dir() -> Router {
@@ -40,7 +37,7 @@ fn using_serve_dir() -> Router {
     let serve_dir = get_service(serve_dir).handle_error(handle_error);
 
     Router::new()
-	.nest_service("/", serve_dir.clone())
+        .nest_service("/", serve_dir.clone())
         .fallback_service(serve_dir)
 }
 
