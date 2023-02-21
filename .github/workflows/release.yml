@@ -8,7 +8,7 @@ on:
 env:
   REGISTRY: ghcr.io
 jobs:
-  build-x86_64-container:
+  build-container:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
