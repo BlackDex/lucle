@@ -44,14 +44,13 @@ fn handle_error<E: Display, T>(error: E) -> T {
 }
 
 pub async fn start_rpc_server() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    tracing_subscriber::fmt::init();
 
     let addr = "127.0.0.1:3000".parse().unwrap();
     let api = LucleApi::default();
 
     let api = LucleServer::new(api);
 
-    println!("RPCServer listening on {}", addr);
+    tracing::info!("RPCServer listening on {}", addr);
 
     let cors_layer = CorsLayer::new()
 	.allow_origin(Any)

@@ -20,14 +20,17 @@ mod query_helper;
 #[tokio::main]
 async fn main() {
   //database::setup_database("sqlite");
-    /*tracing_subscriber::registry()
+    tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG")
-                .unwrap_or_else(|_| "example_static_file_server=debug,tower_http=debug".into()),
+                .unwrap_or_else(|_| "info".into()),
         ))
-        .with(tracing_subscriber::fmt::layer())
+        .with(tracing_subscriber::fmt::layer()
+          .with_writer(std::io::stdout)
+          .pretty()
+      )
         .init();
-*/
+
 	tokio::join!(serve(using_serve_dir(), 8080));
 	tokio::join!(rpc::start_rpc_server());
 }
@@ -48,7 +51,7 @@ async fn handle_error(err: io::Error) -> impl IntoResponse {
 
 async fn serve(app: Router, port: u16) {
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
-    tracing::debug!("listening on {}", addr);
+    tracing::info!("HTTP server starting on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.layer(TraceLayer::new_for_http()).into_make_service())
         .await
