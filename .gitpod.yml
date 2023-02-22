@@ -4,5 +4,8 @@ tasks:
       unzip protoc-21.12-linux-x86_64.zip -d $HOME/.local
       export PATH="$PATH:$HOME/.local/bin"
       rm protoc-21.12-linux-x86_64.zip
+      cd web 
+      yarn
+      yarn build
   - init: cargo build
     command: cargo watch -x run
