@@ -47,7 +47,7 @@ async fn handle_error(err: io::Error) -> impl IntoResponse {
 }
 
 async fn serve(app: Router, port: u16) {
-    let addr = SocketAddr::from(([127, 0, 0, 1], port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     tracing::info!("HTTP server starting on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.layer(TraceLayer::new_for_http()).into_make_service())
