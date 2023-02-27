@@ -1,5 +1,5 @@
-use axum::{Router};
-use std::{net::SocketAddr};
+use axum::Router;
+use std::net::SocketAddr;
 use tower_http::{
     services::{ServeDir, ServeFile},
     trace::TraceLayer,
@@ -8,12 +8,12 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod database;
 mod database_errors;
+mod migrations;
 mod query_helper;
 mod rpc;
 
 #[tokio::main]
 async fn main() {
-    database::setup_database("sqlite.db");
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
@@ -25,11 +25,11 @@ async fn main() {
                 .with_target(false)
                 .with_ansi(true)
                 .with_line_number(false)
-                .with_file(false)
+                .with_file(false),
         )
         .init();
 
-        tokio::join!(serve(using_serve_dir(), 8080), rpc::start_rpc_server());
+    tokio::join!(serve(using_serve_dir(), 8080), rpc::start_rpc_server());
 }
 
 fn using_serve_dir() -> Router {

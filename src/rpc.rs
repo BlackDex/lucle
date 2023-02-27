@@ -24,7 +24,9 @@ impl Lucle for LucleApi {
         println!("{:?}", DatabaseType::from_i32(db_type));
         match DatabaseType::from_i32(db_type) {
             Some(DatabaseType::Sqlite) => {
-                database::setup_database("lucle.db").unwrap_or_else(handle_error)
+                let migrations_dir = database::create_migrations_dir(migration_path)
+                    .unwrap_or_else(database::handle_error);
+                database::setup_database("lucle.db", &migrations_dir).unwrap_or_else(handle_error)
             }
             //Some(DatabaseType::Mysql) => database::setup_database("mysql://").unwrap_or_else(handle_error),
             _ => {}

@@ -1,13 +1,15 @@
 use super::query_helper;
-use crate::database_errors::DatabaseResult;
+use crate::database_errors::{DatabaseError, DatabaseResult};
+use crate::migrations;
 use diesel::{
     mysql::MysqlConnection, pg::PgConnection, result, sqlite::SqliteConnection, Connection,
     RunQueryDsl,
 };
 use std::{
-    fs::{self, File},
-    io::Write,
-    path::Path,
+    env,
+    error::Error,
+    fs,
+    path::{Path, PathBuf},
 };
 use url::Url;
 
@@ -36,9 +38,9 @@ impl Backend {
     }
 }
 
-pub fn setup_database(database_url: &str /*, migrations_dir: &Path*/) -> DatabaseResult<()> {
+pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResult<()> {
     create_database_if_needed(&database_url)?;
-    //    create_default_migration_if_needed(&database_url, migrations_dir)?;
+    create_default_migration_if_needed(&database_url, migrations_dir)?;
     //    create_schema_table_and_run_migrations_if_needed(&database_url, migrations_dir)?;
     Ok(())
 }
@@ -48,7 +50,7 @@ fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
         Backend::Pg => {
             if PgConnection::establish(database_url).is_err() {
                 let (database, postgres_url) = change_database_of_url(database_url, "postgres");
-                println!("Creating database: {}", database);
+                tracing::info!("Creating database: {}", database);
                 let mut conn = PgConnection::establish(&postgres_url)?;
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
@@ -56,7 +58,7 @@ fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
         Backend::Sqlite => {
             let path = path_from_sqlite_url(database_url)?;
             if !path.exists() {
-                println!("Creating database: {}", database_url);
+                tracing::info!("Creating database: {}", database_url);
                 SqliteConnection::establish(database_url)?;
             }
         }
@@ -64,7 +66,7 @@ fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
             if MysqlConnection::establish(database_url).is_err() {
                 let (database, mysql_url) =
                     change_database_of_url(database_url, "information_schema");
-                println!("Creating database: {}", database);
+                tracing::info!("Creating database: {}", database);
                 let mut conn = MysqlConnection::establish(&mysql_url)?;
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
@@ -124,4 +126,67 @@ fn path_from_sqlite_url(database_url: &str) -> DatabaseResult<::std::path::PathB
         // assume it's a bare path
         Ok(::std::path::PathBuf::from(database_url))
     }
+}
+
+pub fn create_migrations_dir(migration_path: Option<String>) -> DatabaseResult<PathBuf> {
+    let dir = match self::migrations::migrations_dir(migration_path) {
+        Ok(dir) => dir,
+        Err(_) => find_project_root()
+            .unwrap_or_else(handle_error)
+            .join("migrations"),
+    };
+
+    if dir.exists() {
+        // This is a cleanup code for migrating from an
+        // older version of diesel_cli that set a `.gitkeep` instead of a `.keep` file.
+        // TODO: remove this after a few releases
+        if let Ok(read_dir) = fs::read_dir(&dir) {
+            if let Some(dir_entry) =
+                read_dir
+                    .filter_map(|entry| entry.ok())
+                    .find(|entry| match entry.file_type() {
+                        Ok(file_type) => file_type.is_file() && entry.file_name() == ".gitkeep",
+                        Err(_) => false,
+                    })
+            {
+                fs::remove_file(dir_entry.path()).unwrap_or_else(|err| {
+                    eprintln!("WARNING: Unable to delete existing `migrations/.gitkeep`:\n{err}")
+                });
+            }
+        }
+    } else {
+        create_migrations_directory(&dir)?;
+    }
+
+    Ok(dir)
+}
+
+fn search_for_directory_containing_file(path: &Path, file: &str) -> DatabaseResult<PathBuf> {
+    let toml_path = path.join(file);
+    if toml_path.is_file() {
+        Ok(path.to_owned())
+    } else {
+        path.parent()
+            .map(|p| search_for_directory_containing_file(p, file))
+            .unwrap_or_else(|| Err(DatabaseError::ProjectRootNotFound(path.into())))
+            .map_err(|_| DatabaseError::ProjectRootNotFound(path.into()))
+    }
+}
+
+fn create_migrations_directory(path: &Path) -> DatabaseResult<PathBuf> {
+    println!("Creating migrations directory at: {}", path.display());
+    fs::create_dir(path)?;
+    fs::File::create(path.join(".keep"))?;
+    Ok(path.to_owned())
+}
+
+fn find_project_root() -> DatabaseResult<PathBuf> {
+    let current_dir = env::current_dir()?;
+    search_for_directory_containing_file(&current_dir, "diesel.toml")
+        .or_else(|_| search_for_directory_containing_file(&current_dir, "Cargo.toml"))
+}
+
+pub fn handle_error<E: Error, T>(error: E) -> T {
+    println!("{error}");
+    ::std::process::exit(1);
 }

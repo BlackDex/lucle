@@ -6,13 +6,25 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { install, connect } from "utils/rpc";
 
+import {
+  createGrpcWebTransport,
+  createPromiseClient,
+} from "@bufbuild/connect-web";
+import { Lucle } from "gen/lucle_connectweb";
+
 function Setup() {
   const [client, setClient] = useState<any>();
   const [selectedDB, setSelectedDB] = useState<any>();
 
   useEffect(() => {
-    const newclient = connect("127.0.0.1", "3000");
-    setClient(newclient);
+    //const newclient = connect("127.0.0.1", "3000");
+    const client = createPromiseClient(
+      Lucle,
+      createGrpcWebTransport({
+        baseUrl: `http://127.0.0.1:3000`,
+      })
+    );
+    setClient(client);
   }, []);
 
   return (
