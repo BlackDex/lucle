@@ -1,5 +1,5 @@
-use axum::{http::StatusCode, response::IntoResponse, routing::get_service, Router};
-use std::{io, net::SocketAddr};
+use axum::{Router};
+use std::{net::SocketAddr};
 use tower_http::{
     services::{ServeDir, ServeFile},
     trace::TraceLayer,
@@ -13,7 +13,7 @@ mod rpc;
 
 #[tokio::main]
 async fn main() {
-    //database::setup_database("sqlite");
+    database::setup_database("sqlite.db");
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
@@ -34,16 +34,10 @@ async fn main() {
 
 fn using_serve_dir() -> Router {
     let serve_dir = ServeDir::new("web/dist").fallback(ServeFile::new("web/dist/index.html"));
-    let serve_dir = get_service(serve_dir).handle_error(handle_error);
 
     Router::new()
         .nest_service("/", serve_dir.clone())
         .fallback_service(serve_dir)
-}
-
-async fn handle_error(err: io::Error) -> impl IntoResponse {
-    dbg!(err);
-    (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
 }
 
 async fn serve(app: Router, port: u16) {
