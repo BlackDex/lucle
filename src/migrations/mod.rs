@@ -1,5 +1,5 @@
 use diesel_migrations::{FileBasedMigrations, MigrationError};
-use std::{path::PathBuf};
+use std::path::PathBuf;
 
 pub fn migrations_dir(migration_dir: Option<String>) -> Result<PathBuf, MigrationError> {
     match migration_dir {

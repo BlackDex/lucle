@@ -21,7 +21,7 @@ impl Lucle for LucleApi {
         let inner = request.into_inner();
         let db_type = inner.db_type;
         let migration_path = inner.migration_path;
-        println!("{:?}", DatabaseType::from_i32(db_type));
+        tracing::info!("test {:?}", DatabaseType::from_i32(db_type));
         match DatabaseType::from_i32(db_type) {
             Some(DatabaseType::Sqlite) => {
                 let migrations_dir = database::create_migrations_dir(migration_path)

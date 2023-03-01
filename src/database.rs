@@ -2,9 +2,10 @@ use super::query_helper;
 use crate::database_errors::{DatabaseError, DatabaseResult};
 use crate::migrations;
 use diesel::{
-    mysql::MysqlConnection, pg::PgConnection, result, sqlite::SqliteConnection, Connection,
-    RunQueryDsl,
+    backend::Backend as DieselBackend, dsl::select, dsl::sql, mysql::MysqlConnection,
+    pg::PgConnection, result, sql_types::Bool, sqlite::SqliteConnection, Connection, RunQueryDsl,
 };
+use diesel_migrations::{FileBasedMigrations, HarnessWithOutput, MigrationHarness};
 use std::{
     env,
     error::Error,
@@ -38,10 +39,44 @@ impl Backend {
     }
 }
 
+pub enum InferConnection {
+    Pg(PgConnection),
+    Sqlite(SqliteConnection),
+    Mysql(MysqlConnection),
+}
+
+impl InferConnection {
+    pub fn establish(database_url: &str) -> DatabaseResult<Self> {
+        match Backend::for_url(database_url) {
+            Backend::Pg => PgConnection::establish(database_url).map(InferConnection::Pg),
+            Backend::Sqlite => {
+                SqliteConnection::establish(database_url).map(InferConnection::Sqlite)
+            }
+            Backend::Mysql => MysqlConnection::establish(database_url).map(InferConnection::Mysql),
+        }
+        .map_err(Into::into)
+    }
+}
+
+macro_rules! call_with_conn {
+    (
+        $database_url:expr,
+        $($func:ident)::+ ($($args:expr),*)
+    ) => {
+        match crate::database::InferConnection::establish(&$database_url)
+            .unwrap_or_else(|err| {handle_error_with_database_url(&$database_url, err)})
+        {
+            crate::database::InferConnection::Pg(ref mut conn) => $($func)::+ (conn, $($args),*),
+            crate::database::InferConnection::Sqlite(ref mut conn) => $($func)::+ (conn, $($args),*),
+            crate::database::InferConnection::Mysql(ref mut conn) => $($func)::+ (conn, $($args),*),
+        }
+    };
+}
+
 pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResult<()> {
     create_database_if_needed(&database_url)?;
     create_default_migration_if_needed(&database_url, migrations_dir)?;
-    //    create_schema_table_and_run_migrations_if_needed(&database_url, migrations_dir)?;
+    create_schema_table_and_run_migrations_if_needed(&database_url, migrations_dir)?;
     Ok(())
 }
 
@@ -76,6 +111,42 @@ fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
     Ok(())
 }
 
+fn schema_table_exists(database_url: &str) -> DatabaseResult<bool> {
+    match InferConnection::establish(database_url).unwrap() {
+        InferConnection::Pg(mut conn) => select(sql::<Bool>(
+            "EXISTS \
+             (SELECT 1 \
+             FROM information_schema.tables \
+             WHERE table_name = '__diesel_schema_migrations')",
+        ))
+        .get_result(&mut conn),
+        InferConnection::Sqlite(mut conn) => select(sql::<Bool>(
+            "EXISTS \
+             (SELECT 1 \
+             FROM sqlite_master \
+             WHERE type = 'table' \
+             AND name = '__diesel_schema_migrations')",
+        ))
+        .get_result(&mut conn),
+        InferConnection::Mysql(mut conn) => select(sql::<Bool>(
+            "EXISTS \
+                    (SELECT 1 \
+                     FROM information_schema.tables \
+                     WHERE table_name = '__diesel_schema_migrations'
+                     AND table_schema = DATABASE())",
+        ))
+        .get_result(&mut conn),
+    }
+    .map_err(Into::into)
+}
+
+fn database_url(database_url: Option<String>) -> String {
+    match database_url {
+        Some(path) => path,
+        None => handle_error(DatabaseError::DatabaseUrlMissing),
+    }
+}
+
 fn create_default_migration_if_needed(
     database_url: &str,
     migrations_dir: &Path,
@@ -96,6 +167,18 @@ fn create_default_migration_if_needed(
         _ => {}
     }
 
+    Ok(())
+}
+
+fn create_schema_table_and_run_migrations_if_needed(
+    database_url: &str,
+    migrations_dir: &Path,
+) -> DatabaseResult<()> {
+    if !schema_table_exists(database_url).unwrap_or_else(handle_error) {
+        let migrations =
+            FileBasedMigrations::from_path(migrations_dir).unwrap_or_else(handle_error);
+        call_with_conn!(database_url, run_migrations_with_output(migrations))?;
+    };
     Ok(())
 }
 
@@ -173,6 +256,19 @@ fn search_for_directory_containing_file(path: &Path, file: &str) -> DatabaseResu
     }
 }
 
+fn run_migrations_with_output<Conn, DB>(
+    conn: &mut Conn,
+    migrations: FileBasedMigrations,
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>>
+where
+    Conn: MigrationHarness<DB> + Connection<Backend = DB> + 'static,
+    DB: DieselBackend,
+{
+    HarnessWithOutput::write_to_stdout(conn)
+        .run_pending_migrations(migrations)
+        .map(|_| ())
+}
+
 fn create_migrations_directory(path: &Path) -> DatabaseResult<PathBuf> {
     println!("Creating migrations directory at: {}", path.display());
     fs::create_dir(path)?;
@@ -188,5 +284,10 @@ fn find_project_root() -> DatabaseResult<PathBuf> {
 
 pub fn handle_error<E: Error, T>(error: E) -> T {
     println!("{error}");
+    ::std::process::exit(1);
+}
+
+pub fn handle_error_with_database_url<E: Error, T>(database_url: &str, error: E) -> T {
+    eprintln!("Could not connect to database via `{database_url}`: {error}");
     ::std::process::exit(1);
 }
