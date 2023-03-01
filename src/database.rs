@@ -140,13 +140,6 @@ fn schema_table_exists(database_url: &str) -> DatabaseResult<bool> {
     .map_err(Into::into)
 }
 
-fn database_url(database_url: Option<String>) -> String {
-    match database_url {
-        Some(path) => path,
-        None => handle_error(DatabaseError::DatabaseUrlMissing),
-    }
-}
-
 fn create_default_migration_if_needed(
     database_url: &str,
     migrations_dir: &Path,
