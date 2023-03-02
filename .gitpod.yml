@@ -6,7 +6,7 @@ tasks:
       export PATH="$PATH:$HOME/.local/bin"
       rm protoc-21.12-linux-x86_64.zip
       curl -LO https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
-      dpkg -i dbeaver-ce_latest_amd64.deb
+      sudo dpkg -i dbeaver-ce_latest_amd64.deb
       rm dbeaver-ce_latest_amd64.deb
       cd web 
       yarn
