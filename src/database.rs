@@ -1,18 +1,21 @@
 use super::query_helper;
 use crate::database_errors::{DatabaseError, DatabaseResult};
-use crate::migrations;
+use chrono::Utc;
 use diesel::{
     backend::Backend as DieselBackend, dsl::select, dsl::sql, mysql::MysqlConnection,
     pg::PgConnection, result, sql_types::Bool, sqlite::SqliteConnection, Connection, RunQueryDsl,
 };
-use diesel_migrations::{FileBasedMigrations, HarnessWithOutput, MigrationHarness};
+use diesel_migrations::{FileBasedMigrations, HarnessWithOutput, MigrationError, MigrationHarness};
 use std::{
     env,
     error::Error,
+    fmt::Display,
     fs,
     path::{Path, PathBuf},
 };
 use url::Url;
+
+pub static TIMESTAMP_FORMAT: &str = "%Y-%m-%d-%H%M%S";
 
 pub enum Backend {
     Pg,
@@ -205,7 +208,7 @@ fn path_from_sqlite_url(database_url: &str) -> DatabaseResult<::std::path::PathB
 }
 
 pub fn create_migrations_dir(migration_path: Option<String>) -> DatabaseResult<PathBuf> {
-    let dir = match self::migrations::migrations_dir(migration_path) {
+    let dir = match migrations_dir(migration_path) {
         Ok(dir) => dir,
         Err(_) => find_project_root()
             .unwrap_or_else(handle_error)
@@ -226,7 +229,10 @@ pub fn create_migrations_dir(migration_path: Option<String>) -> DatabaseResult<P
                     })
             {
                 fs::remove_file(dir_entry.path()).unwrap_or_else(|err| {
-                    eprintln!("WARNING: Unable to delete existing `migrations/.gitkeep`:\n{err}")
+                    eprintln!(
+                        "WARNING: Unable to delete existing `migrations/.gitkeep`:\n{}",
+                        err
+                    )
                 });
             }
         }
@@ -275,6 +281,13 @@ fn find_project_root() -> DatabaseResult<PathBuf> {
         .or_else(|_| search_for_directory_containing_file(&current_dir, "Cargo.toml"))
 }
 
+fn migrations_dir(path: Option<String>) -> Result<PathBuf, MigrationError> {
+    match path {
+        Some(dir) => Ok(dir.into()),
+        None => FileBasedMigrations::find_migrations_directory().map(|p| p.path().to_path_buf()),
+    }
+}
+
 pub fn handle_error<E: Error, T>(error: E) -> T {
     println!("{error}");
     ::std::process::exit(1);
@@ -283,4 +296,81 @@ pub fn handle_error<E: Error, T>(error: E) -> T {
 pub fn handle_error_with_database_url<E: Error, T>(database_url: &str, error: E) -> T {
     eprintln!("Could not connect to database via `{database_url}`: {error}");
     ::std::process::exit(1);
+}
+
+//migration
+fn run_generate_migration_command(
+    migration_name: Option<String>,
+    migration_dir: Option<String>,
+    migration_ver: Option<String>,
+    migration_format: Option<String>,
+    with_down_file: Option<Bool>,
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+    let version = migration_version(migration_ver);
+    let versioned_name = format!("{}_{}", version, migration_name.unwrap());
+    let migration_dir = migrations_dir(migration_dir)
+        .unwrap_or_else(handle_error)
+        .join(versioned_name);
+    fs::create_dir(&migration_dir).unwrap();
+
+    let mut down_file;
+    if let Some(i) = with_down_file {
+        down_file = true;
+    } else {
+        down_file = false;
+    }
+    match migration_format.as_deref() {
+        Some("sql") => generate_sql_migration(&migration_dir, down_file),
+        Some(x) => return Err(format!("Unrecognized migration format `{}`", x).into()),
+        None => unreachable!("MIGRATION_FORMAT has a default value"),
+    }
+
+    Ok(())
+}
+
+fn generate_sql_migration(path: &Path, with_down: bool) {
+    use std::io::Write;
+
+    let migration_dir_relative =
+        convert_absolute_path_to_relative(path, &env::current_dir().unwrap());
+
+    let up_path = path.join("up.sql");
+    println!(
+        "Creating {}",
+        migration_dir_relative.join("up.sql").display()
+    );
+    let mut up = fs::File::create(up_path).unwrap();
+    up.write_all(b"-- Your SQL goes here").unwrap();
+
+    if with_down {
+        let down_path = path.join("down.sql");
+        println!(
+            "Creating {}",
+            migration_dir_relative.join("down.sql").display()
+        );
+        let mut down = fs::File::create(down_path).unwrap();
+        down.write_all(b"-- This file should undo anything in `up.sql`")
+            .unwrap();
+    }
+}
+
+fn convert_absolute_path_to_relative(target_path: &Path, mut current_path: &Path) -> PathBuf {
+    let mut result = PathBuf::new();
+
+    while !target_path.starts_with(current_path) {
+        result.push("..");
+        match current_path.parent() {
+            Some(parent) => current_path = parent,
+            None => return target_path.into(),
+        }
+    }
+
+    result.join(target_path.strip_prefix(current_path).unwrap())
+}
+
+fn migration_version<'a>(version: Option<String>) -> Box<dyn Display + 'a> {
+    match version {
+        Some(version) => Box::new(version) as Box<dyn Display>,
+        None => Box::new(Utc::now().format(TIMESTAMP_FORMAT)),
+    }
 }

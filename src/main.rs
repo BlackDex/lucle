@@ -8,7 +8,6 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod database;
 mod database_errors;
-mod migrations;
 mod query_helper;
 mod rpc;
 
