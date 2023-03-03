@@ -14,7 +14,7 @@
     "@bufbuild/connect-web": "0.8.1",
     "@emotion/react": "11.10.6",
     "@emotion/styled": "11.10.6",
-    "@mui/icons-material": "5.11.9",
+    "@mui/icons-material": "5.11.11",
     "@mui/material": "5.11.11",
     "@mui/styles": "5.11.11",
     "@types/prop-types": "^15.7.5",
