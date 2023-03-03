@@ -11,6 +11,7 @@ use std::{
     error::Error,
     fmt::Display,
     fs,
+    io::Write,
     path::{Path, PathBuf},
 };
 use url::Url;
@@ -80,6 +81,7 @@ pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResu
     create_database_if_needed(&database_url)?;
     create_default_migration_if_needed(&database_url, migrations_dir)?;
     create_schema_table_and_run_migrations_if_needed(&database_url, migrations_dir)?;
+    run_generate_migration_command("allo".to_string(), None, None, Some("sql".to_string()), Some(true))?;
     Ok(())
 }
 
@@ -88,7 +90,6 @@ fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
         Backend::Pg => {
             if PgConnection::establish(database_url).is_err() {
                 let (database, postgres_url) = change_database_of_url(database_url, "postgres");
-                tracing::info!("Creating database: {}", database);
                 let mut conn = PgConnection::establish(&postgres_url)?;
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
@@ -96,7 +97,6 @@ fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
         Backend::Sqlite => {
             let path = path_from_sqlite_url(database_url)?;
             if !path.exists() {
-                tracing::info!("Creating database: {}", database_url);
                 SqliteConnection::establish(database_url)?;
             }
         }
@@ -104,12 +104,12 @@ fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
             if MysqlConnection::establish(database_url).is_err() {
                 let (database, mysql_url) =
                     change_database_of_url(database_url, "information_schema");
-                tracing::info!("Creating database: {}", database);
                 let mut conn = MysqlConnection::establish(&mysql_url)?;
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
-        }
+        }   
     }
+    tracing::info!("Creating database: {}", database_url);
 
     Ok(())
 }
@@ -269,7 +269,7 @@ where
 }
 
 fn create_migrations_directory(path: &Path) -> DatabaseResult<PathBuf> {
-    println!("Creating migrations directory at: {}", path.display());
+    tracing::info!("Creating migrations directory at: {}", path.display());
     fs::create_dir(path)?;
     fs::File::create(path.join(".keep"))?;
     Ok(path.to_owned())
@@ -284,8 +284,22 @@ fn find_project_root() -> DatabaseResult<PathBuf> {
 fn migrations_dir(path: Option<String>) -> Result<PathBuf, MigrationError> {
     match path {
         Some(dir) => Ok(dir.into()),
-        None => FileBasedMigrations::find_migrations_directory().map(|p| p.path().to_path_buf()),
+        None => FileBasedMigrations::find_migrations_directory().map(
+            |p| p.path().to_path_buf()),
     }
+}
+
+fn create_table(migration_dir: PathBuf ) {
+    let up_path = migration_dir.join("up.sql");
+ 
+    tracing::info!("Creating {}", migration_dir.join("up.sql").display());
+    let mut up = fs::File::create(up_path).unwrap();
+   up.write_all(b"CREATE TABLE posts (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR NOT NULL,
+        body TEXT NOT NULL,
+        published BOOLEAN NOT NULL DEFAULT FALSE
+      )").unwrap();
 }
 
 pub fn handle_error<E: Error, T>(error: E) -> T {
@@ -300,21 +314,21 @@ pub fn handle_error_with_database_url<E: Error, T>(database_url: &str, error: E)
 
 //migration
 fn run_generate_migration_command(
-    migration_name: Option<String>,
-    migration_dir: Option<String>,
+    migration_name: String,
+    migration_folder: Option<String>,
     migration_ver: Option<String>,
     migration_format: Option<String>,
-    with_down_file: Option<Bool>,
+    with_down_file: Option<bool>,
 ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     let version = migration_version(migration_ver);
-    let versioned_name = format!("{}_{}", version, migration_name.unwrap());
-    let migration_dir = migrations_dir(migration_dir)
+    let versioned_name = format!("{}_{}", version, migration_name);
+    let migration_dir = migrations_dir(migration_folder)
         .unwrap_or_else(handle_error)
         .join(versioned_name);
     fs::create_dir(&migration_dir).unwrap();
 
-    let mut down_file;
-    if let Some(i) = with_down_file {
+    let down_file;
+    if let Some(_i) = with_down_file {
         down_file = true;
     } else {
         down_file = false;
@@ -322,29 +336,21 @@ fn run_generate_migration_command(
     match migration_format.as_deref() {
         Some("sql") => generate_sql_migration(&migration_dir, down_file),
         Some(x) => return Err(format!("Unrecognized migration format `{}`", x).into()),
-        None => unreachable!("MIGRATION_FORMAT has a default value"),
+        None => tracing::info!("MIGRATION_FORMAT has a default value"),
     }
 
     Ok(())
 }
 
 fn generate_sql_migration(path: &Path, with_down: bool) {
-    use std::io::Write;
-
     let migration_dir_relative =
         convert_absolute_path_to_relative(path, &env::current_dir().unwrap());
 
-    let up_path = path.join("up.sql");
-    println!(
-        "Creating {}",
-        migration_dir_relative.join("up.sql").display()
-    );
-    let mut up = fs::File::create(up_path).unwrap();
-    up.write_all(b"-- Your SQL goes here").unwrap();
+    create_table(migration_dir_relative.clone());
 
     if with_down {
         let down_path = path.join("down.sql");
-        println!(
+        tracing::info!(
             "Creating {}",
             migration_dir_relative.join("down.sql").display()
         );

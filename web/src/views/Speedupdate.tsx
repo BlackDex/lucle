@@ -24,6 +24,12 @@ import {
   registerPackage,
 } from "utils/rpc";
 
+import {
+  createGrpcWebTransport,
+  createPromiseClient,
+} from "@bufbuild/connect-web";
+import { Repo } from "gen/speedupdate_connectweb";
+
 function Speedupdate() {
   const [repoInit, setRepoInit] = useState<boolean>(false);
   const [url, setUrl] = useState<string>(localStorage.getItem("url") || "");
@@ -38,14 +44,20 @@ function Speedupdate() {
   const [fileObjects, setFileObjects] = useState();
 
   useEffect(() => {
-    const newClient = connect(url, port);
-    setClient(newClient);
-    status(newClient, path).then((repo: any) => {
+    //const newClient = connect(url, port);
+      const client = createPromiseClient(
+        Repo,
+        createGrpcWebTransport({
+          baseUrl: `http://localhost:3000`,
+        })
+      );
+    setClient(client);
+    /*status(client, path).then((repo: any) => {
       setRepoInit(true);
       setCurrentVersion(repo.currentVersion);
       setListVersions(repo.listVersion);
       setListPackages(repo.packages);
-    });
+    });*/
   }, [url, port, path]);
 
   return (

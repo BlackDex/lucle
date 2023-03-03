@@ -3,6 +3,7 @@ import {
   createPromiseClient,
 } from "@bufbuild/connect-web";
 import { Lucle } from "gen/lucle_connectweb";
+import { Repo } from "gen/speedupdate_connectweb";
 
 export const connect = (url: string, port: string) => {
   const client = createPromiseClient(
