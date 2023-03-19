@@ -11,7 +11,7 @@ COPY . .
 RUN cargo build --release --verbose
 
 FROM --platform=$BUILDPLATFORM rust:alpine3.17 as alpine-builder-arm64
-RUN apk add --update mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev protobuf
+RUN apk add --update g++-aarch64-none-elf mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev protobuf
 RUN rustup target add aarch64-unknown-linux-musl
 WORKDIR /opt/lucle
 COPY . . 
