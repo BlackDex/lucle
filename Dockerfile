@@ -15,7 +15,6 @@ RUN apk add --update gcc-cross-embedded mysql mysql-client mariadb-dev postgresq
 RUN rustup target add aarch64-unknown-linux-musl
 WORKDIR /opt/lucle
 COPY . . 
-ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
 RUN cargo build --release --verbose --target aarch64-unknown-linux-musl
 RUN mv target/aarch64-unknown-linux-musl/release/lucle target/release/lucle
 
