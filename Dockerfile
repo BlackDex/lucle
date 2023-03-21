@@ -1,7 +1,7 @@
 FROM node as build-frontend 
 WORKDIR /opt/lucle
 COPY . . 
-RUN cd web && yarn install --network-timeout 60000
+RUN cd web && yarn install --network-timeout 500000
 RUN cd web && yarn build
 
 FROM rust:alpine3.17 as alpine-builder-amd64
