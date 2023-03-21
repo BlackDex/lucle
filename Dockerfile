@@ -20,7 +20,7 @@ FROM alpine-builder-$TARGETARCH as build
 
 FROM alpine:3.17 as alpine
 WORKDIR /opt/lucle
-COPY --from=build /opt/lucle/target/release/lucle .
+#COPY --from=build /opt/lucle/target/release/lucle .
 COPY --from=build-frontend /opt/lucle/web/dist ./web/dist
 EXPOSE 3000
 EXPOSE 8080
