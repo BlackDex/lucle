@@ -1,0 +1,41 @@
+name: Release
+
+on: 
+ push:
+   tags:
+     - chart-v*
+ 
+jobs:     
+  build-helm-chart:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.10.0
+      - id: 'configure-git'
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      - name: lint
+        run: |
+          helm lint charts/lucle/
+      - name: Package chart
+        run: helm package chart/lucle charts/speedupdate 
+
+      - name: Push
+        uses: cloudsmith-io/action@v0.5.3
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: "push"
+          format: "helm"
+          owner: "ludea"
+          repo: "lucle"
+          republish: "true"
+          file: chart/lucle-${{ github.ref_name }}.tgz
