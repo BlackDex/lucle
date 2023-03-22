@@ -39,7 +39,7 @@ jobs:
         uses: helm/kind-action@v1.4.0
 
       - name: Run chart-testing (install)
-        run: ct install --chart-dirs chart
+        run: ct install --chart-dirs chart/ --charts chart/ 
         
       - name: Package chart
         run: helm package chart/lucle
