@@ -42,7 +42,7 @@ jobs:
         run: ct install --chart-dirs chart/ --charts chart/ 
         
       - name: Package chart
-        run: helm package chart/lucle
+        run: helm package chart/
 
       - name: Push
         uses: cloudsmith-io/action@v0.5.3
