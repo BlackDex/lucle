@@ -15,7 +15,7 @@ RUN apk add --update git mysql mysql-client mariadb-dev postgresql postgresql-cl
 WORKDIR /opt/lucle
 COPY . . 
 RUN CARGO_NET_GIT_FETCH_WITH_CLI=true cargo build --release --verbose
-RUN ls /opt/lucle/target/
+RUN ls /opt/lucle/target/release
 
 FROM alpine-builder-$TARGETARCH as build
 
