@@ -53,4 +53,4 @@ jobs:
           owner: "ludea"
           repo: "lucle"
           republish: "true"
-          file: chart/lucle-${{ github.ref_name }}.tgz
+          file: chart/lucle-v${{ github.ref_name }}.tgz
