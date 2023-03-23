@@ -40,6 +40,11 @@ jobs:
 
       - name: Run chart-testing (install)
         run: ct install --chart-dirs chart/ --charts chart/ 
+
+      - name: Get version
+        uses: mikefarah/yq@master
+        with:
+          cmd: echo "VERSION=$(yq -i '.version chart/Chart.yml)" >> $GITHUB_ENV
         
       - name: Package chart
         run: helm package chart/
@@ -53,4 +58,4 @@ jobs:
           owner: "ludea"
           repo: "lucle"
           republish: "true"
-          file: chart/lucle-${{ github.ref_name }}.tgz
+          file: chart/lucle-${{ env.VERSION }}.tgz
