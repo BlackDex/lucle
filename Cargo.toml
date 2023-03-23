@@ -5,7 +5,7 @@ edition = "2021"
 license = "Apache-2.0"
 
 [dependencies]
-axum = "0.6.11"
+axum = "0.6.12"
 chrono = { version = "0.4.24", default-features = false, features = ["clock", "std"] }
 ftp = "3.0.1"
 diesel = { version = "2.0.3", features = ["mysql", "postgres", "sqlite", "r2d2"] }
