@@ -58,4 +58,4 @@ jobs:
           owner: "ludea"
           repo: "lucle"
           republish: "true"
-          file: chart/lucle-${{ env.VERSION }}.tgz
+          file: lucle-${{ env.VERSION }}.tgz
