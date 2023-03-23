@@ -42,9 +42,9 @@ jobs:
         run: ct install --chart-dirs chart/ --charts chart/ 
 
       - name: Get version
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4.32.2
         with:
-          cmd: echo "VERSION=$(yq -i '.version chart/Chart.yml)" >> $GITHUB_ENV
+          cmd: echo "VERSION=$(yq .version chart/Chart.yml)" >> $GITHUB_ENV
         
       - name: Package chart
         run: helm package chart/
