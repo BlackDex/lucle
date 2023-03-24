@@ -56,7 +56,6 @@ jobs:
     - uses: dtolnay/rust-toolchain@stable
       with:
         targets: aarch64-unknown-linux-musl
-        toolchain: stable-aarch64-unknown-linux-musl
     - name: Build backend (rust side)
       run: cargo build --target aarch64-unknown-linux-musl --verbose
     - name: Run tests
