@@ -36,27 +36,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: install deps
+    - name: build binary 
       run: |
-        sudo apt update 
-        sudo apt install -y gcc-aarch64-linux-gnu
-    - name: Install protoc
-      run: |
-        curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v22.2/protoc-22.2-linux-x86_64.zip
-        unzip protoc-22.2-linux-x86_64.zip -d $HOME/.local
-        export PATH="$PATH:$HOME/.local/bin"
-#    - name: Install dependencies
- #     run: cd web && yarn install
- #   - name: lint
- #     run: cd web && yarn lint
-#    - name: prettier
- #     run: cd web && yarn prettier
- #   - name: Build frontend (js side)
- #     run: cd web && yarn build
-    - uses: dtolnay/rust-toolchain@stable
-      with:
-        targets: aarch64-unknown-linux-musl
-    - name: Build backend (rust side)
-      run: cargo build --target aarch64-unknown-linux-musl --verbose
-    - name: Run tests
-      run: cargo test --verbose
+        docker run --rm -it -v "$(pwd)":/home/rust/src messense/rust-musl-cross:aarch64-musl sudo apt install -y protobuf 
+        docker run --rm -it -v "$(pwd)":/home/rust/src messense/rust-musl-cross:aarch64-musl cargo build --release --verbose 
+
+        
