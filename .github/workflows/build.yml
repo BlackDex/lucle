@@ -53,6 +53,9 @@ jobs:
  #     run: cd web && yarn prettier
  #   - name: Build frontend (js side)
  #     run: cd web && yarn build
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-unknown-linux-musl
     - name: Build backend (rust side)
       run: cargo build --target aarch64-unknown-linux-musl --verbose
     - name: Run tests
