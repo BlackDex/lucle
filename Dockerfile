@@ -17,7 +17,7 @@ RUN git clone https://github.com/alpinelinux/aports --depth 1 && \
     export BARCH=aarch64 && \
     ls && \
     ls aports && \
-    ls aports/scritps && \
+    ls aports/scripts && \
     CBUILDROOT=~/sysroot-$BARCH aports/scripts/bootstrap.sh $BARCH
 RUN git clone https://gitlab.alpinelinux.org/alpine/aports --depth 1
 RUN cd aports && \
