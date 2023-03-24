@@ -19,7 +19,7 @@ RUN CARGO_NET_GIT_FETCH_WITH_CLI=true cargo build --release --verbose
 FROM alpine-builder-$TARGETARCH as build
 
 FROM alpine:3.17 as alpine
-RUN apk add --update mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev
+RUN apk add --update mysql mysql-client postgresql postgresql-client sqlite 
 WORKDIR /opt/lucle
 COPY --from=build /opt/lucle/target/release/lucle .
 COPY --from=build-frontend /opt/lucle/web/dist ./web/dist
