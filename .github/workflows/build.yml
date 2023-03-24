@@ -42,8 +42,8 @@ jobs:
         sudo apt install -y gcc-aarch64-linux-gnu
     - name: Install protoc
       run: |
-        curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v22.2/protoc-22.2-linux-aarch_64.zip
-        unzip protoc-22.2-linux-aarch_64.zip -d $HOME/.local
+        curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v22.2/protoc-22.2-linux-x86_64.zip
+        unzip protoc-22.2-linux-x86_64.zip -d $HOME/.local
         export PATH="$PATH:$HOME/.local/bin"
 #    - name: Install dependencies
  #     run: cd web && yarn install
