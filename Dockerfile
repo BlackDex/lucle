@@ -10,11 +10,16 @@ WORKDIR /opt/lucle
 COPY . . 
 RUN cargo build --release --verbose
 
-FROM --platform=linux/arm64 rust:alpine3.17 as alpine-builder-arm64
+FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
+
+FROM --platform=$BUILDPLATFORM rust:alpine3.17 as alpine-builder-arm64
+COPY --from=xx / /
+ARG TARGETPLATFORM
 RUN apk add --update git mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev protobuf
 WORKDIR /opt/lucle
 COPY . . 
-RUN CARGO_NET_GIT_FETCH_WITH_CLI=true cargo build --release --verbose
+RUN xx-cargo build --release --verbose
+RUN ls target/
 
 FROM alpine-builder-$TARGETARCH as build
 
