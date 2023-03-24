@@ -10,11 +10,18 @@ WORKDIR /opt/lucle
 COPY . . 
 RUN cargo build --release --verbose
 
-FROM --platform=linux/arm64 rust:alpine3.17 as alpine-builder-arm64
-RUN apk add --update git mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev protobuf
-WORKDIR /opt/lucle
-COPY . . 
-RUN CARGO_NET_GIT_FETCH_WITH_CLI=true cargo build --release --verbose
+#FROM --platform=linux/arm64 rust:alpine3.17 as alpine-builder-arm64
+#RUN apk add --update git mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev protobuf
+#WORKDIR /opt/lucle
+#COPY . . 
+#RUN CARGO_NET_GIT_FETCH_WITH_CLI=true cargo build --release --verbose
+FROM messense/rust-musl-cross:aarch64-musl as alpine-builder-arm64
+RUN sudo apt update && \
+    apt install -y protobuf-compiler
+WORKDIR /opt/speedupdate
+COPY . .
+RUN cargo build --release
+RUN mv target/aarch64-unknown-linux-musl/release/lucle target/release/lucle
 
 FROM alpine-builder-$TARGETARCH as build
 
