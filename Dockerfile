@@ -17,7 +17,7 @@ RUN cargo build --release --verbose
 #RUN CARGO_NET_GIT_FETCH_WITH_CLI=true cargo build --release --verbose
 FROM --platform=$BUILDPLATFORM messense/rust-musl-cross:aarch64-musl as alpine-builder-arm64
 RUN sudo apt update && \
-    apt install -y protobuf-compiler mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite musl-dev 
+    apt install -y protobuf-compiler mysql-client postgresql postgresql-client sqlite musl-dev 
 WORKDIR /opt/speedupdate
 COPY . .
 RUN cargo build --release
