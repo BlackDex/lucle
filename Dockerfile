@@ -15,7 +15,7 @@ RUN cargo build --release --verbose
 #WORKDIR /opt/lucle
 #COPY . . 
 #RUN CARGO_NET_GIT_FETCH_WITH_CLI=true cargo build --release --verbose
-FROM messense/rust-musl-cross:aarch64-musl as alpine-builder-arm64
+FROM --platform=$BUILDPLATFORM messense/rust-musl-cross:aarch64-musl as alpine-builder-arm64
 RUN sudo apt update && \
     apt install -y protobuf-compiler
 WORKDIR /opt/speedupdate
