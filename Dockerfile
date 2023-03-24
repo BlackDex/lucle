@@ -10,12 +10,26 @@ WORKDIR /opt/lucle
 COPY . . 
 RUN cargo build --release --verbose
 
+FROM --platform=$BUILDPLATFORM alpine as deps
+RUN apk add --update git
+WORKDIR opt/deps
+RUN git clone https://github.com/alpinelinux/aports --depth 1 && \
+    export BARCH=aarch64 && \
+    CBUILDROOT=~/sysroot-$BARCH ~/aports/scripts/bootstrap.sh $BARCH
+RUN git clone https://gitlab.alpinelinux.org/alpine/aports --depth 1
+RUN cd aports && \
+    git ckeckout 3.17.1 && \
+    cd main/sqlite && \
+    CTARGET=aarch64 abuild checksum && abuild -r
+RUN ls
+
 FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
 
 FROM --platform=$BUILDPLATFORM rust:alpine3.17 as alpine-builder-arm64
 COPY --from=xx / /
 ARG TARGETPLATFORM
-RUN apk add --update git mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev protobuf
+#RUN apk add --update git mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev protobuf
+COPY --from=deps / /
 WORKDIR /opt/lucle
 COPY . . 
 RUN xx-cargo build --release --verbose
