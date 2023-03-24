@@ -11,7 +11,7 @@ COPY . .
 RUN cargo build --release --verbose
 
 FROM --platform=$BUILDPLATFORM alpine as deps
-RUN apk add --update git
+RUN apk add --update git alpine-sdk
 WORKDIR opt/deps
 RUN git clone https://github.com/alpinelinux/aports --depth 1 && \
     export BARCH=aarch64 && \
