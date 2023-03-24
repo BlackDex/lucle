@@ -19,7 +19,7 @@ RUN apk add --update git mysql mysql-client mariadb-dev postgresql postgresql-cl
 WORKDIR /opt/lucle
 COPY . . 
 RUN xx-cargo build --release --verbose
-RUN ls target/
+RUN mv target/aarch64-unknown-linux-musl/release/lucle target/release/lucle
 
 FROM alpine-builder-$TARGETARCH as build
 
