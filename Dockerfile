@@ -14,7 +14,7 @@ FROM --platform=linux/arm64 rust:alpine3.17 as alpine-builder-arm64
 RUN apk add --update git mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev protobuf
 WORKDIR /opt/lucle
 COPY . . 
-RUN CARGO_NET_GIT_FETCH_WITH_CLI=true cargo build --release --verbose
+RUN CARGO_NET_GIT_FETCH_WITH_CLI=true cargo build --target aarch64-unknown-linux-musl --release --verbose
 
 FROM alpine-builder-$TARGETARCH as build
 
