@@ -39,3 +39,4 @@ jobs:
     - name: build binary 
       run: |
         docker run --rm -v "$(pwd)":/home/rust/src messense/rust-musl-cross:aarch64-musl sudo apt update && sudo apt install -y protobuf-compiler && cargo build --release --verbose 
+        ls 
