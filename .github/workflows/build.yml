@@ -38,7 +38,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: build binary 
       run: |
-        docker run --rm -it -v "$(pwd)":/home/rust/src messense/rust-musl-cross:aarch64-musl sudo apt install -y protobuf 
-        docker run --rm -it -v "$(pwd)":/home/rust/src messense/rust-musl-cross:aarch64-musl cargo build --release --verbose 
+        docker run --rm -v "$(pwd)":/home/rust/src messense/rust-musl-cross:aarch64-musl sudo apt install -y protobuf 
+        docker run --rm -v "$(pwd)":/home/rust/src messense/rust-musl-cross:aarch64-musl cargo build --release --verbose 
 
         
