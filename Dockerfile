@@ -14,7 +14,7 @@ RUN cargo build --release --verbose
 FROM --platform=$BUILDPLATFORM messense/rust-musl-cross:aarch64-musl as builder-arm64
 RUN sudo apt update && \
     apt install -y protobuf-compiler curl  
-WORKDIR /opt/speedupdate
+WORKDIR /opt/lucle
 RUN curl -LJO https://sqlite.org/2023/sqlite-autoconf-3410200.tar.gz && \
     tar -xvf sqlite-autoconf-3410200.tar.gz && \
     cd sqlite-autoconf-3410200 && \
