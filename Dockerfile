@@ -6,14 +6,14 @@ RUN cd web && yarn build
 
 
 FROM messense/rust-musl-cross:x86_64-musl as builder-amd64
-RUN sudo apt update && sudo apt install -y mariadb-server mysql-client postgresql postgresql-client sqlite protobuf-compiler
+RUN sudo apt update && sudo apt install -y mariadb-server mariadb-client postgresql postgresql-client sqlite protobuf-compiler
 WORKDIR /opt/lucle
 COPY . . 
 RUN cargo build --release --verbose
 
 FROM --platform=$BUILDPLATFORM messense/rust-musl-cross:aarch64-musl as builder-arm64
 RUN sudo apt update && \
-    apt install -y protobuf-compiler mysql-client mariadb-server postgresql postgresql-client sqlite 
+    apt install -y protobuf-compiler mariadb-client mariadb-server postgresql postgresql-client sqlite 
 WORKDIR /opt/speedupdate
 COPY . .
 RUN cargo build --release
