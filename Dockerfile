@@ -18,7 +18,7 @@ WORKDIR /opt/lucle
 RUN curl -LJO https://sqlite.org/2023/sqlite-autoconf-3410200.tar.gz && \
     tar -xvf sqlite-autoconf-3410200.tar.gz && \
     cd sqlite-autoconf-3410200 && \
-    CC=musl-gcc ./configure && \
+    ./configure && \
     make && cp sqlite3 /usr/bin
 
 COPY . .
