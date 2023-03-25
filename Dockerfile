@@ -13,8 +13,14 @@ RUN cargo build --release --verbose
 
 FROM --platform=$BUILDPLATFORM messense/rust-musl-cross:aarch64-musl as builder-arm64
 RUN sudo apt update && \
-    apt install -y protobuf-compiler mariadb-client mariadb-server postgresql postgresql-client sqlite 
+    apt install -y protobuf-compiler curl  
 WORKDIR /opt/speedupdate
+RUN curl -LJO https://sqlite.org/2023/sqlite-autoconf-3410200.tar.gz && \
+    tar -xvf sqlite-autoconf-3410200.tar.gz && \
+    cd sqlite-autoconf-3410200 && \
+    CC=musl-gcc ./configure && \
+    make && cp sqlite3 /usr/bin
+
 COPY . .
 RUN cargo build --release
 RUN mv target/aarch64-unknown-linux-musl/release/lucle target/release/lucle
