@@ -1,5 +1,5 @@
 FROM messense/rust-musl-cross:aarch64-musl
-RUN sudo apt update && sudo apt install -y protobuf-compiler sqlte mariadb-server mariadb-client postgresql 
+RUN sudo apt update && sudo apt install -y protobuf-compiler sqlite mariadb-server mariadb-client postgresql 
 WORKDIR /opt/lucle
 COPY . .
 RUN cargo build --release --verbose 
