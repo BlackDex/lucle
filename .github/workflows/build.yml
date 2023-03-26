@@ -37,7 +37,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: build binary 
-      run: docker run --rm -t -v "$(pwd)":/home/rust/src messense/rust-musl-cross:aarch64-musl sudo apt update && sudo apt install -y protobuf-compiler && cargo build --release --verbose 
+      run: docker run --rm -t -v "$(pwd)":/home/rust/src messense/rust-musl-cross:aarch64-musl "sudo apt update && sudo apt install -y protobuf-compiler && cargo build --release --verbose" 
     - uses: actions/upload-artifact@v3
       with:
         name: lucle 
