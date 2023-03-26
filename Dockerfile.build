@@ -1,3 +1,5 @@
 FROM messense/rust-musl-cross:aarch64-musl
 RUN sudo apt update && sudo apt install protobuf-compiler 
+WORKDIR /opt/lucle
+COPY . .
 RUN cargo build --release --verbose 
