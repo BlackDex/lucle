@@ -24,4 +24,4 @@ COPY --from=build /opt/lucle/target/release/lucle .
 COPY --from=build-frontend /opt/lucle/web/dist ./web/dist
 EXPOSE 3000
 EXPOSE 8080
-CMD ["/opt/lucle/lucle"] 
+CMD ["./lucle"] 
