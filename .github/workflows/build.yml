@@ -37,7 +37,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: build binary 
-      run: docker run -v "$(pwd)":/home/rust/src -f Dockerfile.build
+      run: |
+        docker build -f Dockerfile.build . -t ludea/builder
+        docker run ludea/builder -v "$(pwd)":/home/rust/src
     - uses: actions/upload-artifact@v3
       with:
         name: lucle 
