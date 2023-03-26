@@ -43,5 +43,5 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: lucle 
-        path: target/release/lucle
+        path: target/aarch64-unknown-linux-musl/release/lucle
         
