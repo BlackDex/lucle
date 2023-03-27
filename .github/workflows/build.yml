@@ -36,12 +36,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: build binary 
-      run: |
-        cargo install cross 
-        cross run --target aarch64-unknown-linux-musl -v
-    - uses: actions/upload-artifact@v3
+    - name: Build container 
+      uses: docker/build-push-action@v4
       with:
-        name: lucle 
-        path: target/aarch64-unknown-linux-musl/release/lucle
-        
+        push: true
+        tags: |
+          ludea/lucle:${{ env.PACKAGE_VERSION }}
+          ludea/lucle:latest
+        platforms: linux/arm64
+        target: alpine
+    - name: get binary
+      run: |
+        docker run -v "$(pwd)":/opt/lucle ludea/lucle
+        ls target/
+      
