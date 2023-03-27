@@ -5,7 +5,7 @@ ENV TZ=Etc/UTC
 
 RUN dpkg --add-architecture arm64 && \
     apt-get update && \
-    apt-get install -y zip curl sqlite3 mariadb-client postgresql
+    apt-get install -y zip curl sqlite3:arm64 mariadb-client:arm64 postgresql:arm64
     
 RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v22.2/protoc-22.2-linux-x86_64.zip && \
         unzip protoc-22.2-linux-x86_64.zip -d $HOME/.local && \
