@@ -39,7 +39,7 @@ jobs:
     - name: build binary 
       run: |
         cargo install cross 
-        cross run --target aarch64-unknown-linux-musl
+        cross run --target aarch64-unknown-linux-musl -v
     - uses: actions/upload-artifact@v3
       with:
         name: lucle 
