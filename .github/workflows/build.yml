@@ -51,5 +51,9 @@ jobs:
     - name: get binary
       run: |
         docker run -v "$(pwd)":/opt/lucle ludea/lucle
-        ls target/
+        lld target/release/lucle
+    - uses: actions/upload-artifact@v3
+      with:
+       name: lucle
+       path: target/release/lucle
       
