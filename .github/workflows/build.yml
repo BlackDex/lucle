@@ -41,7 +41,8 @@ jobs:
     - name: Build container 
       uses: docker/build-push-action@v4
       with:
-        push: true
+        load: true
+        push: false
         tags: |
           ludea/lucle:latest
         platforms: linux/arm64
