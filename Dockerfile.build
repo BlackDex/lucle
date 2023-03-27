@@ -1,5 +1,8 @@
 FROM ghcr.io/cross-rs/aarch64-unknown-linux-musl:latest
 
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Etc
+
 RUN dpkg --add-architecture arm64 && \
     apt-get update && \
     apt-get install -y zip curl sqlite3 mariadb-client postgresql
