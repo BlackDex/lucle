@@ -6,5 +6,5 @@ RUN dpkg --add-architecture arm64 && \
     
 RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v22.2/protoc-22.2-linux-x86_64.zip && \
         unzip protoc-22.2-linux-x86_64.zip -d $HOME/.local && \
-        export PATH="$PATH:$HOME/.local/bin"
+        mv $HOME/.local/protoc /usr/bin/protoc
 
