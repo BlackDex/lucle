@@ -46,15 +46,15 @@ jobs:
     - name: Build container 
       uses: docker/build-push-action@v4
       with:
-        load: false
-        push: true
+        load: true
+        push: false
         tags: |
           ludea/lucle:latest
         platforms: linux/arm64
         target: alpine
     - name: get binary
       run: |
-        docker run -t -v "$(pwd)":/opt/lucle ludea/lucle ls
+        docker run -t -v "$(pwd)":/opt/lucle ludea/lucle echo "foo" 
     - uses: actions/upload-artifact@v3
       with:
        name: lucle
