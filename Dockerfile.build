@@ -1,7 +1,7 @@
 FROM ghcr.io/cross-rs/aarch64-unknown-linux-musl:latest
 
 ARG DEBIAN_FRONTEND=noninteractive
-ENV TZ=Europe/Etc
+ENV TZ=Etc/UTC
 
 RUN dpkg --add-architecture arm64 && \
     apt-get update && \
