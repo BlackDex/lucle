@@ -4,7 +4,7 @@ COPY . .
 RUN cd web && yarn install --network-timeout 500000
 RUN cd web && yarn build
 
-FROM rust:alpine3.17 as alpine-builder-amd64
+FROM --platform=$BUILDPLATFORM rust:alpine3.17 as alpine-builder-amd64
 RUN apk add --update mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev protobuf
 WORKDIR /opt/lucle
 COPY . . 
