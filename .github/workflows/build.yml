@@ -54,7 +54,7 @@ jobs:
     - name: get binary
       run: |
         docker container ls --all
-        docker image inspect ludea/lucle:latest
+        docker run ludea/lucle:latest
     - uses: actions/upload-artifact@v3
       with:
        name: lucle
