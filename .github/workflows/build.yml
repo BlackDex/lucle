@@ -53,8 +53,8 @@ jobs:
         target: alpine
     - name: get binary
       run: |
-        docker container ls --all
         docker run ludea/lucle:latest
+        docker container ls
     - uses: actions/upload-artifact@v3
       with:
        name: lucle
