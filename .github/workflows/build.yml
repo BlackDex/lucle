@@ -54,9 +54,9 @@ jobs:
         target: alpine
     - name: get binary
       run: |
-        docker run -t -v "$(pwd)":/opt/lucle ludea/lucle echo "foo" 
+        docker cp ludea/lucle:/opt/lucle/lucle ./lucle
     - uses: actions/upload-artifact@v3
       with:
        name: lucle
-       path: target/release/lucle
+       path: lucle
       
