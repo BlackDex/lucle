@@ -54,7 +54,7 @@ jobs:
     - name: get binary
       run: |
         docker container ls --all
-        docker cp ludea/lucle:latest:/opt/lucle/lucle ./lucle
+        docker image inspect ludea/lucle:latest
     - uses: actions/upload-artifact@v3
       with:
        name: lucle
