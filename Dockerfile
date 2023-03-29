@@ -15,6 +15,7 @@ RUN apk add --update git mysql mariadb-dev postgresql-dev sqlite-dev musl-dev pr
 WORKDIR /opt/lucle
 COPY . . 
 RUN CARGO_NET_GIT_FETCH_WITH_CLI=true RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --verbose --target aarch64-unknown-linux-musl 
+RUN mv target/aarch64-unknown-linux-musl/release/lucle target/release/lucle 
 
 FROM alpine-builder-$TARGETARCH as build
 
