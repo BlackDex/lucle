@@ -11,10 +11,10 @@ COPY . .
 RUN cargo build --release --verbose
 
 FROM --platform=linux/arm64 rust:alpine3.17 as alpine-builder-arm64
-RUN apk add --update git mysql mariadb-dev postgresql-dev sqlite-dev musl-dev protobuf
+RUN apk add --update mariadb-dev postgresql-dev sqlite-dev musl-dev protobuf
 WORKDIR /opt/lucle
 COPY . . 
-RUN CARGO_NET_GIT_FETCH_WITH_CLI=true cargo build --release --verbose
+RUN cargo build --release --verbose
 RUN ldd target/release/lucle
 CMD ["target/release/lucle"]
 
