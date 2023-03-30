@@ -50,7 +50,7 @@ jobs:
         tags: |
           ludea/lucle:latest
         platforms: linux/arm64
-        target: alpine
+        target: alpine-builder-arm64
  #   - name: get binary
  #     run: |
  #       docker run -v "$(pwd)":/opt/lucle ludea/lucle:latest
