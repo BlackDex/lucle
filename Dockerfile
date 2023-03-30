@@ -10,7 +10,7 @@ WORKDIR /opt/lucle
 COPY . . 
 RUN cargo build --release --verbose
 
-FROM --platform=linux/arm64 rust:alpine3.17 as alpine-builder-arm64
+FROM --platform=linux/arm64/v8 rust:alpine3.17 as alpine-builder-arm64
 RUN apk add --update git mysql mariadb-dev postgresql-dev sqlite-dev musl-dev protobuf
 WORKDIR /opt/lucle
 COPY . . 
