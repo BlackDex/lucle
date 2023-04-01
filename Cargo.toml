@@ -18,11 +18,9 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "time"] }
 tower-http = { version = "0.4.0", features = ["fs", "trace", "cors"] }
 tracing = "0.1"
 url = "2.2.2"
+mysqlclient-sys = "0.2.5"
+libsqlite3-sys = { version = "0.26.0", features = ["bundled"] } 
 
 [build-dependencies]
 tonic-build = { version = "0.8.4", features = ["prost"] } 
 prost-build = "0.11"
-
-[link.crates-io]
-mysqlclient-sys = "0.2.5"
-libsqlite3-sys = "0.26.0" 
