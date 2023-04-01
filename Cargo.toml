@@ -23,6 +23,6 @@ url = "2.2.2"
 tonic-build = { version = "0.8.4", features = ["prost"] } 
 prost-build = "0.11"
 
-[patch.crates-io]
+[link.crates-io]
 mysqlclient-sys = "0.2.5"
 libsqlite3-sys = "0.26.0" 
