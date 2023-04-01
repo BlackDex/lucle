@@ -14,7 +14,7 @@ FROM --platform=linux/arm64 rust:alpine3.17 as alpine-builder-arm64
 RUN apk add --update mariadb-dev postgresql-dev sqlite-dev musl-dev protobuf
 WORKDIR /opt/lucle
 COPY . . 
-RUN cargo build --release --verbose
+RUN RUSTFLAGS="-Ctarget-feature=-crt-static" cargo build --release --verbose
 
 FROM alpine-builder-$TARGETARCH as build
 
