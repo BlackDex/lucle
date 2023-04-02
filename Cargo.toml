@@ -20,6 +20,7 @@ tracing = "0.1"
 url = "2.2.2"
 mysqlclient-sys = "0.2.5"
 libsqlite3-sys = { version = "0.25.2", features = ["bundled"] } 
+pq-sys = "0.4.2"
 
 [build-dependencies]
 tonic-build = { version = "0.8.4", features = ["prost"] } 
