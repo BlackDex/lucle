@@ -4,9 +4,7 @@ on:
  push:
    tags:
      - v*.*.*
-
-env:
-  REGISTRY: ghcr.io
+     
 jobs:
   build-container:
     runs-on: ubuntu-22.04
@@ -17,8 +15,6 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: get version
-      run: echo "PACKAGE_VERSION=$(cargo metadata)" >> $GITHUB_ENV
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
     - name: Set up QEMU
@@ -28,7 +24,7 @@ jobs:
       with:
         push: true
         tags: |
-          ludea/lucle:${{ env.PACKAGE_VERSION }}
+          ludea/lucle:0.1.0
           ludea/lucle:latest
         platforms: linux/amd64, linux/arm64
         target: alpine
