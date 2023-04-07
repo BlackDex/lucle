@@ -21,7 +21,7 @@ FROM alpine-builder-$TARGETARCH as build
 FROM alpine:3.17 as alpine
 WORKDIR /opt/lucle
 #TODO: Workaround to fix link issue
-RUN apk add mariadb-connector-c
+RUN apk add mariadb-connector-c postgresql-client
 COPY --from=build /opt/lucle/target/release/lucle .
 COPY --from=build-frontend /opt/lucle/web/dist ./web/dist
 EXPOSE 3000
