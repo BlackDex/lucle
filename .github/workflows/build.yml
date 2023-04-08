@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install deps
-        run: apk add --update mariadb-dev postgresql-dev sqlite-dev 
+        run: apk add --update mariadb-dev postgresql-dev sqlite-dev musl
       - name: Build 
         run: cargo build --verbose
     
