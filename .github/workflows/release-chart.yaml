@@ -9,7 +9,7 @@ jobs:
   build-helm-chart:
     permissions:
       contents: write
-    runs-on: buildjet-2vcpu-ubuntu-2204-arm
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
