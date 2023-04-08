@@ -35,11 +35,11 @@ jobs:
   build-aarch64:
     runs-on: ubuntu-22.04
     container:
-      image: messense/rust-musl-cross:aarch64-musl
+      image: rust:alpine
     steps:
       - uses: actions/checkout@v3
       - name: Install deps
-        run: sudo apt update && sudo apt install -y protobuf-compiler
+        run: apk add --update mariadb-dev postgresql-dev sqlite-dev 
       - name: Build 
         run: cargo build --verbose
     
