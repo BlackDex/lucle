@@ -37,7 +37,7 @@ jobs:
         run: ct install --chart-dirs chart/ --charts chart/ 
 
       - name: Get version
-        uses: mikefarah/yq@v4.33.2
+        uses: mikefarah/yq@v4.33.3
         with:
           cmd: echo "VERSION=$(yq .version chart/Chart.yaml)" >> $GITHUB_ENV
         
