@@ -1,3 +1,4 @@
+{{- if .Values.ingress.enabled -}}
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
@@ -7,8 +8,9 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: Host(`your.example.com`)
+  - match: Host
     kind: Rule
     services:
     - name: lucle
       port: 8080
+{{- end }}
