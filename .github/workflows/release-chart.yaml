@@ -34,7 +34,9 @@ jobs:
         uses: helm/kind-action@v1.5.0
 
       - name: Run chart-testing (install)
-        run: ct install --chart-dirs chart/ --charts chart/ --debug
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+          ct install --chart-dirs chart/ --charts chart/ --debug
 
       - name: Get version
         uses: mikefarah/yq@v4.33.3
