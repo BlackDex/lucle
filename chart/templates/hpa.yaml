@@ -3,7 +3,6 @@ apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "lucle.fullname" . }}
-  namespace: lucle
   labels:
     {{- include "lucle.labels" . | nindent 4 }}
 spec:
