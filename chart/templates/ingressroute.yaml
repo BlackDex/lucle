@@ -1,3 +1,4 @@
+{{- if .Values.ingressroute.enabled -}}
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
@@ -12,3 +13,4 @@ spec:
     services:
     - name: lucle
       port: 8080
+{{- end }}
