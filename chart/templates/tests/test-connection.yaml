@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
+  namespace: lucle
   name: "{{ include "lucle.fullname" . }}-test-connection"
   labels:
     {{- include "lucle.labels" . | nindent 4 }}
