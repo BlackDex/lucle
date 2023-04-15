@@ -1,1 +1,14 @@
-
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: lucle
+  namespace: update
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`your.example.com`)
+    kind: Rule
+    services:
+    - name: lucle
+      port: 8080
