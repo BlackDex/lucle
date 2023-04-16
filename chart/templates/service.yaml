@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "lucle.fullname" . }}
+  name: lucle
   labels:
     {{- include "lucle.labels" . | nindent 4 }}
 spec:
