@@ -35,22 +35,22 @@ function Speedupdate() {
   const [url, setUrl] = useState<string>(localStorage.getItem("url") || "");
   const [currentVersion, setCurrentVersion] = useState<string>("");
   const [pack, setPack] = useState<any>();
-  const [port, setPort] = useState<any>();
   const [version, setVersion] = useState<any>();
   const [listPackages, setListPackages] = useState<string[]>([]);
   const [listVersions, setListVersions] = useState<string[]>([]);
   const [path, setPath] = useState<string>(localStorage.getItem("path") || "");
   const [client, setClient] = useState<any>();
   const [fileObjects, setFileObjects] = useState();
+  const [error, setError] = useState<String>("");
 
   useEffect(() => {
     //const newClient = connect(url, port);
-      const client = createPromiseClient(
-        Repo,
-        createGrpcWebTransport({
-          baseUrl: "http://" + url  + ":" + port,
-        })
-      );
+    const client = createPromiseClient(
+      Repo,
+      createGrpcWebTransport({
+        baseUrl: "http://" + url,
+      })
+    );
     setClient(client);
     /*status(client, path).then((repo: any) => {
       setRepoInit(true);
@@ -58,7 +58,7 @@ function Speedupdate() {
       setListVersions(repo.listVersion);
       setListPackages(repo.packages);
     });*/
-  }, [url, port, path]);
+  }, [url, path]);
 
   return (
     <div>
@@ -73,15 +73,6 @@ function Speedupdate() {
       />
       <TextField
         id="outlined-required"
-        label="port"
-        value={port}
-        onChange={(e) => {
-          setPort(e.currentTarget.value);
-          localStorage.setItem("port", e.currentTarget.value);
-        }}
-      />
-      <TextField
-        id="outlined-required"
         label="path"
         value={path}
         onChange={(e) => {
@@ -91,9 +82,18 @@ function Speedupdate() {
       />
       {!repoInit ? (
         <div>
-          <Button variant="contained" onClick={() => init(client, path)}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              init(client, path).catch((error) => {
+                setRepoInit(false);
+                setError(error);
+              });
+            }}
+          >
             Initialize repository
           </Button>
+          {error}
         </div>
       ) : (
         <div>

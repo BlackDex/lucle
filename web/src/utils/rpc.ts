@@ -4,6 +4,7 @@ import {
 } from "@bufbuild/connect-web";
 import { Lucle } from "gen/lucle_connectweb";
 import { Repo } from "gen/speedupdate_connectweb";
+import { ConnectError } from "@bufbuild/connect";
 
 export const connect = (url: string, port: string) => {
   const client = createPromiseClient(
@@ -22,15 +23,20 @@ export const install = async (client: any, db: number) => {
   await call.response;
 };
 
-export const init = async (client: any, path: string) => {
-  const call = client.init({
-    path,
+export const init = (client: any, path: string) => {
+  return new Promise((resolve, reject) => {
+    client
+      .init({
+        path,
+      })
+      .then((status) => {
+        if (status.code === "OK") {
+          resolve(true);
+        }
+        resolve(false);
+      })
+      .catch((error) => reject(error.message));
   });
-  const status = await call.status;
-  if (status.code === "OK") {
-    return true;
-  }
-  return false;
 };
 
 export const status = async (client: any, path: string) => {
