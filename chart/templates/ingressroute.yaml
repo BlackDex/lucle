@@ -12,4 +12,11 @@ spec:
     services:
     - name: lucle
       port: 8080
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    secretName: {{ .secretName }}
+    certResolver: {{ .certResolver }}
+    {{- end }}
+  {{- end }}
 {{- end }}
