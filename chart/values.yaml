@@ -35,6 +35,9 @@ ingressroute:
   enabled: false
   className: ""
   host: your.example.com
+  tls:
+    - secretName: lucle
+      certResolver: letsencrypt
       
 resources: {}
   # limits:
