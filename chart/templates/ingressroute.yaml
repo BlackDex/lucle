@@ -5,7 +5,7 @@ metadata:
   name: lucle
 spec:
   entryPoints:
-    - web
+    - websecure
   routes:
   - match: Host(`{{ .Values.ingressroute.host }}`) 
     kind: Rule
