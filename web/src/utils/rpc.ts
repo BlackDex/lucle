@@ -29,13 +29,13 @@ export const init = (client: any, path: string) => {
       .init({
         path,
       })
-      .then((status) => {
+      .then((status: any) => {
         if (status.code === "OK") {
           resolve(true);
         }
         resolve(false);
       })
-      .catch((error) => reject(error.message));
+      .catch((error: any) => reject(error.message));
   });
 };
 
