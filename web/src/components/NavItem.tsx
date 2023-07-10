@@ -15,7 +15,7 @@ function NavItem({ href, icon: Icon, title, ...rest }: any) {
           path: href,
           end: false,
         },
-        location.pathname
+        location.pathname,
       )
     : false;
 

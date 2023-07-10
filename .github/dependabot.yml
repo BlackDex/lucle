@@ -1,14 +1,14 @@
 version: 2
 updates:
-  - package-ecosystem: "cargo" 
+  - package-ecosystem: "cargo"
     directory: "/"
     schedule:
       interval: "daily"
-  - package-ecosystem: "npm" 
+  - package-ecosystem: "npm"
     directory: "/web"
     schedule:
       interval: "daily"
-  - package-ecosystem: "github-actions" 
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"

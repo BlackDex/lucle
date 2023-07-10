@@ -81,7 +81,13 @@ pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResu
     create_database_if_needed(&database_url)?;
     create_default_migration_if_needed(&database_url, migrations_dir)?;
     create_schema_table_and_run_migrations_if_needed(&database_url, migrations_dir)?;
-    run_generate_migration_command("allo".to_string(), None, None, Some("sql".to_string()), Some(true))?;
+    run_generate_migration_command(
+        "allo".to_string(),
+        None,
+        None,
+        Some("sql".to_string()),
+        Some(true),
+    )?;
     Ok(())
 }
 
@@ -107,7 +113,7 @@ fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
                 let mut conn = MysqlConnection::establish(&mysql_url)?;
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
-        }   
+        }
     }
     tracing::info!("Creating database: {}", database_url);
 
@@ -284,22 +290,24 @@ fn find_project_root() -> DatabaseResult<PathBuf> {
 fn migrations_dir(path: Option<String>) -> Result<PathBuf, MigrationError> {
     match path {
         Some(dir) => Ok(dir.into()),
-        None => FileBasedMigrations::find_migrations_directory().map(
-            |p| p.path().to_path_buf()),
+        None => FileBasedMigrations::find_migrations_directory().map(|p| p.path().to_path_buf()),
     }
 }
 
-fn create_table(migration_dir: PathBuf ) {
+fn create_table(migration_dir: PathBuf) {
     let up_path = migration_dir.join("up.sql");
- 
+
     tracing::info!("Creating {}", migration_dir.join("up.sql").display());
     let mut up = fs::File::create(up_path).unwrap();
-   up.write_all(b"CREATE TABLE posts (
+    up.write_all(
+        b"CREATE TABLE posts (
         id SERIAL PRIMARY KEY,
         title VARCHAR NOT NULL,
         body TEXT NOT NULL,
         published BOOLEAN NOT NULL DEFAULT FALSE
-      )").unwrap();
+      )",
+    )
+    .unwrap();
 }
 
 pub fn handle_error<E: Error, T>(error: E) -> T {

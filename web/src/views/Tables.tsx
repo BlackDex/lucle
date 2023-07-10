@@ -34,7 +34,7 @@ const CreateData = (
   username: string,
   email: string,
   role: string,
-  createdat: string
+  createdat: string,
 ): Data => ({ id, username, email, role, createdat });
 
 function Tables() {
@@ -52,7 +52,7 @@ function Tables() {
               value.data[i].username,
               value.data[i].email,
               value.data[i].role,
-              value.data[i].createdat
+              value.data[i].createdat,
             ),
           ]);
         }

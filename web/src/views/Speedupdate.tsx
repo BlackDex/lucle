@@ -49,7 +49,7 @@ function Speedupdate() {
       Repo,
       createGrpcWebTransport({
         baseUrl: "http://" + url,
-      })
+      }),
     );
     setClient(client);
     /*status(client, path).then((repo: any) => {

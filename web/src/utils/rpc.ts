@@ -11,7 +11,7 @@ export const connect = (url: string, port: string) => {
     Lucle,
     createGrpcWebTransport({
       baseUrl: `http://${url}:${port}`,
-    })
+    }),
   );
   return client;
 };
@@ -58,7 +58,7 @@ export const status = async (client: any, path: string) => {
 export const setCurrentVersion = async (
   client: any,
   path: string,
-  version: string
+  version: string,
 ) => {
   client.setCurrentVersion({
     path,
@@ -69,7 +69,7 @@ export const setCurrentVersion = async (
 export const registerVersion = async (
   client: any,
   path: string,
-  version: string
+  version: string,
 ) => {
   client.registerVersion({
     path,
@@ -80,7 +80,7 @@ export const registerVersion = async (
 export const unregisterVersion = async (
   client: any,
   path: string,
-  version: string
+  version: string,
 ) => {
   client.unregisterVersion({
     path,
@@ -91,7 +91,7 @@ export const unregisterVersion = async (
 export const registerPackage = async (
   client: any,
   path: string,
-  name: string
+  name: string,
 ) => {
   client.registerPackage({
     path,
@@ -102,7 +102,7 @@ export const registerPackage = async (
 export const unregisterPackage = async (
   client: any,
   path: string,
-  name: string
+  name: string,
 ) => {
   client.unregisterPackage({
     path,

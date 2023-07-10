@@ -27,7 +27,7 @@ const useStyles = makeStyles(() =>
         width: "100%",
       },
     },
-  })
+  }),
 );
 
 function GlobalStyles() {

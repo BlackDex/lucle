@@ -6,7 +6,7 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { install, connect } from "utils/rpc";
 
-import {createGrpcWebTransport} from "@bufbuild/connect-web";
+import { createGrpcWebTransport } from "@bufbuild/connect-web";
 import { createPromiseClient } from "@bufbuild/connect";
 import { Lucle } from "gen/lucle_connectweb";
 
