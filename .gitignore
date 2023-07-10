@@ -8,3 +8,4 @@ dist-ssr
 # Added by cargo
 
 /target
+Cargo.lock
