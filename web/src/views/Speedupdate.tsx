@@ -25,9 +25,9 @@ import {
 } from "utils/rpc";
 
 import {
-  createGrpcWebTransport,
-  createPromiseClient,
+  createGrpcWebTransport
 } from "@bufbuild/connect-web";
+import { createPromiseClient } from "@bufbuild/connect";
 import { Repo } from "gen/speedupdate_connectweb";
 
 function Speedupdate() {
