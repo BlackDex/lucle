@@ -1,6 +1,3 @@
-import {
-  createPromiseClient,
-} from "@bufbuild/connect-web";
 import { createPromiseClient } from "@bufbuild/connect";
 import { Lucle } from "gen/lucle_connectweb";
 import { Repo } from "gen/speedupdate_connectweb";
