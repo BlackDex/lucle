@@ -1,4 +1,5 @@
 import { createPromiseClient } from "@bufbuild/connect";
+import { createGrpcWebTransport } from "@bufbuild/connect-web";
 import { Lucle } from "gen/lucle_connectweb";
 import { Repo } from "gen/speedupdate_connectweb";
 import { ConnectError } from "@bufbuild/connect";
