@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import Dashboard from "layout/Dashboard";
+import Dashboard from "layouts/Dashboard";
 import AdminIndex from "views/admin/Index";
 import Index from "views/Index";
 import OnlineEditor from "views/Editor";
