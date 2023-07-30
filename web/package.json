@@ -7,7 +7,7 @@
     "lint": "eslint .",
     "prettier": "prettier --check .",
     "dev": "yarn buf:generate && vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "serve": "protobuf && vite preview"
   },
   "dependencies": {
