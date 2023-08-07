@@ -6,4 +6,4 @@
 .pnp.*
 yarn.lock
 
-src/gen
+src/gen/
