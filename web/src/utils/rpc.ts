@@ -1,8 +1,6 @@
 import { createPromiseClient } from "@bufbuild/connect";
 import { createGrpcWebTransport } from "@bufbuild/connect-web";
-import { Lucle } from "gen/lucle_connectweb";
-import { Repo } from "gen/speedupdate_connectweb";
-import { ConnectError } from "@bufbuild/connect";
+import { Lucle } from "gen/lucle_connect";
 
 export const connect = (url: string, port: string) => {
   const client = createPromiseClient(

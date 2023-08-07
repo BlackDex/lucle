@@ -8,7 +8,7 @@ import { install, connect } from "utils/rpc";
 
 import { createGrpcWebTransport } from "@bufbuild/connect-web";
 import { createPromiseClient } from "@bufbuild/connect";
-import { Lucle } from "gen/lucle_connectweb";
+import { Lucle } from "gen/lucle_connect";
 
 function Setup() {
   const [client, setClient] = useState<any>();

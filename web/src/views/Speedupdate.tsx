@@ -28,7 +28,6 @@ import {
   createGrpcWebTransport
 } from "@bufbuild/connect-web";
 import { createPromiseClient } from "@bufbuild/connect";
-import { Repo } from "gen/speedupdate_connectweb";
 
 function Speedupdate() {
   const [repoInit, setRepoInit] = useState<boolean>(false);
