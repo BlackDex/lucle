@@ -5,3 +5,5 @@
 .yarn/cache
 .pnp.*
 yarn.lock
+
+web/src/gen
