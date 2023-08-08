@@ -5,7 +5,7 @@ import Index from "views/Index";
 import OnlineEditor from "views/Editor";
 import Tables from "views/Tables";
 import Login from "views/Login";
-import Setup from "views/Install";
+import Setup from "views/Install/createDB";
 import Speedupdate from "views/Speedupdate";
 
 const routes = (isInstalled: boolean, isLogged: boolean) => [

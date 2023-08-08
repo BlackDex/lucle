@@ -3,7 +3,9 @@ syntax = "proto3";
 package luclerpc;
 
 service Lucle {
-  rpc install (Database) returns (Empty);
+  rpc create_db (Database) returns (Empty);
+  rpc isDB_created (Database) returns (Empty);
+  rpc create_table (Database) returns (Empty);
   rpc ServerStreamingEcho (Empty) returns (stream Message);
 }
 

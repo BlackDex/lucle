@@ -10,14 +10,14 @@ import { createGrpcWebTransport } from "@bufbuild/connect-web";
 import { createPromiseClient } from "@bufbuild/connect";
 import { Lucle } from "gen/lucle_connect";
 
-function Setup() {
+function CreateDB() {
   const [client, setClient] = useState<any>();
   const [selectedDB, setSelectedDB] = useState<any>(2);
 
   useEffect(() => {
     //const newclient = connect("127.0.0.1", "3000");
     const transport = createGrpcWebTransport({
-      baseUrl: `http://127.0.0.1:3000`,
+      baseUrl: `http://127.0.0.1:50051`,
     });
     const client = createPromiseClient(Lucle, transport);
     setClient(client);
@@ -45,4 +45,4 @@ function Setup() {
   );
 }
 
-export default Setup;
+export default CreateDB;

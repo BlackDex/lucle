@@ -42,7 +42,7 @@ impl Backend {
         }
     }
 }
-
+#[derive(diesel::MultiConnection)]
 pub enum InferConnection {
     Pg(PgConnection),
     Sqlite(SqliteConnection),
@@ -50,31 +50,10 @@ pub enum InferConnection {
 }
 
 impl InferConnection {
-    pub fn establish(database_url: &str) -> DatabaseResult<Self> {
-        match Backend::for_url(database_url) {
-            Backend::Pg => PgConnection::establish(database_url).map(InferConnection::Pg),
-            Backend::Sqlite => {
-                SqliteConnection::establish(database_url).map(InferConnection::Sqlite)
-            }
-            Backend::Mysql => MysqlConnection::establish(database_url).map(InferConnection::Mysql),
-        }
-        .map_err(Into::into)
+    pub fn from_matches(database_url: &str) -> Self {
+        Self::establish(&database_url)
+            .unwrap_or_else(|err| handle_error_with_database_url(&database_url, err))
     }
-}
-
-macro_rules! call_with_conn {
-    (
-        $database_url:expr,
-        $($func:ident)::+ ($($args:expr),*)
-    ) => {
-        match crate::database::InferConnection::establish(&$database_url)
-            .unwrap_or_else(|err| {handle_error_with_database_url(&$database_url, err)})
-        {
-            crate::database::InferConnection::Pg(ref mut conn) => $($func)::+ (conn, $($args),*),
-            crate::database::InferConnection::Sqlite(ref mut conn) => $($func)::+ (conn, $($args),*),
-            crate::database::InferConnection::Mysql(ref mut conn) => $($func)::+ (conn, $($args),*),
-        }
-    };
 }
 
 pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResult<()> {
@@ -179,7 +158,8 @@ fn create_schema_table_and_run_migrations_if_needed(
     if !schema_table_exists(database_url).unwrap_or_else(handle_error) {
         let migrations =
             FileBasedMigrations::from_path(migrations_dir).unwrap_or_else(handle_error);
-        call_with_conn!(database_url, run_migrations_with_output(migrations))?;
+            let mut conn = InferConnection::establish(database_url)?;
+            run_migrations_with_output(&mut conn, migrations)?;
     };
     Ok(())
 }

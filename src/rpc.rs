@@ -8,9 +8,9 @@ use tonic::{transport::Server, Request, Response, Status};
 use tonic_web::GrpcWebLayer;
 use tower_http::cors::{Any, CorsLayer};
 
-use std::{pin::Pin, time::Duration};
+use std::{pin::Pin};
 use tokio::sync::mpsc;
-use tokio_stream::{wrappers::ReceiverStream, Stream, StreamExt};
+use tokio_stream::{wrappers::ReceiverStream, Stream};
 
 pub mod luclerpc {
     tonic::include_proto!("luclerpc");
@@ -24,7 +24,7 @@ pub struct LucleApi {}
 
 #[tonic::async_trait]
 impl Lucle for LucleApi {
-    async fn install(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
+    async fn create_db(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
         let db_type = inner.db_type;
         let migration_path = inner.migration_path;
@@ -37,6 +37,16 @@ impl Lucle for LucleApi {
             //Some(DatabaseType::Mysql) => database::setup_database("mysql://").unwrap_or_else(handle_error),
             _ => {}
         }
+        let reply = Empty {};
+        Ok(Response::new(reply))
+    }
+
+    async fn create_table(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
+        let reply = Empty {};
+        Ok(Response::new(reply))
+    }
+
+    async fn is_db_created(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
         let reply = Empty {};
         Ok(Response::new(reply))
     }
