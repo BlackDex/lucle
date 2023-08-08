@@ -22,14 +22,20 @@ function Counters() {
             />
           </Grid>
           <Grid item xs={12} md={4} display="flex">
-            <Divider orientation="vertical" sx={{ display: { xs: "none", md: "block" }, mx: 0 }} />
+            <Divider
+              orientation="vertical"
+              sx={{ display: { xs: "none", md: "block" }, mx: 0 }}
+            />
             <DefaultCounterCard
               count={15}
               suffix="+"
               title="Design Blocks"
               description="Mix the sections, change the colors and unleash your creativity"
             />
-            <Divider orientation="vertical" sx={{ display: { xs: "none", md: "block" }, ml: 0 }} />
+            <Divider
+              orientation="vertical"
+              sx={{ display: { xs: "none", md: "block" }, ml: 0 }}
+            />
           </Grid>
           <Grid item xs={12} md={4}>
             <DefaultCounterCard

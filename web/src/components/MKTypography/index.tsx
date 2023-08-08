@@ -8,8 +8,17 @@ import MKTypographyRoot from "components/MKTypography/MKTypographyRoot";
 
 const MKTypography = forwardRef(
   (
-    { color, fontWeight, textTransform, verticalAlign, textGradient, opacity, children, ...rest },
-    ref
+    {
+      color,
+      fontWeight,
+      textTransform,
+      verticalAlign,
+      textGradient,
+      opacity,
+      children,
+      ...rest
+    },
+    ref,
   ) => (
     <MKTypographyRoot
       {...rest}
@@ -25,7 +34,7 @@ const MKTypography = forwardRef(
     >
       {children}
     </MKTypographyRoot>
-  )
+  ),
 );
 
 // Setting default values for the props of MKTypography
@@ -54,7 +63,12 @@ MKTypography.propTypes = {
     "white",
   ]),
   fontWeight: PropTypes.oneOf([false, "light", "regular", "medium", "bold"]),
-  textTransform: PropTypes.oneOf(["none", "capitalize", "uppercase", "lowercase"]),
+  textTransform: PropTypes.oneOf([
+    "none",
+    "capitalize",
+    "uppercase",
+    "lowercase",
+  ]),
   verticalAlign: PropTypes.oneOf([
     "unset",
     "baseline",

@@ -7,9 +7,20 @@ import Icon from "@mui/material/Icon";
 import MKBox from "components/MKBox";
 import MKTypography from "components/MKTypography";
 
-function DefaultInfoCard({ color, icon, title, description, direction, small }) {
+function DefaultInfoCard({
+  color,
+  icon,
+  title,
+  description,
+  direction,
+  small,
+}) {
   return (
-    <MKBox lineHeight={1} p={direction === "center" ? 2 : 0} textAlign={direction}>
+    <MKBox
+      lineHeight={1}
+      p={direction === "center" ? 2 : 0}
+      textAlign={direction}
+    >
       {typeof icon === "string" ? (
         <MKTypography
           display="block"

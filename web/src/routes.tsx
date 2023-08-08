@@ -8,18 +8,17 @@ import Login from "views/Login";
 import Setup from "views/Install";
 import Speedupdate from "views/Speedupdate";
 
-const routes = [
+const routes = (isInstalled: boolean, isLogged: boolean) => [
   { path: "/login", element: <Login /> },
   {
     path: "admin",
-    element: <Dashboard />,
-  /*   !isInstalled ? (
+    element: !isInstalled ? (
       <Navigate to="/install" />
     ) : !isLogged ? (
       <Navigate to="/login" />
     ) : (
       <Dashboard />
-    ), */
+    ),
     children: [
       { path: "", element: <AdminIndex /> },
       { path: "editor", element: <OnlineEditor /> },
@@ -32,7 +31,9 @@ const routes = [
   },
   {
     path: "/",
-    element: <Index />,
+    element: !isInstalled ? (
+      <Navigate to="/install" />
+    ) : <Index />,
   },
   {
     path: "/update",

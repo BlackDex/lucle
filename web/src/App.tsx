@@ -6,9 +6,9 @@ import theme from "theme/Index";
 import routes from "./routes";
 
 function App() {
-  const [isLogged, setIsLogged] = useState<any>(false);
+  const [isLogged, setIsLogged] = useState<boolean>(false);
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
-  const content = useRoutes(routes); // (isLogged, isInstalled)
+  const content = useRoutes(routes(isInstalled, isLogged));
 
   useEffect(() => {
     // TODO: check if credentials are stored

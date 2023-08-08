@@ -19,7 +19,12 @@ function Pages() {
   const renderData = data.map(({ image, name, route }) => (
     <Grid item xs={12} md={6} sx={{ mb: { xs: 3, lg: 0 } }} key={name}>
       <Link to={route}>
-        <ExampleCard image={image} name={name} display="grid" minHeight="auto" />
+        <ExampleCard
+          image={image}
+          name={name}
+          display="grid"
+          minHeight="auto"
+        />
       </Link>
     </Grid>
   ));
@@ -64,9 +69,15 @@ function Pages() {
               <MKTypography variant="h3" fontWeight="bold" mb={1}>
                 Presentation Pages for Company, Landing Pages, Blogs and Support
               </MKTypography>
-              <MKTypography variant="body2" fontWeight="regular" color="secondary" mb={1} pr={2}>
-                These is just a small selection of the multiple possibitilies you have. Focus on the
-                business, not on the design.
+              <MKTypography
+                variant="body2"
+                fontWeight="regular"
+                color="secondary"
+                mb={1}
+                pr={2}
+              >
+                These is just a small selection of the multiple possibitilies
+                you have. Focus on the business, not on the design.
               </MKTypography>
             </MKBox>
           </Grid>

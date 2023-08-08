@@ -27,7 +27,16 @@ import DefaultNavbarMobile from "examples/Navbars/DefaultNavbar/DefaultNavbarMob
 // Material Kit 2 React base styles
 import breakpoints from "assets/theme/base/breakpoints";
 
-function DefaultNavbar({ brand, routes, transparent, light, action, sticky, relative, center }) {
+function DefaultNavbar({
+  brand,
+  routes,
+  transparent,
+  light,
+  action,
+  sticky,
+  relative,
+  center,
+}) {
   const [dropdown, setDropdown] = useState("");
   const [dropdownEl, setDropdownEl] = useState("");
   const [dropdownName, setDropdownName] = useState("");
@@ -65,7 +74,7 @@ function DefaultNavbar({ brand, routes, transparent, light, action, sticky, rela
     return () => window.removeEventListener("resize", displayMobileNavbar);
   }, []);
 
-  const renderNavbarItems = routes.map(({ name, icon, href, route, collapse }) => (
+  /*const renderNavbarItems = routes.map(({ name, icon, href, route, collapse }) => (
     <DefaultNavbarDropdown
       key={name}
       name={name}
@@ -83,10 +92,10 @@ function DefaultNavbar({ brand, routes, transparent, light, action, sticky, rela
       onMouseLeave={() => collapse && setDropdown(null)}
       light={light}
     />
-  ));
+  ));*/
 
   // Render the routes on the dropdown menu
-  const renderRoutes = routes.map(({ name, collapse, columns, rowsPerColumn }) => {
+  /*const renderRoutes = routes.map(({ name, collapse, columns, rowsPerColumn }) => {
     let template;
 
     // Render the dropdown menu that should be display as columns
@@ -261,7 +270,7 @@ function DefaultNavbar({ brand, routes, transparent, light, action, sticky, rela
     }
 
     return template;
-  });
+  });*/
 
   // Routes dropdown menu
   const dropdownMenu = (
@@ -313,7 +322,7 @@ function DefaultNavbar({ brand, routes, transparent, light, action, sticky, rela
   );
 
   // Render routes that are nested inside the dropdown menu routes
-  const renderNestedRoutes = routes.map(({ collapse, columns }) =>
+  /*const renderNestedRoutes = routes.map(({ collapse, columns }) =>
     collapse && !columns
       ? collapse.map(({ name: parentName, collapse: nestedCollapse }) => {
           let template;
@@ -395,7 +404,7 @@ function DefaultNavbar({ brand, routes, transparent, light, action, sticky, rela
           return template;
         })
       : null
-  );
+  );*/
 
   // Dropdown menu for the nested dropdowns
   const nestedDropdownMenu = (
@@ -447,12 +456,21 @@ function DefaultNavbar({ brand, routes, transparent, light, action, sticky, rela
         position={relative ? "relative" : "absolute"}
         left={0}
         zIndex={3}
-        sx={({ palette: { transparent: transparentColor, white }, functions: { rgba } }) => ({
-          backgroundColor: transparent ? transparentColor.main : rgba(white.main, 0.8),
+        sx={({
+          palette: { transparent: transparentColor, white },
+          functions: { rgba },
+        }) => ({
+          backgroundColor: transparent
+            ? transparentColor.main
+            : rgba(white.main, 0.8),
           backdropFilter: transparent ? "none" : `saturate(200%) blur(30px)`,
         })}
       >
-        <MKBox display="flex" justifyContent="space-between" alignItems="center">
+        <MKBox
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
           <MKBox
             component={Link}
             to="/"
@@ -460,7 +478,11 @@ function DefaultNavbar({ brand, routes, transparent, light, action, sticky, rela
             py={transparent ? 1.5 : 0.75}
             pl={relative || transparent ? 0 : { xs: 0, lg: 1 }}
           >
-            <MKTypography variant="button" fontWeight="bold" color={light ? "white" : "dark"}>
+            <MKTypography
+              variant="button"
+              fontWeight="bold"
+              color={light ? "white" : "dark"}
+            >
               {brand}
             </MKTypography>
           </MKBox>
@@ -470,7 +492,7 @@ function DefaultNavbar({ brand, routes, transparent, light, action, sticky, rela
             ml="auto"
             mr={center ? "auto" : 0}
           >
-            {renderNavbarItems}
+            {/* {renderNavbarItems} */}
           </MKBox>
           <MKBox ml={{ xs: "auto", lg: 0 }}>
             {action &&
@@ -524,7 +546,9 @@ function DefaultNavbar({ brand, routes, transparent, light, action, sticky, rela
           borderRadius="xl"
           px={transparent ? 2 : 0}
         >
-          {mobileView && <DefaultNavbarMobile routes={routes} open={mobileNavbar} />}
+          {mobileView && (
+            <DefaultNavbarMobile routes={routes} open={mobileNavbar} />
+          )}
         </MKBox>
       </MKBox>
       {dropdownMenu}

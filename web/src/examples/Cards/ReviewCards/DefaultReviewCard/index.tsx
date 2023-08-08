@@ -105,7 +105,9 @@ function DefaultReviewCard({ color, image, name, date, review, rating }) {
           display="block"
           variant={image ? "button" : "h6"}
           fontWeight="bold"
-          color={color === "transparent" || color === "light" ? "dark" : "white"}
+          color={
+            color === "transparent" || color === "light" ? "dark" : "white"
+          }
           mb={0.5}
         >
           {name}
@@ -114,7 +116,9 @@ function DefaultReviewCard({ color, image, name, date, review, rating }) {
           variant={image ? "caption" : "button"}
           fontWeight="regular"
           lineHeight={1}
-          color={color === "transparent" || color === "light" ? "text" : "white"}
+          color={
+            color === "transparent" || color === "light" ? "text" : "white"
+          }
           sx={{ display: "flex", alignItems: "center" }}
         >
           <Icon>schedule</Icon>&nbsp;

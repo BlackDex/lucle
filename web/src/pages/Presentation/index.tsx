@@ -76,8 +76,8 @@ function Presentation() {
               px={{ xs: 6, lg: 12 }}
               mt={1}
             >
-              Free & Open Source Web UI Kit built over ReactJS &amp; MUI. Join over 1.6 million
-              developers around the world.
+              Free & Open Source Web UI Kit built over ReactJS &amp; MUI. Join
+              over 1.6 million developers around the world.
             </MKTypography>
           </Grid>
         </Container>
@@ -88,7 +88,8 @@ function Presentation() {
           mx: { xs: 2, lg: 3 },
           mt: -8,
           mb: 4,
-          backgroundColor: ({ palette: { white }, functions: { rgba } }) => rgba(white.main, 0.8),
+          backgroundColor: ({ palette: { white }, functions: { rgba } }) =>
+            rgba(white.main, 0.8),
           backdropFilter: "saturate(200%) blur(30px)",
           boxShadow: ({ boxShadows: { xxl } }) => xxl,
         }}
@@ -111,7 +112,8 @@ function Presentation() {
                 description="Check the possible ways of working with our product and the necessary files for building your own project."
                 action={{
                   type: "external",
-                  route: "https://www.creative-tim.com/learning-lab/react/overview/material-kit/",
+                  route:
+                    "https://www.creative-tim.com/learning-lab/react/overview/material-kit/",
                   label: "Let's start",
                 }}
               />
@@ -124,7 +126,8 @@ function Presentation() {
                 description="Get inspiration and have an overview about the plugins that we used to create the Material Kit."
                 action={{
                   type: "external",
-                  route: "https://www.creative-tim.com/learning-lab/react/overview/datepicker/",
+                  route:
+                    "https://www.creative-tim.com/learning-lab/react/overview/datepicker/",
                   label: "Read more",
                 }}
               />
@@ -137,7 +140,8 @@ function Presentation() {
                 description="Material Kit is giving you a lot of pre-made components, that will help you to build UI's faster."
                 action={{
                   type: "external",
-                  route: "https://www.creative-tim.com/learning-lab/react/alerts/material-kit/",
+                  route:
+                    "https://www.creative-tim.com/learning-lab/react/alerts/material-kit/",
                   label: "Read more",
                 }}
               />
@@ -149,7 +153,13 @@ function Presentation() {
         <MKBox pt={18} pb={6}>
           <Container>
             <Grid container spacing={3}>
-              <Grid item xs={12} lg={5} ml="auto" sx={{ textAlign: { xs: "center", lg: "left" } }}>
+              <Grid
+                item
+                xs={12}
+                lg={5}
+                ml="auto"
+                sx={{ textAlign: { xs: "center", lg: "left" } }}
+              >
                 <MKTypography variant="h4" fontWeight="bold" mb={0.5}>
                   Thank you for your support!
                 </MKTypography>

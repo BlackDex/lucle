@@ -59,7 +59,9 @@ function FilledInfoCard({ variant, color, icon, title, description, action }) {
         <MKTypography
           display="block"
           variant="5"
-          color={variant === "contained" || color === "light" ? "dark" : "white"}
+          color={
+            variant === "contained" || color === "light" ? "dark" : "white"
+          }
           fontWeight="bold"
           mb={1}
         >
@@ -68,7 +70,9 @@ function FilledInfoCard({ variant, color, icon, title, description, action }) {
         <MKTypography
           display="block"
           variant="body2"
-          color={variant === "contained" || color === "light" ? "text" : "white"}
+          color={
+            variant === "contained" || color === "light" ? "text" : "white"
+          }
           mb={2}
         >
           {description}
@@ -84,7 +88,8 @@ function FilledInfoCard({ variant, color, icon, title, description, action }) {
             color={variant === "contained" ? color : "white"}
             sx={buttonStyles}
           >
-            {action.label} <Icon sx={{ fontWeight: "bold" }}>arrow_forward</Icon>
+            {action.label}{" "}
+            <Icon sx={{ fontWeight: "bold" }}>arrow_forward</Icon>
           </MKTypography>
         ) : null}
         {action && action.type === "internal" ? (
@@ -96,7 +101,8 @@ function FilledInfoCard({ variant, color, icon, title, description, action }) {
             color={variant === "contained" ? color : "white"}
             sx={buttonStyles}
           >
-            {action.label} <Icon sx={{ fontWeight: "bold" }}>arrow_forward</Icon>
+            {action.label}{" "}
+            <Icon sx={{ fontWeight: "bold" }}>arrow_forward</Icon>
           </MKTypography>
         ) : null}
       </MKBox>

@@ -18,7 +18,7 @@ const MKButton = forwardRef(
     >
       {children}
     </MKButtonRoot>
-  )
+  ),
 );
 
 // Setting default values for the props of MKButton
