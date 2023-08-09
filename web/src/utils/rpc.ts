@@ -13,7 +13,7 @@ export const connect = (url: string, port: string) => {
 };
 
 export const install = async (client: any, db: number) => {
-  const call = client.install({
+  const call = client.create_db({
     dbType: db,
   });
   await call.response;

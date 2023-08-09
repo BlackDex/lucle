@@ -67,6 +67,7 @@ pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResu
         Some("sql".to_string()),
         Some(true),
     )?;
+    do_migrations(database_url, Some(migrations_dir.display().to_string()))?;
     Ok(())
 }
 
@@ -158,8 +159,8 @@ fn create_schema_table_and_run_migrations_if_needed(
     if !schema_table_exists(database_url).unwrap_or_else(handle_error) {
         let migrations =
             FileBasedMigrations::from_path(migrations_dir).unwrap_or_else(handle_error);
-            let mut conn = InferConnection::establish(database_url)?;
-            run_migrations_with_output(&mut conn, migrations)?;
+        let mut conn = InferConnection::establish(database_url)?;
+        run_migrations_with_output(&mut conn, migrations)?;
     };
     Ok(())
 }
@@ -280,11 +281,10 @@ fn create_table(migration_dir: PathBuf) {
     tracing::info!("Creating {}", migration_dir.join("up.sql").display());
     let mut up = fs::File::create(up_path).unwrap();
     up.write_all(
-        b"CREATE TABLE posts (
+        b"CREATE TABLE USERS (
         id SERIAL PRIMARY KEY,
-        title VARCHAR NOT NULL,
-        body TEXT NOT NULL,
-        published BOOLEAN NOT NULL DEFAULT FALSE
+        login VARCHAR NOT NULL,
+        password TEXT NOT NULL
       )",
     )
     .unwrap();
@@ -326,6 +326,19 @@ fn run_generate_migration_command(
         Some(x) => return Err(format!("Unrecognized migration format `{}`", x).into()),
         None => tracing::info!("MIGRATION_FORMAT has a default value"),
     }
+
+    Ok(())
+}
+
+fn do_migrations(
+    database_url: &str,
+    migration_dir: Option<String>,
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+    let mut conn = InferConnection::from_matches(database_url);
+    let dir = migrations_dir(migration_dir).unwrap_or_else(handle_error);
+    let dir = FileBasedMigrations::from_path(dir).unwrap_or_else(handle_error);
+    run_migrations_with_output(&mut conn, dir)?;
+    // regenerate_schema_if_file_specified(matches)?;
 
     Ok(())
 }
