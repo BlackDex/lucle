@@ -291,7 +291,7 @@ fn create_table(migration_dir: PathBuf) {
 }
 
 pub fn handle_error<E: Error, T>(error: E) -> T {
-    println!("{error}");
+    tracing::error!("{}", error);
     ::std::process::exit(1);
 }
 

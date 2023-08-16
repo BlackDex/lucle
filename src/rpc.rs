@@ -1,7 +1,7 @@
 use super::database;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Database, DatabaseType, Empty, Message,
+    Database, DatabaseType, Empty, Message, ResponseResult,
 };
 use std::fmt::Display;
 use tonic::{transport::Server, Request, Response, Status};
@@ -24,20 +24,27 @@ pub struct LucleApi {}
 
 #[tonic::async_trait]
 impl Lucle for LucleApi {
-    async fn create_db(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
+    async fn create_db(&self, request: Request<Database>) -> Result<Response<ResponseResult>, Status> {
         let inner = request.into_inner();
         let db_type = inner.db_type;
         let migration_path = inner.migration_path;
+        let mut error: String = "".to_string();
         match DatabaseType::from_i32(db_type) {
             Some(DatabaseType::Sqlite) => {
                 let migrations_dir = database::create_migrations_dir(migration_path)
                     .unwrap_or_else(database::handle_error);
-                database::setup_database("lucle.db", &migrations_dir).unwrap_or_else(handle_error)
+                match database::setup_database("lucle.db", &migrations_dir) {
+                    Ok(_) => {},
+                    Err(err) => {
+                        tracing::error!("{}", err);
+                        error = err.to_string();
+                    }
+                }
             }
             //Some(DatabaseType::Mysql) => database::setup_database("mysql://").unwrap_or_else(handle_error),
             _ => {}
         }
-        let reply = Empty {};
+        let reply = ResponseResult {error: error};
         Ok(Response::new(reply))
     }
 
@@ -79,7 +86,7 @@ impl Lucle for LucleApi {
 }
 
 fn handle_error<E: Display, T>(error: E) -> T {
-    eprintln!("{}", error);
+    tracing::error!("{}", error);
     ::std::process::exit(1);
 }
 
