@@ -16,7 +16,8 @@ export const install = async (client: any, db: number) => {
   const call = client.create_db({
     dbType: db,
   });
-  await call.response;
+  //await call.response;
+  console.log(await JSON.stringify(call));
 };
 
 export const init = (client: any, path: string) => {
