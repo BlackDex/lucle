@@ -24,7 +24,10 @@ pub struct LucleApi {}
 
 #[tonic::async_trait]
 impl Lucle for LucleApi {
-    async fn create_db(&self, request: Request<Database>) -> Result<Response<ResponseResult>, Status> {
+    async fn create_db(
+        &self,
+        request: Request<Database>,
+    ) -> Result<Response<ResponseResult>, Status> {
         let inner = request.into_inner();
         let db_type = inner.db_type;
         let migration_path = inner.migration_path;
@@ -33,18 +36,16 @@ impl Lucle for LucleApi {
             Some(DatabaseType::Sqlite) => {
                 let migrations_dir = database::create_migrations_dir(migration_path)
                     .unwrap_or_else(database::handle_error);
-                match database::setup_database("lucle.db", &migrations_dir) {
-                    Ok(_) => {},
-                    Err(err) => {
-                        tracing::error!("{}", err);
-                        db_error = err.to_string();
-                    }
-                }
+                database::setup_database("lucle.db", &migrations_dir).unwrap_or_else(|err| {
+                    tracing::error!("{}", err);
+                    db_error = err.to_string()
+                });
+
+                //Some(DatabaseType::Mysql) => database::setup_database("mysql://").unwrap_or_else(handle_error),
             }
-            //Some(DatabaseType::Mysql) => database::setup_database("mysql://").unwrap_or_else(handle_error),
             _ => {}
         }
-        let reply = ResponseResult {error: db_error};
+        let reply = ResponseResult { error: db_error };
         Ok(Response::new(reply))
     }
 
