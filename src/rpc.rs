@@ -38,7 +38,7 @@ impl Lucle for LucleApi {
                     .unwrap_or_else(database::handle_error);
                 database::setup_database("lucle.db", &migrations_dir).unwrap_or_else(|err| {
                     tracing::error!("{}", err);
-                    db_error = err.to_string()
+                    db_error = err.to_string();
                 });
 
                 //Some(DatabaseType::Mysql) => database::setup_database("mysql://").unwrap_or_else(handle_error),
