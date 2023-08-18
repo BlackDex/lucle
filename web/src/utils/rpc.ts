@@ -13,11 +13,10 @@ export const connect = (url: string, port: string) => {
 };
 
 export const install = async (client: any, db: number) => {
-  const call = client.create_db({
+  const {error} = await client.create_db({
     dbType: db,
   });
-  //await call.response;
-  console.log(await JSON.stringify(call));
+  console.log(error);
 };
 
 export const init = (client: any, path: string) => {
