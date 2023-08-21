@@ -5,7 +5,7 @@ use diesel::{
     backend::Backend as DieselBackend, dsl::select, dsl::sql, mysql::MysqlConnection,
     pg::PgConnection, result, sql_types::Bool, sqlite::SqliteConnection, Connection, RunQueryDsl,
 };
-use diesel_migrations::{FileBasedMigrations, HarnessWithOutput, MigrationError, MigrationHarness};
+use diesel_migrations::{FileBasedMigrations, MigrationError, MigrationHarness};
 use std::{
     env,
     error::Error,
@@ -160,7 +160,7 @@ fn create_schema_table_and_run_migrations_if_needed(
         let migrations =
             FileBasedMigrations::from_path(migrations_dir).unwrap_or_else(handle_error);
         let mut conn = InferConnection::establish(database_url)?;
-        run_migrations_with_output(&mut conn, migrations)?;
+        run_migrations(&mut conn, migrations)?;
     };
     Ok(())
 }
@@ -242,7 +242,7 @@ fn search_for_directory_containing_file(path: &Path, file: &str) -> DatabaseResu
     }
 }
 
-fn run_migrations_with_output<Conn, DB>(
+fn run_migrations<Conn, DB>(
     conn: &mut Conn,
     migrations: FileBasedMigrations,
 ) -> Result<(), Box<dyn Error + Send + Sync + 'static>>
@@ -250,9 +250,9 @@ where
     Conn: MigrationHarness<DB> + Connection<Backend = DB> + 'static,
     DB: DieselBackend,
 {
-    HarnessWithOutput::write_to_stdout(conn)
-        .run_pending_migrations(migrations)
-        .map(|_| ())
+    tracing::info!("Running migration");
+
+    conn.run_pending_migrations(migrations).map(|_| ())
 }
 
 fn create_migrations_directory(path: &Path) -> DatabaseResult<PathBuf> {
@@ -337,7 +337,7 @@ fn do_migrations(
     let mut conn = InferConnection::from_matches(database_url);
     let dir = migrations_dir(migration_dir).unwrap_or_else(handle_error);
     let dir = FileBasedMigrations::from_path(dir).unwrap_or_else(handle_error);
-    run_migrations_with_output(&mut conn, dir)?;
+    run_migrations(&mut conn, dir)?;
     // regenerate_schema_if_file_specified(matches)?;
 
     Ok(())
