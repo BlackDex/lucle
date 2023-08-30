@@ -310,8 +310,12 @@ fn create_table(migration_dir: PathBuf) {
     up.write_all(
         b"CREATE TABLE USERS (
         id SERIAL PRIMARY KEY,
-        login VARCHAR NOT NULL,
-        password TEXT NOT NULL
+        username TEXT NOT NULL,
+        password TEXT NOT NULL,
+        email TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        modifiedAt TEXT NOT NULL,
+        privilege TEXT NOT NULL
       )",
     )
     .unwrap();
@@ -374,7 +378,7 @@ fn generate_sql_migration(path: &Path, with_down: bool) {
     let migration_dir_relative =
         convert_absolute_path_to_relative(path, &env::current_dir().unwrap());
 
-    //create_table(migration_dir_relative.clone());
+    create_table(migration_dir_relative.clone());
 
     if with_down {
         let down_path = path.join("down.sql");
