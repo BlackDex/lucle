@@ -8,8 +8,10 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod database;
 mod database_errors;
+pub mod models;
 mod query_helper;
 mod rpc;
+pub mod schema;
 
 #[tokio::main]
 async fn main() {

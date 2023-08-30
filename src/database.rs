@@ -1,9 +1,12 @@
 use super::query_helper;
 use crate::database_errors::{DatabaseError, DatabaseResult};
+use crate::models::Users;
+use crate::schema::users;
 use chrono::Utc;
 use diesel::{
     backend::Backend as DieselBackend, dsl::select, dsl::sql, mysql::MysqlConnection,
     pg::PgConnection, result, sql_types::Bool, sqlite::SqliteConnection, Connection, RunQueryDsl,
+    SelectableHelper,
 };
 use diesel_migrations::{FileBasedMigrations, MigrationError, MigrationHarness};
 use std::{
@@ -68,7 +71,31 @@ pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResu
         Some(true),
     )?;
     do_migrations(database_url, Some(migrations_dir.display().to_string()))?;
+    setup_user(database_url);
     Ok(())
+}
+
+pub fn setup_user(database_url: &str) -> Users {
+    let new_user = Users {
+        id: 01,
+        username: "test".to_string(),
+        password: "password".to_string(),
+        createdAt: "now".to_string(),
+        modifiedAt: "now".to_string(),
+        email: "allo".to_string(),
+        privilege: "admin".to_string(),
+    };
+    let conn = &mut test(&database_url);
+    diesel::insert_into(users::table)
+        .values(&new_user)
+        .returning(Users::as_returning())
+        .get_result(conn)
+        .expect("Error saving new users")
+}
+
+fn test(database_url: &str) -> SqliteConnection {
+    SqliteConnection::establish(&database_url)
+    .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
 
 fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
@@ -347,7 +374,7 @@ fn generate_sql_migration(path: &Path, with_down: bool) {
     let migration_dir_relative =
         convert_absolute_path_to_relative(path, &env::current_dir().unwrap());
 
-    create_table(migration_dir_relative.clone());
+    //create_table(migration_dir_relative.clone());
 
     if with_down {
         let down_path = path.join("down.sql");

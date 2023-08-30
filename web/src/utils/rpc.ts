@@ -12,15 +12,14 @@ export const connect = (url: string, port: string) => {
   return client;
 };
 
-export const install = async (client: any, db: number) => {
-  const {error} = await client.create_db({
+export const db_connection = async (client: any, db: number) => {
+  const { error } = await client.create_db({
     dbType: db,
   });
-  console.log(error);
+  if (error) throw error;
 };
 
-export const init = (client: any, path: string) => {
-  return new Promise((resolve, reject) => {
+export const init = (client: any, path: string) => new Promise((resolve, reject) => {
     client
       .init({
         path,
@@ -33,7 +32,6 @@ export const init = (client: any, path: string) => {
       })
       .catch((error: any) => reject(error.message));
   });
-};
 
 export const status = async (client: any, path: string) => {
   const call = client.status({

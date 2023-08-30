@@ -54,6 +54,16 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
+    async fn create_user(
+        &self,
+        request: Request<Database>,
+    ) -> Result<Response<ResponseResult>, Status> {
+        let reply = ResponseResult {
+            error: "".to_string(),
+        };
+        Ok(Response::new(reply))
+    }
+
     async fn is_db_created(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
         let reply = Empty {};
         Ok(Response::new(reply))

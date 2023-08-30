@@ -16,6 +16,9 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 // api
+
+import { createGrpcWebTransport } from "@bufbuild/connect-web";
+import { createPromiseClient } from "@bufbuild/connect";
 import {
   connect,
   init,
@@ -23,9 +26,6 @@ import {
   unregisterVersion,
   registerPackage,
 } from "utils/rpc";
-
-import { createGrpcWebTransport } from "@bufbuild/connect-web";
-import { createPromiseClient } from "@bufbuild/connect";
 
 function Speedupdate() {
   const [repoInit, setRepoInit] = useState<boolean>(false);
@@ -41,20 +41,20 @@ function Speedupdate() {
   const [error, setError] = useState<String>("");
 
   useEffect(() => {
-    //const newClient = connect(url, port);
+    // const newClient = connect(url, port);
     const client = createPromiseClient(
       Repo,
       createGrpcWebTransport({
-        baseUrl: "http://" + url,
+        baseUrl: `http://${  url}`,
       }),
     );
     setClient(client);
-    /*status(client, path).then((repo: any) => {
+    /* status(client, path).then((repo: any) => {
       setRepoInit(true);
       setCurrentVersion(repo.currentVersion);
       setListVersions(repo.listVersion);
       setListPackages(repo.packages);
-    });*/
+    }); */
   }, [url, path]);
 
   return (

@@ -74,7 +74,7 @@ function DefaultNavbar({
     return () => window.removeEventListener("resize", displayMobileNavbar);
   }, []);
 
-  /*const renderNavbarItems = routes.map(({ name, icon, href, route, collapse }) => (
+  /* const renderNavbarItems = routes.map(({ name, icon, href, route, collapse }) => (
     <DefaultNavbarDropdown
       key={name}
       name={name}
@@ -92,10 +92,10 @@ function DefaultNavbar({
       onMouseLeave={() => collapse && setDropdown(null)}
       light={light}
     />
-  ));*/
+  )); */
 
   // Render the routes on the dropdown menu
-  /*const renderRoutes = routes.map(({ name, collapse, columns, rowsPerColumn }) => {
+  /* const renderRoutes = routes.map(({ name, collapse, columns, rowsPerColumn }) => {
     let template;
 
     // Render the dropdown menu that should be display as columns
@@ -270,7 +270,7 @@ function DefaultNavbar({
     }
 
     return template;
-  });*/
+  }); */
 
   // Routes dropdown menu
   const dropdownMenu = (
@@ -322,7 +322,7 @@ function DefaultNavbar({
   );
 
   // Render routes that are nested inside the dropdown menu routes
-  /*const renderNestedRoutes = routes.map(({ collapse, columns }) =>
+  /* const renderNestedRoutes = routes.map(({ collapse, columns }) =>
     collapse && !columns
       ? collapse.map(({ name: parentName, collapse: nestedCollapse }) => {
           let template;
@@ -404,7 +404,7 @@ function DefaultNavbar({
           return template;
         })
       : null
-  );*/
+  ); */
 
   // Dropdown menu for the nested dropdowns
   const nestedDropdownMenu = (
