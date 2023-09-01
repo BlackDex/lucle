@@ -4,7 +4,7 @@ package luclerpc;
 
 service Lucle {
   rpc create_db (Database) returns (ResponseResult);
-  rpc create_user (Database) returns (ResponseResult);
+  rpc create_user (User) returns (ResponseResult);
   rpc isDB_created (Database) returns (Empty);
   rpc create_table (Database) returns (Empty);
   rpc ServerStreamingEcho (Empty) returns (stream Message);
@@ -54,6 +54,12 @@ enum DatabaseType {
 message Database {
   DatabaseType db_type = 1;
   optional string migration_path = 2;
+}
+
+message User {
+  string database_path = 1;
+  string username = 2;
+  string password = 3;
 }
 
 message Message {

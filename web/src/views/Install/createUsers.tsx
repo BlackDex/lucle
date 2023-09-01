@@ -1,7 +1,14 @@
+import { useState } from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 
-export default function CreateDefaultUser() {
+import PasswordStrengthBar from "react-password-strength-bar";
+
+export default function CreateDefaultUser({ user, passwd }) {
+  const [password, setPassword] = useState<string>();
+  const [confirmpassword, setConfirmPassword] = useState<string>();
+  const [matchpassword, setMatchPassword] = useState<boolean>();
+
   return (
     <Box
       component="form"
@@ -11,13 +18,42 @@ export default function CreateDefaultUser() {
       noValidate
       autoComplete="off"
     >
-      <TextField id="login" label="Username" variant="standard" />
+      <TextField
+        id="login"
+        label="Username"
+        variant="standard"
+        onChange={(event) => {
+          user(event.target.value);
+        }}
+      />
       <TextField
         id="password"
-        label="password"
+        label="Password"
         variant="standard"
         type="password"
+        value={password}
+        onChange={(event) => {
+          passwd(event.target.value);
+          setPassword(event.target.value);
+        }}
       />
+      <TextField
+        id="password-confirm"
+        label="Confirm password"
+        variant="standard"
+        type="password"
+        value={confirmpassword}
+        onChange={(event) => {
+          setConfirmPassword(event.target.value);
+          {
+            password != confirmpassword
+              ? setMatchPassword(false)
+              : setMatchPassword(true);
+          }
+        }}
+      />
+      {matchpassword ? "Password doesn't match !" : null}
+      <PasswordStrengthBar password={password} />
     </Box>
   );
 }

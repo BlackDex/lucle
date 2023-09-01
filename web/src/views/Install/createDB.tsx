@@ -5,13 +5,12 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 
-
 import { createGrpcWebTransport } from "@bufbuild/connect-web";
 import { createPromiseClient } from "@bufbuild/connect";
 import { db_connection } from "utils/rpc";
 import { Lucle } from "gen/lucle_connect";
 
-function CreateDB({InstallError}: boolean) {
+function CreateDB({ InstallError }) {
   const [client, setClient] = useState<any>();
   const [error, setError] = useState<any>();
   const [selectedDB, setSelectedDB] = useState<any>(2);

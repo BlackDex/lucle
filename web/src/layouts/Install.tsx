@@ -1,43 +1,57 @@
 import { useState, useEffect, Fragment } from "react";
+
+// MUI
 import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+
+// RPC Connect
 import { createGrpcWebTransport } from "@bufbuild/connect-web";
 import { createPromiseClient } from "@bufbuild/connect";
+
+// Components
 import CreateDB from "views/Install/createDB";
 import CreateDefaultUser from "views/Install/createUsers";
+import { create_user } from "utils/rpc";
 
 import { Lucle } from "gen/lucle_connect";
 
 const steps = ["Create Database", "Create default user"];
 
 export default function Install() {
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [client, setClient] = useState<any>();
   const [error, setError] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
 
-  function InstallStep(step: number) {
+  const InstallStep = (step: number) => {
     switch (step) {
       case 1:
-        return <CreateDB InstallError={() => setError(true)}/>;
+        return <CreateDB InstallError={() => setError(true)} />;
       case 2:
-        return <CreateDefaultUser />;
+        return (
+          <CreateDefaultUser
+            user={(user: string) => setUsername(user)}
+            passwd={(pass: string) => setPassword(pass)}
+          />
+        );
       default:
         break;
     }
-  }
+  };
 
-  /*   useEffect(() => {
+  useEffect(() => {
     //const newclient = connect("127.0.0.1", "3000");
     const transport = createGrpcWebTransport({
       baseUrl: `http://127.0.0.1:50051`,
     });
     const client = createPromiseClient(Lucle, transport);
     setClient(client);
-  }, []); */
+  }, []);
 
   const isStepFailed = (step: number) => step === activeStep;
 
@@ -53,7 +67,7 @@ export default function Install() {
             stepProps.error = error;
           }
           return (
-            <Step key={label} >
+            <Step key={label}>
               <StepLabel {...stepProps}>{label}</StepLabel>
             </Step>
           );
@@ -85,9 +99,12 @@ export default function Install() {
             <Box sx={{ flex: "1 1 auto" }} />
             <Button
               disabled={error}
-              onClick={() =>
-                setActiveStep((prevActiveStep) => prevActiveStep + 1)
-              }
+              onClick={() => {
+                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                activeStep === steps.length - 1
+                  ? create_user(client, username, password)
+                  : null;
+              }}
             >
               {activeStep === steps.length - 1 ? "Finish" : "Next"}
             </Button>

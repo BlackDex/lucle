@@ -4,8 +4,8 @@ diesel::table! {
         username -> Text,
         password -> Text,
         email -> Text,
-        createdAt -> Text,
-        modifiedAt -> Text,
+        createdat -> Text,
+        modifiedat -> Text,
         privilege -> Text
     }
 }

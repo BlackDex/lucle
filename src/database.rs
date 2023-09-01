@@ -80,8 +80,8 @@ pub fn setup_user(database_url: &str) -> Users {
         id: 01,
         username: "test".to_string(),
         password: "password".to_string(),
-        createdAt: "now".to_string(),
-        modifiedAt: "now".to_string(),
+        createdat: "now".to_string(),
+        modifiedat: "now".to_string(),
         email: "allo".to_string(),
         privilege: "admin".to_string(),
     };
@@ -95,7 +95,7 @@ pub fn setup_user(database_url: &str) -> Users {
 
 fn test(database_url: &str) -> SqliteConnection {
     SqliteConnection::establish(&database_url)
-    .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
+        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
 
 fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {

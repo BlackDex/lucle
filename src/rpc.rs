@@ -1,7 +1,7 @@
 use super::database;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Database, DatabaseType, Empty, Message, ResponseResult,
+    Database, DatabaseType, Empty, Message, ResponseResult, User,
 };
 use std::fmt::Display;
 use tonic::{transport::Server, Request, Response, Status};
@@ -56,8 +56,11 @@ impl Lucle for LucleApi {
 
     async fn create_user(
         &self,
-        request: Request<Database>,
+        request: Request<User>,
     ) -> Result<Response<ResponseResult>, Status> {
+        let inner = request.into_inner();
+        let username = inner.username;
+        let mut db_error: String = "".to_string();
         let reply = ResponseResult {
             error: "".to_string(),
         };

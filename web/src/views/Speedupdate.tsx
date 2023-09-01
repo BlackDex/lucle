@@ -45,7 +45,7 @@ function Speedupdate() {
     const client = createPromiseClient(
       Repo,
       createGrpcWebTransport({
-        baseUrl: `http://${  url}`,
+        baseUrl: `http://${url}`,
       }),
     );
     setClient(client);

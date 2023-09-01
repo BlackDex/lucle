@@ -1,5 +1,5 @@
-use diesel::prelude::*;
 use super::schema::users;
+use diesel::prelude::*;
 
 #[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = users)]
@@ -9,7 +9,7 @@ pub struct Users {
     pub username: String,
     pub password: String,
     pub email: String,
-    pub createdAt: String,
-    pub modifiedAt: String,
+    pub createdat: String,
+    pub modifiedat: String,
     pub privilege: String,
 }
