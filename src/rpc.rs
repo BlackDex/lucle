@@ -60,7 +60,9 @@ impl Lucle for LucleApi {
     ) -> Result<Response<ResponseResult>, Status> {
         let inner = request.into_inner();
         let username = inner.username;
+        let password = inner.password;
         let mut db_error: String = "".to_string();
+        database::setup_user("lucle.db", username, password);
         let reply = ResponseResult {
             error: "".to_string(),
         };

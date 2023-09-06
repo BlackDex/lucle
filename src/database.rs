@@ -1,7 +1,8 @@
 use super::query_helper;
 use crate::database_errors::{DatabaseError, DatabaseResult};
-use crate::models::Users;
+use crate::models::{Users, NewUser};
 use crate::schema::users;
+use chrono::NaiveDateTime;
 use chrono::Utc;
 use diesel::{
     backend::Backend as DieselBackend, dsl::select, dsl::sql, mysql::MysqlConnection,
@@ -71,26 +72,28 @@ pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResu
         Some(true),
     )?;
     do_migrations(database_url, Some(migrations_dir.display().to_string()))?;
-    setup_user(database_url);
     Ok(())
 }
 
-pub fn setup_user(database_url: &str) -> Users {
-    let new_user = Users {
-        id: 01,
-        username: "test".to_string(),
-        password: "password".to_string(),
-        createdat: "now".to_string(),
-        modifiedat: "now".to_string(),
-        email: "allo".to_string(),
-        privilege: "admin".to_string(),
+pub fn setup_user(database_url: &str, username: String, password: String) {
+    let conn = &mut test(&database_url);
+    let now = select(diesel::dsl::now).get_result::<NaiveDateTime>(conn).unwrap();
+
+    let new_user = NewUser {
+        username: &username,
+        password: &password,
+        created_at: now,
+        modified_at: now,
+        email: "allo",
+        privilege: "admin",
     };
     let conn = &mut test(&database_url);
+
     diesel::insert_into(users::table)
         .values(&new_user)
         .returning(Users::as_returning())
         .get_result(conn)
-        .expect("Error saving new users")
+        .unwrap_or_else(|error| handle_error(error));
 }
 
 fn test(database_url: &str) -> SqliteConnection {
@@ -308,13 +311,13 @@ fn create_table(migration_dir: PathBuf) {
     tracing::info!("Creating {}", migration_dir.join("up.sql").display());
     let mut up = fs::File::create(up_path).unwrap();
     up.write_all(
-        b"CREATE TABLE USERS (
-        id SERIAL PRIMARY KEY,
+        b"CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL,
         password TEXT NOT NULL,
         email TEXT NOT NULL,
-        createdAt TEXT NOT NULL,
-        modifiedAt TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        modified_at TEXT NOT NULL,
         privilege TEXT NOT NULL
       )",
     )

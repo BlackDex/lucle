@@ -7,7 +7,7 @@ import PasswordStrengthBar from "react-password-strength-bar";
 export default function CreateDefaultUser({ user, passwd }) {
   const [password, setPassword] = useState<string>();
   const [confirmpassword, setConfirmPassword] = useState<string>();
-  const [matchpassword, setMatchPassword] = useState<boolean>();
+  const [matchpassword, setMatchPassword] = useState<boolean>(false);
 
   return (
     <Box
@@ -45,8 +45,10 @@ export default function CreateDefaultUser({ user, passwd }) {
         value={confirmpassword}
         onChange={(event) => {
           setConfirmPassword(event.target.value);
+          console.log(password);
+          console.log(confirmpassword);
           {
-            password != confirmpassword
+            password !== confirmpassword
               ? setMatchPassword(false)
               : setMatchPassword(true);
           }

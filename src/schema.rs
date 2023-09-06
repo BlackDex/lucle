@@ -1,11 +1,11 @@
 diesel::table! {
     users (id) {
-        id -> Int4,
+        id -> Integer,
         username -> Text,
         password -> Text,
         email -> Text,
-        createdat -> Text,
-        modifiedat -> Text,
+        created_at -> Timestamp,
+        modified_at -> Timestamp,
         privilege -> Text
     }
 }

@@ -1,4 +1,5 @@
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect } from "react";
+import libsodium from 'libsodium-wrappers-sumo';
 
 // MUI
 import Box from "@mui/material/Box";
@@ -11,6 +12,7 @@ import Button from "@mui/material/Button";
 // RPC Connect
 import { createGrpcWebTransport } from "@bufbuild/connect-web";
 import { createPromiseClient } from "@bufbuild/connect";
+
 
 // Components
 import CreateDB from "views/Install/createDB";
@@ -44,8 +46,21 @@ export default function Install() {
     }
   };
 
+  const hash_password = async (plain_password : string) => {
+    await libsodium.ready;
+    const sodium = libsodium;
+
+    var hashed_password =
+    sodium.crypto_pwhash_str(plain_password,
+    sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
+    sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE);
+    
+    return hashed_password;
+  }
+
   useEffect(() => {
     //const newclient = connect("127.0.0.1", "3000");
+
     const transport = createGrpcWebTransport({
       baseUrl: `http://127.0.0.1:50051`,
     });
@@ -102,7 +117,7 @@ export default function Install() {
               onClick={() => {
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
                 activeStep === steps.length - 1
-                  ? create_user(client, username, password)
+                  ? hash_password(password).then((passwd: string) => create_user(client, username, passwd))
                   : null;
               }}
             >

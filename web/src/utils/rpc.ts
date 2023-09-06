@@ -25,6 +25,7 @@ export const create_user = async (
   password: string,
 ) => {
   const { error } = await client.create_user({
+    //TODO: delete this var
     database_path: "lucle.db",
     username: username,
     password: password,
