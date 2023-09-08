@@ -1,13 +1,13 @@
 use super::query_helper;
 use crate::database_errors::{DatabaseError, DatabaseResult};
-use crate::models::{Users, NewUser};
+use crate::models::NewUser;
 use crate::schema::users;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use diesel::{
     backend::Backend as DieselBackend, dsl::select, dsl::sql, mysql::MysqlConnection,
-    pg::PgConnection, result, sql_types::Bool, sqlite::SqliteConnection, Connection, RunQueryDsl,
-    SelectableHelper,
+    pg::PgConnection, result, sql_types::Bool, sqlite::SqliteConnection, Connection,
+    ExpressionMethods, OptionalExtension, QueryDsl, QueryResult, RunQueryDsl,
 };
 use diesel_migrations::{FileBasedMigrations, MigrationError, MigrationHarness};
 use std::{
@@ -47,13 +47,13 @@ impl Backend {
     }
 }
 #[derive(diesel::MultiConnection)]
-pub enum InferConnection {
+pub enum LucleDBConnection {
     Pg(PgConnection),
     Sqlite(SqliteConnection),
     Mysql(MysqlConnection),
 }
 
-impl InferConnection {
+impl LucleDBConnection {
     pub fn from_matches(database_url: &str) -> Self {
         Self::establish(&database_url)
             .unwrap_or_else(|err| handle_error_with_database_url(&database_url, err))
@@ -61,9 +61,9 @@ impl InferConnection {
 }
 
 pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResult<()> {
-    create_database_if_needed(&database_url)?;
-    create_default_migration_if_needed(&database_url, migrations_dir)?;
-    create_schema_table_and_run_migrations_if_needed(&database_url, migrations_dir)?;
+    create_database(&database_url)?;
+    create_default_migration(&database_url, migrations_dir)?;
+    create_schema_table_and_run_migrations(&database_url, migrations_dir)?;
     run_generate_migration_command(
         "allo".to_string(),
         None,
@@ -75,33 +75,71 @@ pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResu
     Ok(())
 }
 
-pub fn setup_user(database_url: &str, username: String, password: String) {
-    let conn = &mut test(&database_url);
-    let now = select(diesel::dsl::now).get_result::<NaiveDateTime>(conn).unwrap();
+pub fn setup_user(database_url: &str, username: String, password: String) -> DatabaseResult<()> {
+    match Backend::for_url(database_url) {
+        Backend::Pg => {
+            let conn = &mut PgConnection::establish(database_url).unwrap_or_else(handle_error);
+            let now = select(diesel::dsl::now)
+                .get_result::<NaiveDateTime>(conn)
+                .unwrap();
 
-    let new_user = NewUser {
-        username: &username,
-        password: &password,
-        created_at: now,
-        modified_at: now,
-        email: "allo",
-        privilege: "admin",
-    };
-    let conn = &mut test(&database_url);
+            let new_user = NewUser {
+                username: &username,
+                password: &password,
+                created_at: now,
+                modified_at: now,
+                email: "allo",
+                privilege: "admin",
+            };
 
-    diesel::insert_into(users::table)
-        .values(&new_user)
-        .returning(Users::as_returning())
-        .get_result(conn)
-        .unwrap_or_else(|error| handle_error(error));
+            diesel::insert_into(users::table)
+                .values(&new_user)
+                .execute(conn)?;
+        }
+        Backend::Mysql => {
+            let conn = &mut MysqlConnection::establish(database_url).unwrap_or_else(handle_error);
+            let now = select(diesel::dsl::now)
+                .get_result::<NaiveDateTime>(conn)
+                .unwrap();
+
+            let new_user = NewUser {
+                username: &username,
+                password: &password,
+                created_at: now,
+                modified_at: now,
+                email: "allo",
+                privilege: "admin",
+            };
+
+            diesel::insert_into(users::table)
+                .values(&new_user)
+                .execute(conn)?;
+        }
+        Backend::Sqlite => {
+            let conn = &mut SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
+            let now = select(diesel::dsl::now)
+                .get_result::<NaiveDateTime>(conn)
+                .unwrap();
+
+            let new_user = NewUser {
+                username: &username,
+                password: &password,
+                created_at: now,
+                modified_at: now,
+                email: "allo",
+                privilege: "admin",
+            };
+
+            diesel::insert_into(users::table)
+                .values(&new_user)
+                .execute(conn)?;
+        }
+    }
+
+    Ok(())
 }
 
-fn test(database_url: &str) -> SqliteConnection {
-    SqliteConnection::establish(&database_url)
-        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
-}
-
-fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
+fn create_database(database_url: &str) -> DatabaseResult<()> {
     match Backend::for_url(database_url) {
         Backend::Pg => {
             if PgConnection::establish(database_url).is_err() {
@@ -131,15 +169,15 @@ fn create_database_if_needed(database_url: &str) -> DatabaseResult<()> {
 }
 
 fn schema_table_exists(database_url: &str) -> DatabaseResult<bool> {
-    match InferConnection::establish(database_url).unwrap() {
-        InferConnection::Pg(mut conn) => select(sql::<Bool>(
+    match LucleDBConnection::establish(database_url).unwrap() {
+        LucleDBConnection::Pg(mut conn) => select(sql::<Bool>(
             "EXISTS \
              (SELECT 1 \
              FROM information_schema.tables \
              WHERE table_name = '__diesel_schema_migrations')",
         ))
         .get_result(&mut conn),
-        InferConnection::Sqlite(mut conn) => select(sql::<Bool>(
+        LucleDBConnection::Sqlite(mut conn) => select(sql::<Bool>(
             "EXISTS \
              (SELECT 1 \
              FROM sqlite_master \
@@ -147,7 +185,7 @@ fn schema_table_exists(database_url: &str) -> DatabaseResult<bool> {
              AND name = '__diesel_schema_migrations')",
         ))
         .get_result(&mut conn),
-        InferConnection::Mysql(mut conn) => select(sql::<Bool>(
+        LucleDBConnection::Mysql(mut conn) => select(sql::<Bool>(
             "EXISTS \
                     (SELECT 1 \
                      FROM information_schema.tables \
@@ -159,10 +197,7 @@ fn schema_table_exists(database_url: &str) -> DatabaseResult<bool> {
     .map_err(Into::into)
 }
 
-fn create_default_migration_if_needed(
-    database_url: &str,
-    migrations_dir: &Path,
-) -> DatabaseResult<()> {
+fn create_default_migration(database_url: &str, migrations_dir: &Path) -> DatabaseResult<()> {
     let initial_migration_path = migrations_dir.join("diesel_initial_setup");
     if initial_migration_path.exists() {
         return Ok(());
@@ -182,14 +217,83 @@ fn create_default_migration_if_needed(
     Ok(())
 }
 
-fn create_schema_table_and_run_migrations_if_needed(
+//TODO: move this into schema
+diesel::table! {
+    pg_database (datname) {
+        datname -> Text,
+        datistemplate -> Bool,
+    }
+}
+
+diesel::table! {
+    information_schema.schemata (schema_name) {
+        schema_name -> Text,
+    }
+}
+
+pub fn drop_database(database_url: &str) -> DatabaseResult<()> {
+    match Backend::for_url(database_url) {
+        Backend::Pg => {
+            let (database, postgres_url) = change_database_of_url(database_url, "postgres");
+            let mut conn = PgConnection::establish(&postgres_url)?;
+            if pg_database_exists(&mut conn, &database)? {
+                println!("Dropping database: {database}");
+                query_helper::drop_database(&database)
+                    .if_exists()
+                    .execute(&mut conn)?;
+            }
+        }
+        Backend::Sqlite => {
+            if Path::new(database_url).exists() {
+                println!("Dropping database: {database_url}");
+                std::fs::remove_file(database_url)?;
+            }
+        }
+        Backend::Mysql => {
+            let (database, mysql_url) = change_database_of_url(database_url, "information_schema");
+            let mut conn = MysqlConnection::establish(&mysql_url)?;
+            if mysql_database_exists(&mut conn, &database)? {
+                println!("Dropping database: {database}");
+                query_helper::drop_database(&database)
+                    .if_exists()
+                    .execute(&mut conn)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn pg_database_exists(conn: &mut PgConnection, database_name: &str) -> QueryResult<bool> {
+    use self::pg_database::dsl::*;
+
+    pg_database
+        .select(datname)
+        .filter(datname.eq(database_name))
+        .filter(datistemplate.eq(false))
+        .get_result::<String>(conn)
+        .optional()
+        .map(|x| x.is_some())
+}
+
+fn mysql_database_exists(conn: &mut MysqlConnection, database_name: &str) -> QueryResult<bool> {
+    use self::schemata::dsl::*;
+
+    schemata
+        .select(schema_name)
+        .filter(schema_name.eq(database_name))
+        .get_result::<String>(conn)
+        .optional()
+        .map(|x| x.is_some())
+}
+
+fn create_schema_table_and_run_migrations(
     database_url: &str,
     migrations_dir: &Path,
 ) -> DatabaseResult<()> {
     if !schema_table_exists(database_url).unwrap_or_else(handle_error) {
         let migrations =
             FileBasedMigrations::from_path(migrations_dir).unwrap_or_else(handle_error);
-        let mut conn = InferConnection::establish(database_url)?;
+        let mut conn = LucleDBConnection::establish(database_url)?;
         run_migrations(&mut conn, migrations)?;
     };
     Ok(())
@@ -368,7 +472,7 @@ fn do_migrations(
     database_url: &str,
     migration_dir: Option<String>,
 ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-    let mut conn = InferConnection::from_matches(database_url);
+    let mut conn = LucleDBConnection::from_matches(database_url);
     let dir = migrations_dir(migration_dir).unwrap_or_else(handle_error);
     let dir = FileBasedMigrations::from_path(dir).unwrap_or_else(handle_error);
     run_migrations(&mut conn, dir)?;

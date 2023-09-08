@@ -10,7 +10,6 @@ pub type DatabaseResult<T> = Result<T, DatabaseError>;
 #[derive(Debug)]
 pub enum DatabaseError {
     ProjectRootNotFound(PathBuf),
-    DatabaseUrlMissing,
     IoError(io::Error),
     QueryError(result::Error),
     ConnectionError(result::ConnectionError),
@@ -47,23 +46,30 @@ impl fmt::Display for DatabaseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match *self {
             ProjectRootNotFound(ref p) => {
-                write!(f, "Unable to find diesel.toml or Cargo.toml in {:?} or any parent directories.", p)
+                write!(
+                    f,
+                    "Unable to find diesel.toml or Cargo.toml in {:?} or any parent directories.",
+                    p
+                )
             }
-            DatabaseUrlMissing => {
-                f.write_str("The --database-url argument must be passed, or the DATABASE_URL environment variable must be set.")
-            }
-            IoError(ref error) => f.write_str(&error
-                .source()
-                .map(ToString::to_string)
-                .unwrap_or_else(|| error.to_string())),
-            QueryError(ref error) => f.write_str(&error
-                .source()
-                .map(ToString::to_string)
-                .unwrap_or_else(|| error.to_string())),
-            ConnectionError(ref error) => f.write_str(&error
-                .source()
-                .map(ToString::to_string)
-                .unwrap_or_else(|| error.to_string())),
+            IoError(ref error) => f.write_str(
+                &error
+                    .source()
+                    .map(ToString::to_string)
+                    .unwrap_or_else(|| error.to_string()),
+            ),
+            QueryError(ref error) => f.write_str(
+                &error
+                    .source()
+                    .map(ToString::to_string)
+                    .unwrap_or_else(|| error.to_string()),
+            ),
+            ConnectionError(ref error) => f.write_str(
+                &error
+                    .source()
+                    .map(ToString::to_string)
+                    .unwrap_or_else(|| error.to_string()),
+            ),
             MigrationError(ref error) => {
                 write!(f, "Failed to run migrations: {}", error)
             }

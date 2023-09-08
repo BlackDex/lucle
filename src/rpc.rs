@@ -3,7 +3,6 @@ use luclerpc::{
     lucle_server::{Lucle, LucleServer},
     Database, DatabaseType, Empty, Message, ResponseResult, User,
 };
-use std::fmt::Display;
 use tonic::{transport::Server, Request, Response, Status};
 use tonic_web::GrpcWebLayer;
 use tower_http::cors::{Any, CorsLayer};
@@ -54,6 +53,21 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
+    async fn delete_db(
+        &self,
+        request: Request<Database>,
+    ) -> Result<Response<ResponseResult>, Status> {
+        let inner = request.into_inner();
+        let database_url = "lucle.db";
+        let mut db_error: String = "".to_string();
+        database::drop_database(database_url).unwrap_or_else(|err| {
+            tracing::error!("{}", err);
+            db_error = err.to_string();
+        });
+        let reply = ResponseResult { error: db_error };
+        Ok(Response::new(reply))
+    }
+
     async fn create_user(
         &self,
         request: Request<User>,
@@ -62,10 +76,11 @@ impl Lucle for LucleApi {
         let username = inner.username;
         let password = inner.password;
         let mut db_error: String = "".to_string();
-        database::setup_user("lucle.db", username, password);
-        let reply = ResponseResult {
-            error: "".to_string(),
-        };
+        database::setup_user("lucle.db", username, password).unwrap_or_else(|err| {
+            tracing::error!("{}", err);
+            db_error = err.to_string();
+        });
+        let reply = ResponseResult { error: db_error };
         Ok(Response::new(reply))
     }
 
@@ -99,11 +114,6 @@ impl Lucle for LucleApi {
             Box::pin(output_stream) as Self::ServerStreamingEchoStream
         ))
     }
-}
-
-fn handle_error<E: Display, T>(error: E) -> T {
-    tracing::error!("{}", error);
-    ::std::process::exit(1);
 }
 
 pub async fn start_rpc_server() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
