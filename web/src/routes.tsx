@@ -27,7 +27,7 @@ const routes = (isInstalled: boolean, isLogged: boolean) => [
   },
   {
     path: "/install",
-    element: <Install />,
+    element: isInstalled ? <Navigate to="/" /> : <Install />,
   },
   {
     path: "/",

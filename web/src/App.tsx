@@ -23,8 +23,6 @@ function App() {
   useEffect(() => {
     // TODO: check if credentials are stored
     setIsLogged(false);
-    // TODO: Check if cms is installed
-    setIsInstalled(false);
     const transport = createGrpcWebTransport({
       baseUrl: `http://127.0.0.1:50051`,
     });
@@ -32,9 +30,9 @@ function App() {
     setClient(client);
 
     if (location.pathname == "/admin") {
-      check_if_installed(client);
-      // .then(() => setIsInstalled(true))
-      // .catch(() => setIsInstalled(false));
+      check_if_installed(client)
+        .then(() => setIsInstalled(true))
+        .catch(() => setIsInstalled(false));
     }
   }, []);
 
