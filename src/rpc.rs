@@ -84,8 +84,18 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
-    async fn is_db_created(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
-        let reply = Empty {};
+    async fn is_created_user(
+        &self,
+        request: Request<Database>,
+    ) -> Result<Response<ResponseResult>, Status> {
+        let mut db_error = "".to_string();
+        if database::is_empty_table("lucle.db") {
+            println!("ok!");
+        } else {
+            println!("NOK");
+            db_error = "test".to_string();
+        }
+        let reply = ResponseResult { error: db_error };
         Ok(Response::new(reply))
     }
 

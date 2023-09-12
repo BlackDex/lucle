@@ -31,7 +31,7 @@ const routes = (isInstalled: boolean, isLogged: boolean) => [
   },
   {
     path: "/",
-    element: !isInstalled ? <Navigate to="/install" /> : <Index />,
+    element: <Index />,
   },
   {
     path: "/update",

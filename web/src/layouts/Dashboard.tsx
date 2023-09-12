@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
+
+// MUI
 import { styled } from "@mui/material/styles";
+
+// Components
 import DashboardNavbar from "components/Navbar";
 import DashboardSidebar from "components/Sidebar";
 

@@ -12,6 +12,13 @@ export const connect = (url: string, port: string) => {
   return client;
 };
 
+export const check_if_installed = async (client: any) => {
+  const { error } = await client.is_created_user({
+    dbType: 2,
+  });
+  if (error) throw error;
+};
+
 export const db_connection = async (client: any, db: number) => {
   const { error } = await client.create_db({
     dbType: db,

@@ -55,15 +55,15 @@ pub enum LucleDBConnection {
 
 impl LucleDBConnection {
     pub fn from_matches(database_url: &str) -> Self {
-        Self::establish(&database_url)
-            .unwrap_or_else(|err| handle_error_with_database_url(&database_url, err))
+        Self::establish(database_url)
+            .unwrap_or_else(|err| handle_error_with_database_url(database_url, err))
     }
 }
 
 pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResult<()> {
-    create_database(&database_url)?;
-    create_default_migration(&database_url, migrations_dir)?;
-    create_schema_table_and_run_migrations(&database_url, migrations_dir)?;
+    create_database(database_url)?;
+    create_default_migration(database_url, migrations_dir)?;
+    create_schema_table_and_run_migrations(database_url, migrations_dir)?;
     run_generate_migration_command(
         "allo".to_string(),
         None,
@@ -137,6 +137,38 @@ pub fn setup_user(database_url: &str, username: String, password: String) -> Dat
     }
 
     Ok(())
+}
+
+pub fn is_empty_table(database_url: &str) -> bool {
+    match Backend::for_url(database_url) {
+        Backend::Pg => {
+            let conn = &mut PgConnection::establish(database_url).unwrap_or_else(handle_error);
+            let user = users::table.count().get_result::<i64>(conn);
+            if let Ok(count) = user {
+                count > 0
+            } else {
+                false
+            }
+        }
+        Backend::Mysql => {
+            let conn = &mut MysqlConnection::establish(database_url).unwrap_or_else(handle_error);
+            let user = users::table.count().get_result::<i64>(conn);
+            if let Ok(count) = user {
+                count > 0
+            } else {
+                false
+            }
+        }
+        Backend::Sqlite => {
+            let conn = &mut SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
+            let user = users::table.count().get_result::<i64>(conn);
+            if let Ok(count) = user {
+                count > 0
+            } else {
+                false
+            }
+        }
+    }
 }
 
 fn create_database(database_url: &str) -> DatabaseResult<()> {
