@@ -563,7 +563,7 @@ fn migration_version<'a>(version: Option<String>) -> Box<dyn Display + 'a> {
     }
 }
 
-fn regenerate_schema(
+/* n regenerate_schema(
     database_url: &str,
     locked_schema: Option<bool>,
 ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
@@ -601,4 +601,4 @@ fn regenerate_schema(
         }
     }
     Ok(())
-}
+} */
