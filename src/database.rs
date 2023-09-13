@@ -551,3 +551,40 @@ fn migration_version<'a>(version: Option<String>) -> Box<dyn Display + 'a> {
         None => Box::new(Utc::now().format(TIMESTAMP_FORMAT)),
     }
 }
+
+fn regenerate_schema(
+    database_url: &str,
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+    use std::io::Read;
+
+    let config = Config::read(matches)?.print_schema;
+    if let Some(ref path) = config.file {
+        let mut connection = LucleDBConnection::from_matches(database_url);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+
+        if matches.get_flag("LOCKED_SCHEMA") {
+            let mut buf = Vec::new();
+            print_schema::run_print_schema(&mut connection, &config, &mut buf)?;
+
+            let mut old_buf = Vec::new();
+            let mut file = fs::File::open(path)?;
+            file.read_to_end(&mut old_buf)?;
+
+            if buf != old_buf {
+                return Err(format!(
+                    "Command would result in changes to {}. \
+                     Rerun the command locally, and commit the changes.",
+                    path.display()
+                )
+                .into());
+            }
+        } else {
+            let mut file = fs::File::create(path)?;
+            let schema = print_schema::output_schema(&mut connection, &config)?;
+            file.write_all(schema.as_bytes())?;
+        }
+    }
+    Ok(())
+}
