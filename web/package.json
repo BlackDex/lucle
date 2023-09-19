@@ -17,7 +17,7 @@
     "@emotion/styled": "11.11.0",
     "@mui/icons-material": "5.14.9",
     "@mui/material": "5.14.9",
-    "@mui/styles": "5.14.9",
+    "@mui/styles": "5.14.10",
     "@types/prop-types": "^15.7.5",
     "axios": "1.5.0",
     "chroma-js": "^2.4.2",
