@@ -2,6 +2,7 @@ use super::query_helper;
 use crate::database_errors::{DatabaseError, DatabaseResult};
 use crate::models::NewUser;
 use crate::schema::users;
+use crate::print_schema;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use diesel::{

@@ -20,8 +20,10 @@ tower-http = { version = "0.4.0", features = ["fs", "trace", "cors"] }
 tracing = "0.1"
 url = "2.2.2"
 mysqlclient-sys = "0.2.5"
+syn = { version = "2", features = ["visit"] }
 libsqlite3-sys = { version = "0.26.0", features = ["bundled"] } 
 pq-sys = "0.4.2"
+diffy = "0.3.0"
 
 [build-dependencies]
 tonic-build = { version = "0.10.0", features = ["prost"] } 
