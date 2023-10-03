@@ -19,7 +19,7 @@
     "@mui/material": "5.14.11",
     "@mui/styles": "5.14.11",
     "@types/prop-types": "^15.7.5",
-    "axios": "1.5.0",
+    "axios": "1.5.1",
     "chroma-js": "^2.4.2",
     "libsodium-wrappers-sumo": "^0.7.11",
     "mui-file-dropzone": "4.0.2",
