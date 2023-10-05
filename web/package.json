@@ -11,7 +11,7 @@
     "serve": "protobuf && vite preview"
   },
   "dependencies": {
-    "@bufbuild/buf": "1.26.1",
+    "@bufbuild/buf": "1.27.0",
     "@bufbuild/connect-web": "0.13.0",
     "@emotion/react": "11.11.1",
     "@emotion/styled": "11.11.0",
