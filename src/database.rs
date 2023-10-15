@@ -1,8 +1,9 @@
 use super::query_helper;
+use crate::config::Config;
 use crate::database_errors::{DatabaseError, DatabaseResult};
 use crate::models::NewUser;
-use crate::schema::users;
 use crate::print_schema;
+use crate::schema::users;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use diesel::{
@@ -46,7 +47,16 @@ impl Backend {
             _ => Backend::Sqlite,
         }
     }
+
+    pub(crate) fn for_connection(connection: &LucleDBConnection) -> Backend {
+        match connection {
+            LucleDBConnection::Pg(_) => Self::Pg,
+            LucleDBConnection::Sqlite(_) => Self::Sqlite,
+            LucleDBConnection::Mysql(_) => Self::Mysql,
+        }
+    }
 }
+
 #[derive(diesel::MultiConnection)]
 pub enum LucleDBConnection {
     Pg(PgConnection),
@@ -429,7 +439,7 @@ fn create_migrations_directory(path: &Path) -> DatabaseResult<PathBuf> {
     Ok(path.to_owned())
 }
 
-fn find_project_root() -> DatabaseResult<PathBuf> {
+pub fn find_project_root() -> DatabaseResult<PathBuf> {
     let current_dir = env::current_dir()?;
     search_for_directory_containing_file(&current_dir, "diesel.toml")
         .or_else(|_| search_for_directory_containing_file(&current_dir, "Cargo.toml"))
@@ -509,7 +519,7 @@ fn do_migrations(
     let dir = migrations_dir(migration_dir).unwrap_or_else(handle_error);
     let dir = FileBasedMigrations::from_path(dir).unwrap_or_else(handle_error);
     run_migrations(&mut conn, dir)?;
-    // regenerate_schema_if_file_specified(matches)?;
+    regenerate_schema(database_url, None)?;
 
     Ok(())
 }
@@ -555,31 +565,34 @@ fn migration_version<'a>(version: Option<String>) -> Box<dyn Display + 'a> {
 
 fn regenerate_schema(
     database_url: &str,
+    locked_schema: Option<bool>,
 ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     use std::io::Read;
 
-    let config = Config::read(matches)?.print_schema;
+    let config = Config::read()?.print_schema;
     if let Some(ref path) = config.file {
         let mut connection = LucleDBConnection::from_matches(database_url);
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
         }
 
-        if matches.get_flag("LOCKED_SCHEMA") {
-            let mut buf = Vec::new();
-            print_schema::run_print_schema(&mut connection, &config, &mut buf)?;
+        if let Some(locked_schema) = locked_schema {
+            if locked_schema {
+                let mut buf = Vec::new();
+                print_schema::run_print_schema(&mut connection, &config, &mut buf)?;
 
-            let mut old_buf = Vec::new();
-            let mut file = fs::File::open(path)?;
-            file.read_to_end(&mut old_buf)?;
+                let mut old_buf = Vec::new();
+                let mut file = fs::File::open(path)?;
+                file.read_to_end(&mut old_buf)?;
 
-            if buf != old_buf {
-                return Err(format!(
-                    "Command would result in changes to {}. \
+                if buf != old_buf {
+                    return Err(format!(
+                        "Command would result in changes to {}. \
                      Rerun the command locally, and commit the changes.",
-                    path.display()
-                )
-                .into());
+                        path.display()
+                    )
+                    .into());
+                }
             }
         } else {
             let mut file = fs::File::create(path)?;

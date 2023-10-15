@@ -1,16 +1,65 @@
 use super::data_structures::*;
-use super::TableName;
-use std::borrow::Cow;
 use super::information_schema::DefaultSchema;
+use super::TableName;
+use crate::print_schema::ColumnSorting;
 use diesel::connection::DefaultLoadingMode;
-use diesel::sql_types::{self, Array, Text};
-use diesel::RunQueryDsl;
-use diesel::expression::AsExpression;
+use diesel::deserialize::{self, FromStaticSqlRow, Queryable};
 use diesel::dsl::AsExprOf;
-use diesel::prelude::*;
+use diesel::expression::AsExpression;
 use diesel::pg::Pg;
-use diesel::QueryResult;
+use diesel::prelude::*;
+use diesel::sql_types::{self, Array, Text};
 use diesel::PgConnection;
+use diesel::QueryResult;
+use diesel::RunQueryDsl;
+use heck::ToUpperCamelCase;
+use std::borrow::Cow;
+use std::error::Error;
+use std::io::{stderr, Write};
+
+pub fn determine_column_type(
+    attr: &ColumnInformation,
+    default_schema: String,
+) -> Result<ColumnType, Box<dyn Error + Send + Sync + 'static>> {
+    let is_array = attr.type_name.starts_with('_');
+    let tpe = if is_array {
+        &attr.type_name[1..]
+    } else {
+        &attr.type_name
+    };
+
+    let diesel_alias_without_postgres_coercion = match &*tpe.to_lowercase() {
+        "varchar" | "citext" => Some(tpe),
+        _ => None,
+    };
+
+    // Postgres doesn't coerce varchar[] to text[] so print out a message to inform
+    // the user.
+    if let (true, Some(tpe)) = (is_array, diesel_alias_without_postgres_coercion) {
+        writeln!(
+            &mut stderr(),
+            "The column `{}` is of type `{}[]`. This will cause problems when using Diesel. You should consider changing the column type to `text[]`.",
+            attr.column_name,
+            tpe
+        )?;
+    }
+
+    Ok(ColumnType {
+        schema: attr.type_schema.as_ref().and_then(|s| {
+            if s == &default_schema {
+                None
+            } else {
+                Some(s.clone())
+            }
+        }),
+        sql_name: tpe.to_string(),
+        rust_name: tpe.to_upper_camel_case(),
+        is_array,
+        is_nullable: attr.nullable,
+        is_unsigned: false,
+        max_length: attr.max_length,
+    })
+}
 
 pub fn load_foreign_key_constraints(
     connection: &mut PgConnection,
@@ -83,6 +132,8 @@ pub fn get_table_comment(
     diesel::select(obj_description(regclass(table), "pg_class")).get_result(conn)
 }
 
+sql_function!(fn obj_description(oid: sql_types::Oid, catalog: sql_types::Text) -> Nullable<Text>);
+
 pub fn get_table_data(
     conn: &mut PgConnection,
     table: &TableName,
@@ -109,5 +160,61 @@ pub fn get_table_data(
     match column_sorting {
         ColumnSorting::OrdinalPosition => query.order(ordinal_position).load(conn),
         ColumnSorting::Name => query.order(column_name).load(conn),
+    }
+}
+
+impl<ST> Queryable<ST, Pg> for ColumnInformation
+where
+    (
+        String,
+        String,
+        Option<String>,
+        String,
+        Option<i32>,
+        Option<String>,
+    ): FromStaticSqlRow<ST, Pg>,
+{
+    type Row = (
+        String,
+        String,
+        Option<String>,
+        String,
+        Option<i32>,
+        Option<String>,
+    );
+
+    fn build(row: Self::Row) -> deserialize::Result<Self> {
+        Ok(ColumnInformation::new(
+            row.0,
+            row.1,
+            row.2,
+            row.3 == "YES",
+            row.4
+                .map(|n| {
+                    std::convert::TryInto::try_into(n).map_err(|e| {
+                        format!("Max column length can't be converted to u64: {e} (got: {n})")
+                    })
+                })
+                .transpose()?,
+            row.5,
+        ))
+    }
+}
+
+mod information_schema {
+    use diesel::prelude::table;
+
+    table! {
+        information_schema.columns (table_schema, table_name, column_name) {
+            table_schema -> VarChar,
+            table_name -> VarChar,
+            column_name -> VarChar,
+            #[sql_name = "is_nullable"]
+            __is_nullable -> VarChar,
+            character_maximum_length -> Nullable<Integer>,
+            ordinal_position -> BigInt,
+            udt_name -> VarChar,
+            udt_schema -> VarChar,
+        }
     }
 }

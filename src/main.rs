@@ -6,13 +6,14 @@ use tower_http::{
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+mod config;
 mod database;
 mod database_errors;
-mod query_helper;
-mod rpc;
-mod print_schema;
 mod infer_schema_internals;
 pub mod models;
+mod print_schema;
+mod query_helper;
+mod rpc;
 pub mod schema;
 
 #[tokio::main]

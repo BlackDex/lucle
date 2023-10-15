@@ -1,19 +1,12 @@
-use std::{
-  error::Error,
-  fmt
-};
 use crate::database::LucleDBConnection;
+use diesel::result::Error::NotFound;
+use std::error::Error;
 
-use diesel::{
-    backend::Backend,
-    deserialize::{self, FromStaticSqlRow, Queryable}
-};
-
-use super::inference;
+use super::data_structures::ColumnDefinition;
 use super::data_structures::*;
 use super::table_data::*;
-use super::data_structures::ColumnDefinition;
 
+use crate::config::Filtering;
 use crate::print_schema::{ColumnSorting, DocConfig};
 
 static RESERVED_NAMES: &[&str] = &[
@@ -122,21 +115,47 @@ pub fn filter_table_names(table_names: Vec<TableName>, table_filter: &Filtering)
         .collect::<_>()
 }
 
+pub fn load_foreign_key_constraints(
+    connection: &mut LucleDBConnection,
+    schema_name: Option<&str>,
+) -> Result<Vec<ForeignKeyConstraint>, Box<dyn Error + Send + Sync + 'static>> {
+    let constraints = match connection {
+        LucleDBConnection::Sqlite(ref mut c) => {
+            super::sqlite::load_foreign_key_constraints(c, schema_name)
+        }
+        LucleDBConnection::Pg(ref mut c) => {
+            super::pg::load_foreign_key_constraints(c, schema_name).map_err(Into::into)
+        }
+        LucleDBConnection::Mysql(ref mut c) => {
+            super::mysql::load_foreign_key_constraints(c, schema_name).map_err(Into::into)
+        }
+    };
+
+    constraints.map(|mut ct| {
+        ct.sort();
+        ct.iter_mut().for_each(|foreign_key_constraint| {
+            for name in &mut foreign_key_constraint.foreign_key_columns_rust {
+                if is_reserved_name(name) {
+                    *name = format!("{name}_");
+                }
+            }
+        });
+        ct
+    })
+}
+
 fn determine_column_type(
     attr: &ColumnInformation,
     conn: &mut LucleDBConnection,
 ) -> Result<ColumnType, Box<dyn Error + Send + Sync + 'static>> {
     match *conn {
-        #[cfg(feature = "sqlite")]
-        InferConnection::Sqlite(_) => super::sqlite::determine_column_type(attr),
-        #[cfg(feature = "postgres")]
-        InferConnection::Pg(ref mut conn) => {
+        LucleDBConnection::Sqlite(_) => super::sqlite::determine_column_type(attr),
+        LucleDBConnection::Pg(ref mut conn) => {
             use crate::infer_schema_internals::information_schema::DefaultSchema;
 
             super::pg::determine_column_type(attr, diesel::pg::Pg::default_schema(conn)?)
         }
-        #[cfg(feature = "mysql")]
-        InferConnection::Mysql(_) => super::mysql::determine_column_type(attr),
+        LucleDBConnection::Mysql(_) => super::mysql::determine_column_type(attr),
     }
 }
 
@@ -215,7 +234,9 @@ fn get_column_information(
             super::sqlite::get_table_data(c, table, column_sorting)
         }
         LucleDBConnection::Pg(ref mut c) => super::pg::get_table_data(c, table, column_sorting),
-        LucleDBConnection::Mysql(ref mut c) => super::mysql::get_table_data(c, table, column_sorting),
+        LucleDBConnection::Mysql(ref mut c) => {
+            super::mysql::get_table_data(c, table, column_sorting)
+        }
     };
     if let Err(NotFound) = column_info {
         Err(format!("no table exists named {table}").into())
@@ -231,7 +252,9 @@ pub(crate) fn get_primary_keys(
     let primary_keys: Vec<String> = match *conn {
         LucleDBConnection::Sqlite(ref mut c) => super::sqlite::get_primary_keys(c, table),
         LucleDBConnection::Pg(ref mut c) => super::information_schema::get_primary_keys(c, table),
-        LucleDBConnection::Mysql(ref mut c) => super::information_schema::get_primary_keys(c, table),
+        LucleDBConnection::Mysql(ref mut c) => {
+            super::information_schema::get_primary_keys(c, table)
+        }
     }?;
     if primary_keys.is_empty() {
         Err(format!(
@@ -258,12 +281,4 @@ fn get_table_comment(
     } else {
         table_comment.map_err(Into::into)
     }
-}
-
-fn write_doc_comments(out: &mut impl fmt::Write, doc: &str) -> fmt::Result {
-    for line in doc.lines() {
-        let line = line.trim();
-        writeln!(out, "///{}{}", if line.is_empty() { "" } else { " " }, line)?;
-    }
-    Ok(())
 }

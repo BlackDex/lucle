@@ -1,6 +1,6 @@
-use diesel_table_macro_syntax::ColumnDef;
-use std::error::Error;
 use super::table_data::TableName;
+//use diesel_table_macro_syntax::ColumnDef;
+use std::fmt;
 
 #[derive(Debug, PartialEq, Clone, Eq)]
 pub struct ColumnType {
@@ -12,65 +12,6 @@ pub struct ColumnType {
     pub is_unsigned: bool,
     pub max_length: Option<u64>,
 }
-
-impl ColumnType {
-    pub(crate) fn for_column_def(c: &ColumnDef) -> Result<Self, Box<dyn Error + Send + Sync>> {
-        Ok(Self::for_type_path(
-            &c.tpe,
-            c.max_length
-                .as_ref()
-                .map(|l| {
-                    l.base10_parse::<u64>()
-                        .map_err(|e| -> Box<dyn Error + Send + Sync> {
-                            format!("Column length literal can't be parsed as u64: {e}").into()
-                        })
-                })
-                .transpose()?,
-        ))
-    }
-fn for_type_path(t: &syn::TypePath, max_length: Option<u64>) -> Self {
-        let last = t
-            .path
-            .segments
-            .last()
-            .expect("At least one segment in this type-path");
-
-        let mut ret = Self {
-            schema: None,
-            rust_name: last.ident.to_string(),
-            sql_name: String::new(),
-            is_array: last.ident == "Array",
-            is_nullable: last.ident == "Nullable",
-            is_unsigned: last.ident == "Unsigned",
-            max_length,
-        };
-
-        let sql_name = if !ret.is_nullable && !ret.is_array && !ret.is_unsigned {
-            last.ident
-                .to_string()
-                .split('_')
-                .collect::<Vec<_>>()
-                .join(" ")
-        } else if let syn::PathArguments::AngleBracketed(ref args) = last.arguments {
-            let arg = args.args.first().expect("There is at least one argument");
-            if let syn::GenericArgument::Type(syn::Type::Path(p)) = arg {
-                let s = Self::for_type_path(p, max_length);
-                ret.is_nullable |= s.is_nullable;
-                ret.is_array |= s.is_array;
-                ret.is_unsigned |= s.is_unsigned;
-                s.sql_name
-            } else {
-                unreachable!("That shouldn't happen")
-            }
-        } else {
-            unreachable!("That shouldn't happen")
-        };
-        ret.sql_name = sql_name;
-        ret
-    }
-}
-
-use std::fmt;
 
 impl fmt::Display for ColumnType {
     fn fmt(&self, out: &mut fmt::Formatter) -> Result<(), fmt::Error> {
@@ -115,6 +56,30 @@ pub struct ColumnInformation {
     pub comment: Option<String>,
 }
 
+impl ColumnInformation {
+    pub fn new<T, U>(
+        column_name: T,
+        type_name: U,
+        type_schema: Option<String>,
+        nullable: bool,
+        max_length: Option<u64>,
+        comment: Option<String>,
+    ) -> Self
+    where
+        T: Into<String>,
+        U: Into<String>,
+    {
+        ColumnInformation {
+            column_name: column_name.into(),
+            type_name: type_name.into(),
+            type_schema,
+            nullable,
+            max_length,
+            comment,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ForeignKeyConstraint {
     pub child_table: TableName,
@@ -133,4 +98,3 @@ impl ForeignKeyConstraint {
         )
     }
 }
-

@@ -132,3 +132,49 @@ where
         })
         .collect())
 }
+
+#[allow(clippy::module_inception)]
+pub mod information_schema {
+    use diesel::prelude::{allow_tables_to_appear_in_same_query, table};
+
+    table! {
+        information_schema.tables (table_schema, table_name) {
+            table_schema -> VarChar,
+            table_name -> VarChar,
+            table_type -> VarChar,
+        }
+    }
+
+    table! {
+        information_schema.key_column_usage (table_schema, table_name, column_name, constraint_name) {
+            table_schema -> VarChar,
+            table_name -> VarChar,
+            column_name -> VarChar,
+            constraint_schema -> VarChar,
+            constraint_name -> VarChar,
+            ordinal_position -> BigInt,
+        }
+    }
+
+    table! {
+        information_schema.table_constraints (table_schema, table_name, constraint_name) {
+            table_schema -> VarChar,
+            table_name -> VarChar,
+            constraint_schema -> VarChar,
+            constraint_name -> VarChar,
+            constraint_type -> VarChar,
+        }
+    }
+
+    table! {
+        information_schema.referential_constraints (constraint_schema, constraint_name) {
+            constraint_schema -> VarChar,
+            constraint_name -> VarChar,
+            unique_constraint_schema -> Nullable<VarChar>,
+            unique_constraint_name -> Nullable<VarChar>,
+        }
+    }
+
+    allow_tables_to_appear_in_same_query!(table_constraints, referential_constraints);
+    allow_tables_to_appear_in_same_query!(key_column_usage, table_constraints);
+}

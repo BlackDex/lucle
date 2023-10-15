@@ -1,7 +1,7 @@
-use diesel::backend::Backend;
-use diesel::deserialize::{self, FromStaticSqlRow, Queryable};
 use super::data_structures::ColumnDefinition;
 use super::inference;
+use diesel::backend::Backend;
+use diesel::deserialize::{self, FromStaticSqlRow, Queryable};
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -36,7 +36,6 @@ impl TableName {
         }
     }
 
-    #[cfg(feature = "uses_information_schema")]
     pub fn strip_schema_if_matches(&mut self, schema: &str) {
         if self.schema.as_deref() == Some(schema) {
             self.schema = None;
