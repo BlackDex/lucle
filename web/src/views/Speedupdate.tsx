@@ -17,8 +17,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 // api
 
-import { createGrpcWebTransport } from "@bufbuild/connect-web";
-import { createPromiseClient } from "@bufbuild/connect";
+import { createGrpcWebTransport } from "@connectrpc/connect-web";
+import { createPromiseClient } from "@connectrpc/connect";
 import {
   connect,
   init,

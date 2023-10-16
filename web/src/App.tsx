@@ -9,8 +9,8 @@ import routes from "./routes";
 import { check_if_installed } from "utils/rpc";
 
 // RPC Connect
-import { createGrpcWebTransport } from "@bufbuild/connect-web";
-import { createPromiseClient } from "@bufbuild/connect";
+import { createGrpcWebTransport } from "@connectrpc/connect-web";
+import { createPromiseClient } from "@connectrpc/connect";
 import { Lucle } from "gen/lucle_connect";
 
 function App() {

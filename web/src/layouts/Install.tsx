@@ -11,8 +11,8 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 
 // RPC Connect
-import { createGrpcWebTransport } from "@bufbuild/connect-web";
-import { createPromiseClient } from "@bufbuild/connect";
+import { createGrpcWebTransport } from "@connectrpc/connect-web";
+import { createPromiseClient } from "@connectrpc/connect";
 import { Lucle } from "gen/lucle_connect";
 
 // Components
