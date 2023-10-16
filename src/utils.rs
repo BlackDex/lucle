@@ -1,5 +1,3 @@
-use std::{fs::File, io::Write};
-
 use rcgen::Certificate;
 
 pub struct TlsServer {
