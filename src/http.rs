@@ -1,0 +1,116 @@
+use axum::{
+    extract::Host,
+    handler::HandlerWithoutStateExt,
+    http::{StatusCode, Uri},
+    response::Redirect,
+    BoxError, Router,
+};
+use axum_server::tls_rustls::RustlsConfig;
+use std::{future::Future, net::SocketAddr, path::PathBuf, time::Duration};
+use tokio::signal;
+use tower_http::services::{ServeDir, ServeFile};
+
+#[derive(Clone, Copy)]
+struct Ports {
+    http: u16,
+    https: u16,
+}
+
+pub fn using_serve_dir() -> Router {
+    let serve_dir = ServeDir::new("web/dist").fallback(ServeFile::new("web/dist/index.html"));
+
+    Router::new()
+        .nest_service("/", serve_dir.clone())
+        .fallback_service(serve_dir)
+}
+
+pub async fn serve(app: Router, cert: PathBuf, key: PathBuf) {
+    let config = RustlsConfig::from_pem_file(cert, key).await.unwrap();
+
+    let ports = Ports {
+        http: 8080,
+        https: 8443,
+    };
+
+    //Create a handle for our TLS server so the shutdown signal can all shutdown
+    let handle = axum_server::Handle::new();
+    //save the future for easy shutting down of redirect server
+    let shutdown_future = shutdown_signal(handle.clone());
+
+    // optional: spawn a second server to redirect http requests to this server
+    tokio::spawn(redirect_http_to_https(ports, shutdown_future));
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], ports.https));
+
+    tracing::info!("HTTP server starting on {}", addr);
+
+    match axum_server::bind_rustls(addr, config)
+        .serve(app.into_make_service())
+        .await
+    {
+        Ok(_) => {}
+        Err(err) => tracing::error!("{}", err),
+    }
+}
+
+async fn redirect_http_to_https(ports: Ports, signal: impl Future<Output = ()>) {
+    fn make_https(host: String, uri: Uri, ports: Ports) -> Result<Uri, BoxError> {
+        let mut parts = uri.into_parts();
+
+        parts.scheme = Some(axum::http::uri::Scheme::HTTPS);
+
+        if parts.path_and_query.is_none() {
+            parts.path_and_query = Some("/".parse().unwrap());
+        }
+
+        let https_host = host.replace(&ports.http.to_string(), &ports.https.to_string());
+        parts.authority = Some(https_host.parse()?);
+
+        Ok(Uri::from_parts(parts)?)
+    }
+
+    let redirect = move |Host(host): Host, uri: Uri| async move {
+        match make_https(host, uri, ports) {
+            Ok(uri) => Ok(Redirect::permanent(&uri.to_string())),
+            Err(error) => {
+                tracing::warn!(%error, "failed to convert URI to HTTPS");
+                Err(StatusCode::BAD_REQUEST)
+            }
+        }
+    };
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], ports.http));
+    tracing::debug!("listening on {addr}");
+    hyper::Server::bind(&addr)
+        .serve(redirect.into_make_service())
+        .with_graceful_shutdown(signal)
+        .await
+        .unwrap();
+}
+
+pub async fn shutdown_signal(handle: axum_server::Handle) {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    tracing::info!("Received termination signal shutting down");
+    handle.graceful_shutdown(Some(Duration::from_secs(10)));
+}

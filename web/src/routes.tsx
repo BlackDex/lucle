@@ -8,17 +8,20 @@ import Tables from "views/Tables";
 import Login from "views/Login";
 import Speedupdate from "views/Speedupdate";
 
+const adminRoutes = (isInstalled: boolean, isLogged: boolean) => {
+  console.log("isInstalled : " + isInstalled);
+  if (!isInstalled) {
+    return <Navigate to="/install" replace />;
+  } else {
+    return <Dashboard />;
+  }
+};
+
 const routes = (isInstalled: boolean, isLogged: boolean) => [
   { path: "/login", element: <Login /> },
   {
     path: "admin",
-    element: !isInstalled ? (
-      <Navigate to="/install" />
-    ) : !isLogged ? (
-      <Navigate to="/login" />
-    ) : (
-      <Dashboard />
-    ),
+    element: adminRoutes(isInstalled, isLogged),
     children: [
       { path: "", element: <AdminIndex /> },
       { path: "editor", element: <OnlineEditor /> },
@@ -27,7 +30,7 @@ const routes = (isInstalled: boolean, isLogged: boolean) => [
   },
   {
     path: "/install",
-    element: isInstalled ? <Navigate to="/" /> : <Install />,
+    element: <Install />, //isInstalled ? <Navigate to="/" replace /> : <Install />,
   },
   {
     path: "/",

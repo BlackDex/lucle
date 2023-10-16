@@ -17,8 +17,9 @@ function App() {
   const [isLogged, setIsLogged] = useState<boolean>(false);
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
   const [client, setClient] = useState<any>();
-  const content = useRoutes(routes(isInstalled, isLogged));
+
   const location = useLocation();
+  const content = useRoutes(routes(isInstalled, isLogged));
 
   useEffect(() => {
     // TODO: check if credentials are stored
@@ -31,8 +32,14 @@ function App() {
 
     if (location.pathname == "/admin") {
       check_if_installed(client)
-        .then(() => setIsInstalled(true))
-        .catch(() => setIsInstalled(false));
+        .then(() => {
+          console.log("ok");
+          setIsInstalled(true);
+        })
+        .catch((value) => {
+          console.log("NOK : " + value);
+          setIsInstalled(false);
+        });
     }
   }, []);
 

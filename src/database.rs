@@ -150,7 +150,7 @@ pub fn setup_user(database_url: &str, username: String, password: String) -> Dat
     Ok(())
 }
 
-pub fn is_empty_table(database_url: &str) -> bool {
+pub fn is_default_user(database_url: &str) -> bool {
     match Backend::for_url(database_url) {
         Backend::Pg => {
             let conn = &mut PgConnection::establish(database_url).unwrap_or_else(handle_error);
@@ -171,10 +171,15 @@ pub fn is_empty_table(database_url: &str) -> bool {
             }
         }
         Backend::Sqlite => {
-            let conn = &mut SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
-            let user = users::table.count().get_result::<i64>(conn);
-            if let Ok(count) = user {
-                count > 0
+            if Path::new("lucle.db").exists() {
+                let conn =
+                    &mut SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
+                let user = users::table.count().get_result::<i64>(conn);
+                if let Ok(count) = user {
+                    count > 0
+                } else {
+                    false
+                }
             } else {
                 false
             }
@@ -563,7 +568,7 @@ fn migration_version<'a>(version: Option<String>) -> Box<dyn Display + 'a> {
     }
 }
 
-/* n regenerate_schema(
+/* fn regenerate_schema(
     database_url: &str,
     locked_schema: Option<bool>,
 ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
