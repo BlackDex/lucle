@@ -33,9 +33,9 @@ async fn main() {
 
     let dir = openssl_probe::probe().cert_dir.unwrap();
 
-    let mut child = std::process::Command::new("ls").uid(0).spawn().expect("failed to execute child");
+    /*let mut child = std::process::Command::new("ls").uid(0).spawn().expect("failed to execute child");
     let stdout = child.stdout.take().unwrap();
-    tracing::info!("{:?}", stdout);
+    tracing::info!("{:?}", stdout);*/
 
     let ca_cert;
     let server_cert_key;
