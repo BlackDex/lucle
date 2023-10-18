@@ -211,7 +211,7 @@ pub async fn start_rpc_server(
         tokio::spawn(async move {
             let mut certificates = Vec::new();
 
-            let conn = tls_acceptor
+            match tls_acceptor
                 .accept_with(conn, |info| {
                     if let Some(certs) = info.peer_certificates() {
                         for cert in certs {
@@ -220,13 +220,18 @@ pub async fn start_rpc_server(
                     }
                 })
                 .await
-                .unwrap();
+            {
+                Ok(conn) => {
+                    let svc = tower::ServiceBuilder::new()
+                        .add_extension(Arc::new(ConnInfo { addr, certificates }))
+                        .service(svc);
 
-            let svc = tower::ServiceBuilder::new()
-                .add_extension(Arc::new(ConnInfo { addr, certificates }))
-                .service(svc);
-
-            http.serve_connection(conn, svc).await.unwrap();
+                    http.serve_connection(conn, svc).await.unwrap();
+                }
+                Err(err) => {
+                    tracing::error!("{}", err)
+                }
+            }
         });
     }
 }

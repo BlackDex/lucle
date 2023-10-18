@@ -32,14 +32,8 @@ function App() {
 
     if (location.pathname == "/admin") {
       check_if_installed(client)
-        .then(() => {
-          console.log("ok");
-          setIsInstalled(true);
-        })
-        .catch((value) => {
-          console.log("NOK : " + value);
-          setIsInstalled(false);
-        });
+        .then(() => setIsInstalled(true))
+        .catch(() => setIsInstalled(false));
     }
   }, []);
 

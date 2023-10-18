@@ -32,6 +32,7 @@ async fn main() {
         .init();
 
     let dir = openssl_probe::probe().cert_dir.unwrap();
+    tracing::info!("ssl path : {}", dir.into_os_string().into_string().unwrap());
 
     /*let mut child = std::process::Command::new("ls").uid(0).spawn().expect("failed to execute child");
     let stdout = child.stdout.take().unwrap();
