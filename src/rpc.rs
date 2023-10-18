@@ -41,16 +41,27 @@ impl Lucle for LucleApi {
         let db_type = inner.db_type;
         let migration_path = inner.migration_path;
         let mut db_error: String = "".to_string();
+        let migrations_dir =
+            database::create_migrations_dir(migration_path).unwrap_or_else(database::handle_error);
+
         match DatabaseType::from_i32(db_type) {
             Some(DatabaseType::Sqlite) => {
-                let migrations_dir = database::create_migrations_dir(migration_path)
-                    .unwrap_or_else(database::handle_error);
                 database::setup_database("lucle.db", &migrations_dir).unwrap_or_else(|err| {
                     tracing::error!("{}", err);
                     db_error = err.to_string();
                 });
-
-                //Some(DatabaseType::Mysql) => database::setup_database("mysql://").unwrap_or_else(handle_error),
+            }
+            Some(DatabaseType::Mysql) => {
+                database::setup_database("mysql://", &migrations_dir).unwrap_or_else(|err| {
+                    tracing::error!("{}", err);
+                    db_error = err.to_string();
+                });
+            }
+            Some(DatabaseType::Postgresql) => {
+                database::setup_database("postgres://", &migrations_dir).unwrap_or_else(|err| {
+                    tracing::error!("{}", err);
+                    db_error = err.to_string();
+                });
             }
             _ => {}
         }

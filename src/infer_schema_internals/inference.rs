@@ -137,7 +137,9 @@ pub(crate) fn get_primary_keys(
     let primary_keys: Vec<String> = match *conn {
         LucleDBConnection::Sqlite(ref mut c) => super::sqlite::get_primary_keys(c, table),
         LucleDBConnection::Pg(ref mut c) => super::information_schema::get_primary_keys(c, table),
-        LucleDBConnection::Mysql(ref mut c) => super::information_schema::get_primary_keys(c, table),
+        LucleDBConnection::Mysql(ref mut c) => {
+            super::information_schema::get_primary_keys(c, table)
+        }
     }?;
     if primary_keys.is_empty() {
         Err(format!(
@@ -176,7 +178,9 @@ fn get_column_information(
             super::sqlite::get_table_data(c, table, column_sorting)
         }
         LucleDBConnection::Pg(ref mut c) => super::pg::get_table_data(c, table, column_sorting),
-        LucleDBConnection::Mysql(ref mut c) => super::mysql::get_table_data(c, table, column_sorting),
+        LucleDBConnection::Mysql(ref mut c) => {
+            super::mysql::get_table_data(c, table, column_sorting)
+        }
     };
     if let Err(NotFound) = column_info {
         Err(format!("no table exists named {table}").into())

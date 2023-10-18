@@ -1,11 +1,9 @@
-use axum::{
-    Router,
-};
+use axum::Router;
 use axum_server::tls_rustls::RustlsConfig;
 use std::{net::SocketAddr, path::PathBuf};
 use tower_http::{
-    services::{ServeDir, ServeFile}, 
-    trace::TraceLayer
+    services::{ServeDir, ServeFile},
+    trace::TraceLayer,
 };
 
 #[derive(Clone, Copy)]
