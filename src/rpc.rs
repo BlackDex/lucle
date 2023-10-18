@@ -12,7 +12,7 @@ use tower_http::cors::{Any, CorsLayer};
 
 use hyper::server::conn::Http;
 use std::{pin::Pin, sync::Arc};
-use tokio::net::{TcpListener, TcpSocket};
+use tokio::net::TcpListener;
 use tokio::sync::mpsc;
 use tokio_rustls::{
     rustls::{Certificate, PrivateKey, ServerConfig},
@@ -43,28 +43,18 @@ impl Lucle for LucleApi {
         let mut db_error: String = "".to_string();
         let migrations_dir =
             database::create_migrations_dir(migration_path).unwrap_or_else(database::handle_error);
-
-        match DatabaseType::from_i32(db_type) {
-            Some(DatabaseType::Sqlite) => {
-                database::setup_database("lucle.db", &migrations_dir).unwrap_or_else(|err| {
-                    tracing::error!("{}", err);
-                    db_error = err.to_string();
-                });
-            }
-            Some(DatabaseType::Mysql) => {
-                database::setup_database("mysql://", &migrations_dir).unwrap_or_else(|err| {
-                    tracing::error!("{}", err);
-                    db_error = err.to_string();
-                });
-            }
-            Some(DatabaseType::Postgresql) => {
-                database::setup_database("postgres://", &migrations_dir).unwrap_or_else(|err| {
-                    tracing::error!("{}", err);
-                    db_error = err.to_string();
-                });
-            }
+        let mut database_url: &str = "";
+        match DatabaseType::try_from(db_type) {
+            Ok(DatabaseType::Sqlite) => database_url = "lucle.db",
+            Ok(DatabaseType::Mysql) => database_url = "mysql://",
+            Ok(DatabaseType::Postgresql) => database_url = "postgres://",
             _ => {}
         }
+
+        database::setup_database(database_url, &migrations_dir).unwrap_or_else(|err| {
+            tracing::error!("{}", err);
+            db_error = err.to_string();
+        });
         let reply = ResponseResult { error: db_error };
         Ok(Response::new(reply))
     }
@@ -226,7 +216,10 @@ pub async fn start_rpc_server(
                         .add_extension(Arc::new(ConnInfo { addr, certificates }))
                         .service(svc);
 
-                    http.serve_connection(conn, svc).await.unwrap();
+                    match http.serve_connection(conn, svc).await {
+                        Ok(_) => {},
+                        Err(err) => tracing::error!("{}", err)
+                    }
                 }
                 Err(err) => {
                     tracing::error!("{}", err)
