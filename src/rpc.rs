@@ -1,6 +1,7 @@
 use crate::utils;
 
 use super::database;
+use super::user;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
     Database, DatabaseType, Empty, Message, ResponseResult, User,
@@ -87,7 +88,7 @@ impl Lucle for LucleApi {
         let username = inner.username;
         let password = inner.password;
         let mut db_error: String = "".to_string();
-        database::setup_user("lucle.db", username, password).unwrap_or_else(|err| {
+        user::create_user("lucle.db", username, password).unwrap_or_else(|err| {
             tracing::error!("{}", err);
             db_error = err.to_string();
         });
@@ -95,12 +96,25 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
+   async fn login(&self, request: Request<User>) -> Result<Response<ResponseResult>, Status> {
+     let inner = request.into_inner();
+     let username = inner.username;
+     let password = inner.password;
+     let mut error: String = "".to_string();
+     user::login("lucle.db", &username).unwrap_or_else(|err| {
+       tracing::error!("{}", err);
+       error = err.to_string();
+     });
+     let reply = ResponseResult { error: "".to_string() };
+     Ok(Response::new(reply))
+   }
+
     async fn is_created_user(
         &self,
         request: Request<Database>,
     ) -> Result<Response<ResponseResult>, Status> {
         let mut db_error = "".to_string();
-        if database::is_default_user("lucle.db") {
+        if user::is_default_user("lucle.db") {
         } else {
             db_error = "test".to_string();
         }
@@ -217,8 +231,8 @@ pub async fn start_rpc_server(
                         .service(svc);
 
                     match http.serve_connection(conn, svc).await {
-                        Ok(_) => {},
-                        Err(err) => tracing::error!("{}", err)
+                        Ok(_) => {}
+                        Err(err) => tracing::error!("{}", err),
                     }
                 }
                 Err(err) => {

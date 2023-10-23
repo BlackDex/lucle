@@ -2,7 +2,7 @@ use super::schema::users;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 
-#[derive(Queryable, Selectable, Insertable)]
+#[derive(Debug, Queryable, Selectable, Insertable)]
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Users {

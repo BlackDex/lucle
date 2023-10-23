@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
@@ -12,17 +12,34 @@ import Container from "@mui/material/Container";
 
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
+// RPC Connect
+import { createGrpcWebTransport } from "@connectrpc/connect-web";
+import { createPromiseClient } from "@connectrpc/connect";
+import { Lucle } from "gen/lucle_connect";
+
+import { login } from "utils/rpc";
+
 const theme = createTheme();
 
 function Login() {
   const [login, setLogin] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<any>();
+  const [client, setClient] = useState<any>();
+
+  useEffect(() => {
+    const transport = createGrpcWebTransport({
+      baseUrl: `http://127.0.0.1:50051`,
+    });
+    const client = createPromiseClient(Lucle, transport);
+    setClient(client);
+  }, []);
 
   const handleLogin = () => {
     if (remember) {
       localStorage.setItem("username", login);
       localStorage.setItem("password", password);
+      login(client, login, password);
     }
   };
 

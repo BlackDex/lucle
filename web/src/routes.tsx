@@ -8,7 +8,6 @@ import Tables from "views/Tables";
 import Login from "views/Login";
 import Speedupdate from "views/Speedupdate";
 
-
 const AnonymousRoutes = ({ isLogged }: { isLogged: boolean }) => {
   return isLogged ? <Navigate to="/admin" replace /> : <Outlet />;
 };
@@ -30,8 +29,8 @@ const routes = (isInstalled: boolean, isLogged: boolean) => [
     element: <AnonymousRoutes isLogged={isLogged} />,
     children: [
       { path: "/login", element: <Login /> },
-      { path: "/", element: <Index /> }
-    ]
+      { path: "/", element: <Index /> },
+    ],
   },
   {
     element: <InstalledRoutes isInstalled={isInstalled} />,
@@ -45,17 +44,17 @@ const routes = (isInstalled: boolean, isLogged: boolean) => [
             children: [
               { index: true, element: <AdminIndex /> },
               { path: "editor", element: <OnlineEditor /> },
-              { path: "tables", element: <Tables /> }
-            ]
-          }
-        ]
+              { path: "tables", element: <Tables /> },
+            ],
+          },
+        ],
       },
       {
         element: <UninstalledRoutes isInstalled={isInstalled} />,
-        children: [{ path: "/install", element: <Install /> }]
-      }
-    ]
-  }
+        children: [{ path: "/install", element: <Install /> }],
+      },
+    ],
+  },
 ];
 
 export default routes;

@@ -5,6 +5,7 @@ package luclerpc;
 service Lucle {
   rpc create_db (Database) returns (ResponseResult);
   rpc delete_db (Database) returns (ResponseResult);
+  rpc login (User) returns (ResponseResult);
   rpc create_user (User) returns (ResponseResult);
   rpc is_created_user (Database) returns (ResponseResult);
   rpc create_table (Database) returns (Empty);

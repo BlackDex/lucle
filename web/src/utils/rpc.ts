@@ -27,6 +27,18 @@ export const db_connection = async (client: any, db: number) => {
   if (error) throw error;
 };
 
+export const login = async (
+  client: any,
+  username: string,
+  password: string,
+) => {
+  const { error } = await client.login({
+    username: username,
+    password: password,
+  });
+  if (error) throw error;
+};
+
 export const create_user = async (
   client: any,
   username: string,

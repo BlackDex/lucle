@@ -21,7 +21,18 @@ pub fn using_serve_dir() -> Router {
 }
 
 pub async fn serve(app: Router, cert: PathBuf, key: PathBuf) {
-    let config = RustlsConfig::from_pem_file(cert, key).await.unwrap();
+    /*    let acceptor = state.axum_acceptor(state.default_rustls_config());
+
+    tokio::spawn(async move {
+        loop {
+            match state.next().await.unwrap() {
+                Ok(ok) => tracing::info!("{:?}", ok),
+                Err(err) => tracing::error!("{:?}", err),
+            }
+        }
+    });*/
+
+    //let config = RustlsConfig::from_pem_file(cert, key).await.unwrap();
 
     let ports = Ports {
         http: 8080,
@@ -34,4 +45,8 @@ pub async fn serve(app: Router, cert: PathBuf, key: PathBuf) {
         .serve(app.layer(TraceLayer::new_for_http()).into_make_service())
         .await
         .unwrap();
+    /*match axum_server::bind(addr).acceptor(acceptor).serve(app.into_make_service()).await {
+     Ok(_) => {},
+     Err(err) => tracing::error!("{}", error)
+    }*/
 }

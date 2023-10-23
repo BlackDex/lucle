@@ -1,3 +1,4 @@
+use rustls_acme::AcmeConfig;
 use std::path::{Path, PathBuf};
 use std::{fs::write, fs::File, io::BufReader, os::unix::process::CommandExt};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -12,6 +13,7 @@ mod print_schema;
 mod query_helper;
 mod rpc;
 pub mod schema;
+mod user;
 mod utils;
 
 #[tokio::main]
@@ -31,12 +33,18 @@ async fn main() {
         )
         .init();
 
-    let dir = openssl_probe::probe().cert_dir.unwrap();
-    tracing::info!("ssl path : {}", dir.into_os_string().into_string().unwrap());
+    //    let dir = openssl_probe::probe().cert_dir.unwrap();
+    //    tracing::info!("ssl path : {}", dir.into_os_string().into_string().unwrap());
 
     /*let mut child = std::process::Command::new("ls").uid(0).spawn().expect("failed to execute child");
     let stdout = child.stdout.take().unwrap();
     tracing::info!("{:?}", stdout);*/
+
+    /*let mut state = AcmeConfig::new()
+    .contact(args.email.iter().map(|e| format!("mailto:{}", e)))
+    .cache_option(args.cache.clone().map(DirCache::new))
+    .directory_lets_encrypt(false)
+    .state();*/
 
     let ca_cert;
     let server_cert_key;
