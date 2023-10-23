@@ -1,29 +1,18 @@
-import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 
-import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { createPromiseClient } from "@connectrpc/connect";
-import { db_connection } from "utils/rpc";
-import { Lucle } from "gen/lucle_connect";
+//Components
+import DatabaseURL from "components/DatabaseURL";
 
-function CreateDB({ InstallError }) {
-  const [client, setClient] = useState<any>();
-  const [error, setError] = useState<any>();
-  const [selectedDB, setSelectedDB] = useState<any>(2);
-
-  useEffect(() => {
-    // const newclient = connect("127.0.0.1", "3000");
-    const transport = createGrpcWebTransport({
-      baseUrl: `http://127.0.0.1:50051`,
-    });
-    const client = createPromiseClient(Lucle, transport);
-    setClient(client);
-  });
-
+function CreateDB({
+  selectedDB,
+  setSelectedDB,
+}: {
+  selectedDB: any;
+  setSelectedDB: any;
+}) {
   return (
     <Box sx={{ minWidth: 120 }}>
       <FormControl>
@@ -39,18 +28,7 @@ function CreateDB({ InstallError }) {
           <MenuItem value={2}>Sqlite</MenuItem>
         </Select>
       </FormControl>
-      <Button
-        variant="contained"
-        onClick={() =>
-          db_connection(client, selectedDB).catch((err) => {
-            setError(err);
-            InstallError();
-          })
-        }
-      >
-        Ok
-      </Button>
-      {error}
+      {selectedDB != 2 ? <DatabaseURL /> : null}
     </Box>
   );
 }

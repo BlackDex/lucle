@@ -1,6 +1,6 @@
 use rustls_acme::AcmeConfig;
 use std::path::{Path, PathBuf};
-use std::{fs::write, fs::File, io::BufReader, os::unix::process::CommandExt};
+use std::{fs::write, fs::File, io::BufReader};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod config;

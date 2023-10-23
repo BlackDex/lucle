@@ -41,6 +41,10 @@ impl Lucle for LucleApi {
         let inner = request.into_inner();
         let db_type = inner.db_type;
         let migration_path = inner.migration_path;
+        let username = inner.username;
+        let password = inner.password;
+        let hostname = inner.hostname;
+        let port = inner.port;
         let mut db_error: String = "".to_string();
         let migrations_dir =
             database::create_migrations_dir(migration_path).unwrap_or_else(database::handle_error);
@@ -159,7 +163,26 @@ pub async fn start_rpc_server(
     cert: &mut BufReader<File>,
     key: &mut BufReader<File>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    utils::generate_ca_cert();
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], 50051));
+
+    let api = LucleApi::default();
+    let api = LucleServer::new(api);
+
+    tracing::info!("RPCServer listening on {}", addr); 
+    let cors_layer = CorsLayer::new().allow_origin(Any).allow_headers(Any);
+
+    Server::builder()
+        .accept_http1(true)
+        .layer(cors_layer)
+        .layer(GrpcWebLayer::new())
+        .add_service(api)
+        .serve(addr)
+        .await?;
+
+        Ok(())
+
+    /*utils::generate_ca_cert();
 
     let api = LucleApi::default();
 
@@ -240,5 +263,5 @@ pub async fn start_rpc_server(
                 }
             }
         });
-    }
+    }*/
 }

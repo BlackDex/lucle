@@ -18,7 +18,7 @@ import { Lucle } from "gen/lucle_connect";
 // Components
 import CreateDB from "views/Install/createDB";
 import CreateDefaultUser from "views/Install/createUsers";
-import { create_user } from "utils/rpc";
+import { create_user, db_connection } from "utils/rpc";
 
 const steps = ["Create Database", "Create default user"];
 
@@ -28,12 +28,19 @@ export default function Install() {
   const [client, setClient] = useState<any>();
   const [error, setError] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
+  const [selectedDB, setSelectedDB] = useState<number>(2);
   const navigate = useNavigate();
+
+  const handleDBtype = (DBType = 2) => {
+    setSelectedDB(DBType);
+  };
 
   const InstallStep = (step: number) => {
     switch (step) {
       case 1:
-        return <CreateDB InstallError={() => setError(true)} />;
+        return (
+          <CreateDB setSelectedDB={handleDBtype} selectedDB={selectedDB} />
+        );
       case 2:
         return (
           <CreateDefaultUser
@@ -118,16 +125,26 @@ export default function Install() {
               disabled={error}
               onClick={() => {
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
-                activeStep === steps.length - 1
-                  ? (hash_password(password).then((passwd: string) =>
-                      create_user(client, username, passwd),
-                    ),
-                    setTimeout(() => navigate("/"), 10000))
-                  : null;
+                {
+                  activeStep === 0
+                    ? db_connection(client, selectedDB).catch((err) => {
+                        setError(err);
+                      })
+                    : null;
+                }
+                {
+                  activeStep === steps.length - 1
+                    ? (hash_password(password).then((passwd: string) =>
+                        create_user(client, username, passwd),
+                      ),
+                      setTimeout(() => navigate("/"), 10000))
+                    : null;
+                }
               }}
             >
               {activeStep === steps.length - 1 ? "Finish" : "Next"}
             </Button>
+            {error}
           </Box>
         </>
       )}

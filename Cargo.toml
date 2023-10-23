@@ -39,7 +39,9 @@ rcgen = "0.11.3"
 rustls-pemfile = "1.0.3"
 openssl-probe = "0.1.5"
 rustls-acme = { git = "https://github.com/ludea/rustls-acme", branch = "tokio_util", features = ["axum"] }
-
+sudo-rs = "0.2.1"
+#rustls-acme = { version = "0.7.6", features = ["axum", "tokio"] }
+ 
 [build-dependencies]
 tonic-build = { version = "0.10.0", features = ["prost"] } 
 prost-build = "0.12"

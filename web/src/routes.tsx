@@ -21,7 +21,7 @@ const InstalledRoutes = ({ isInstalled }: { isInstalled: boolean }) => {
 };
 
 const UninstalledRoutes = ({ isInstalled }: { isInstalled: boolean }) => {
-  return isInstalled ? <Navigate to="/admin" replace /> : <Outlet />;
+  return isInstalled ? <Navigate to="/" replace /> : <Outlet />;
 };
 
 const routes = (isInstalled: boolean, isLogged: boolean) => [
@@ -30,6 +30,7 @@ const routes = (isInstalled: boolean, isLogged: boolean) => [
     children: [
       { path: "/login", element: <Login /> },
       { path: "/", element: <Index /> },
+      { path: "/install", element: <Install /> },
     ],
   },
   {

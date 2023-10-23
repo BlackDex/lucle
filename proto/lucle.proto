@@ -56,6 +56,10 @@ enum DatabaseType {
 message Database {
   DatabaseType db_type = 1;
   optional string migration_path = 2;
+  optional string username = 3;
+  optional string password = 4;
+  optional string hostname = 5;
+  optional string port = 6;
 }
 
 message User {
