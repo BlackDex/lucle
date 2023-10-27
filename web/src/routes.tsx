@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import Dashboard from "layouts/Dashboard";
 import Install from "layouts/Install";
+import ForgotPassword from "views/ForgotPassword";
 import AdminIndex from "views/admin/Index";
 import Index from "views/Index";
 import OnlineEditor from "views/Editor";
@@ -31,6 +32,7 @@ const routes = (isInstalled: boolean, isLogged: boolean) => [
       { path: "/login", element: <Login /> },
       { path: "/", element: <Index /> },
       { path: "/install", element: <Install /> },
+      { path: "/forgot", element: <ForgotPassword /> },
     ],
   },
   {

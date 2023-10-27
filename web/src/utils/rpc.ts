@@ -27,6 +27,13 @@ export const db_connection = async (client: any, db: number) => {
   if (error) throw error;
 };
 
+export const forgot_password = async (client: any, email: string) => {
+  const { error } = await client.forgot_password({
+    email: email,
+  });
+  if (error) throw error;
+};
+
 export const Connection = async (
   client: any,
   username: string,

@@ -39,10 +39,16 @@ rcgen = "0.11.3"
 rustls-pemfile = "1.0.3"
 openssl-probe = "0.1.5"
 rustls-acme = { git = "https://github.com/ludea/rustls-acme", branch = "tokio_util", features = ["axum"] }
+<<<<<<< HEAD
 sudo-rs = "0.2.1"
 argon2 = "0.5.2"
 #rustls-acme = { version = "0.7.6", features = ["axum", "tokio"] }
  
+=======
+lettre = { version = "0.11.1", features = ["file-transport"] }
+jsonwebtoken = "9.1.0"
+
+>>>>>>> f1b69c0 (wip)
 [build-dependencies]
 tonic-build = { version = "0.10.0", features = ["prost"] } 
 prost-build = "0.12"

@@ -132,6 +132,12 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
+    async fn forgot_password(&self, request: Request<User>) -> Result<Response<ResponseResult>, Status> {
+    utils::generate_jwt();
+    let reply = ResponseResult { error: "".to_string() };
+    Ok(Response::new(reply))
+}
+
     type ServerStreamingEchoStream = ResponseStream;
 
     async fn server_streaming_echo(
@@ -147,8 +153,8 @@ impl Lucle for LucleApi {
         let (tx, rx) = mpsc::channel(128);
         tokio::spawn(async move {
             match tx.send(Result::<_, Status>::Ok(message)).await {
-                Ok(_) => {}
-                Err(item) => {}
+                Ok(_) => (),
+                Err(item) => ()
             }
         });
 
@@ -259,7 +265,7 @@ pub async fn start_rpc_server(
                         .service(svc);
 
                     match http.serve_connection(conn, svc).await {
-                        Ok(_) => {}
+                        Ok(_) => (),
                         Err(err) => tracing::error!("{}", err),
                     }
                 }

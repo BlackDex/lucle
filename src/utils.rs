@@ -1,4 +1,34 @@
 use rcgen::Certificate;
+use lettre::{
+    message::header::ContentType, transport::smtp::authentication::Credentials, Message,
+    SmtpTransport, Transport, FileTransport
+};
+use jsonwebtoken::errors::ErrorKind;
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Claims {
+    aud: String,
+    sub: String,
+    company: String,
+    exp: usize,
+}
+
+pub fn send_mail(from: &str, dest: &str, subject: &str, body: &str) {
+  let email = Message::builder()
+        .from(from.parse().unwrap())
+        .to(dest.parse().unwrap())
+        .subject(subject)
+        .header(ContentType::TEXT_PLAIN)
+        .body(String::from(body))
+        .unwrap();
+
+  let mailer = FileTransport::new("./");
+
+    // Store the message when you're ready.
+    mailer.send(&email).expect("failed to deliver message");
+}
 
 pub struct TlsServer {
     pub cert: String,
@@ -42,3 +72,18 @@ pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
     };
     return tls;
 }
+
+pub fn generate_jwt() {
+let key = b"secret";
+    let my_claims = Claims {
+        aud: "me".to_owned(),
+        sub: "b@b.com".to_owned(),
+        company: "ACME".to_owned(),
+        exp: 10000000000,
+    };
+    let token = match encode(&Header::default(), &my_claims, &EncodingKey::from_secret(key)) {
+        Ok(t) => println!("12 {}", t),
+        Err(_) => panic!(),
+    };
+}
+

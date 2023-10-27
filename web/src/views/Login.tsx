@@ -6,7 +6,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import Link from "@mui/material/Link";
+import { Link } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { Navigate } from "react-router-dom";
@@ -110,7 +110,7 @@ function Login() {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="/" variant="body2">
+                <Link to="/forgot">
                   Forgot password?
                 </Link>
               </Grid>
