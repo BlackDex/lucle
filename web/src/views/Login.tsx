@@ -9,7 +9,7 @@ import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-
+import { Navigate } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 // RPC Connect
@@ -17,7 +17,8 @@ import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { createPromiseClient } from "@connectrpc/connect";
 import { Lucle } from "gen/lucle_connect";
 
-import { login } from "utils/rpc";
+//RPC
+import { Connection } from "utils/rpc";
 
 const theme = createTheme();
 
@@ -25,6 +26,7 @@ function Login() {
   const [login, setLogin] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<any>();
+  const [error, setError] = useState<string>("");
   const [client, setClient] = useState<any>();
 
   useEffect(() => {
@@ -39,8 +41,12 @@ function Login() {
     if (remember) {
       localStorage.setItem("username", login);
       localStorage.setItem("password", password);
-      login(client, login, password);
     }
+    Connection(client, login, password)
+      .then(() => {
+        <Navigate to="/admin" />;
+      })
+      .catch((error) => setError(error));
   };
 
   return (
@@ -109,6 +115,7 @@ function Login() {
                 </Link>
               </Grid>
             </Grid>
+            {error}
           </Box>
         </Box>
       </Container>

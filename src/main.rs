@@ -1,4 +1,3 @@
-use rustls_acme::AcmeConfig;
 use std::path::{Path, PathBuf};
 use std::{fs::write, fs::File, io::BufReader};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -39,12 +38,6 @@ async fn main() {
     /*let mut child = std::process::Command::new("ls").uid(0).spawn().expect("failed to execute child");
     let stdout = child.stdout.take().unwrap();
     tracing::info!("{:?}", stdout);*/
-
-    /*let mut state = AcmeConfig::new()
-    .contact(args.email.iter().map(|e| format!("mailto:{}", e)))
-    .cache_option(args.cache.clone().map(DirCache::new))
-    .directory_lets_encrypt(false)
-    .state();*/
 
     let ca_cert;
     let server_cert_key;

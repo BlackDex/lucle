@@ -40,6 +40,7 @@ rustls-pemfile = "1.0.3"
 openssl-probe = "0.1.5"
 rustls-acme = { git = "https://github.com/ludea/rustls-acme", branch = "tokio_util", features = ["axum"] }
 sudo-rs = "0.2.1"
+argon2 = "0.5.2"
 #rustls-acme = { version = "0.7.6", features = ["axum", "tokio"] }
  
 [build-dependencies]

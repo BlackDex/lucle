@@ -1,15 +1,15 @@
 use crate::database::{handle_error, Backend};
-use crate::database_errors::DatabaseResult;
+use crate::database_errors::{DatabaseError, DatabaseResult};
 use crate::models::{NewUser, Users};
 use crate::schema::users;
-use std::path::Path;
-//use self::schema::users::dsl::*;
+use argon2::{self, password_hash::PasswordVerifier, Argon2, PasswordHash};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::SelectableHelper;
 use diesel::{
     select, Connection, MysqlConnection, PgConnection, QueryDsl, RunQueryDsl, SqliteConnection,
 };
+use std::path::Path;
 
 pub fn create_user(database_url: &str, username: String, password: String) -> DatabaseResult<()> {
     match Backend::for_url(database_url) {
@@ -75,11 +75,12 @@ pub fn create_user(database_url: &str, username: String, password: String) -> Da
     Ok(())
 }
 
-pub fn login(database_url: &str, username: &str) -> DatabaseResult<()> {
+pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResult<()> {
+    let user;
     match Backend::for_url(database_url) {
         Backend::Pg => {
             let conn = &mut PgConnection::establish(database_url).unwrap_or_else(handle_error);
-            let user = users::table
+            user = users::table
                 .filter(users::dsl::username.eq(username))
                 .select(Users::as_select())
                 .first(conn)
@@ -87,7 +88,7 @@ pub fn login(database_url: &str, username: &str) -> DatabaseResult<()> {
         }
         Backend::Mysql => {
             let conn = &mut MysqlConnection::establish(database_url).unwrap_or_else(handle_error);
-            let user = users::table
+            user = users::table
                 .filter(users::dsl::username.eq(username))
                 .select(Users::as_select())
                 .first(conn)
@@ -95,15 +96,27 @@ pub fn login(database_url: &str, username: &str) -> DatabaseResult<()> {
         }
         Backend::Sqlite => {
             let conn = &mut SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
-            let user = users::table
+            user = users::table
                 .filter(users::dsl::username.eq(username))
                 .select(Users::as_select())
                 .first(conn)
                 .optional();
-	println!("{:?}", user.unwrap());
         }
     }
-  Ok(())
+    match user {
+        Ok(Some(val)) => {
+            let parsed_hash = PasswordHash::new(&val.password).unwrap();
+            Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
+            if val.privilege == "admin" {
+                return Ok(());
+            }
+            else {
+                return Err(DatabaseError::NotAuthorized)
+            }
+        }
+        Ok(None) => return Err(DatabaseError::UserNotFound),
+        Err(err) => return Err(DatabaseError::QueryError(err)),
+    }
 }
 
 pub fn is_default_user(database_url: &str) -> bool {

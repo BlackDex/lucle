@@ -14,6 +14,9 @@ pub enum DatabaseError {
     QueryError(result::Error),
     ConnectionError(result::ConnectionError),
     MigrationError(Box<dyn Error + Send + Sync + 'static>),
+    UserNotFound,
+    NotAuthorized,
+    Argon2Error(argon2::password_hash::Error),
 }
 
 impl From<io::Error> for DatabaseError {
@@ -37,6 +40,12 @@ impl From<result::ConnectionError> for DatabaseError {
 impl From<Box<dyn Error + Send + Sync + 'static>> for DatabaseError {
     fn from(e: Box<dyn Error + Send + Sync + 'static>) -> Self {
         MigrationError(e)
+    }
+}
+
+impl From<argon2::password_hash::Error> for DatabaseError {
+    fn from(e: argon2::password_hash::Error) -> Self {
+        Argon2Error(e)
     }
 }
 
@@ -73,6 +82,9 @@ impl fmt::Display for DatabaseError {
             MigrationError(ref error) => {
                 write!(f, "Failed to run migrations: {}", error)
             }
+            UserNotFound => write!(f, "User not found"),
+            NotAuthorized => write!(f, "You haven't the right role to access here"),
+            Argon2Error(ref error) => write!(f, "{}", error),
         }
     }
 }

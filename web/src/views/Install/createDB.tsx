@@ -1,6 +1,7 @@
 import Box from "@mui/material/Box";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
+import TextField from "@mui/material/TextField";
 import Select from "@mui/material/Select";
 
 //Components
@@ -28,6 +29,10 @@ function CreateDB({
           <MenuItem value={2}>Sqlite</MenuItem>
         </Select>
       </FormControl>
+      {selectedDB == 2 ? (
+        <TextField id="filled-basic" label="Filled" variant="filled" />
+      ) : null}
+
       {selectedDB != 2 ? <DatabaseURL /> : null}
     </Box>
   );

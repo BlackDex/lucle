@@ -40,17 +40,22 @@ impl Lucle for LucleApi {
     ) -> Result<Response<ResponseResult>, Status> {
         let inner = request.into_inner();
         let db_type = inner.db_type;
+        let db_name = inner.db_name;
         let migration_path = inner.migration_path;
         let username = inner.username;
         let password = inner.password;
         let hostname = inner.hostname;
         let port = inner.port;
+        let name;
         let mut db_error: String = "".to_string();
         let migrations_dir =
             database::create_migrations_dir(migration_path).unwrap_or_else(database::handle_error);
         let mut database_url: &str = "";
         match DatabaseType::try_from(db_type) {
-            Ok(DatabaseType::Sqlite) => database_url = "lucle.db",
+            Ok(DatabaseType::Sqlite) => {
+                name = db_name.unwrap_or("lucle.db".to_string());
+                database_url = name.as_str();
+            }
             Ok(DatabaseType::Mysql) => database_url = "mysql://",
             Ok(DatabaseType::Postgresql) => database_url = "postgres://",
             _ => {}
@@ -100,18 +105,18 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
-   async fn login(&self, request: Request<User>) -> Result<Response<ResponseResult>, Status> {
-     let inner = request.into_inner();
-     let username = inner.username;
-     let password = inner.password;
-     let mut error: String = "".to_string();
-     user::login("lucle.db", &username).unwrap_or_else(|err| {
-       tracing::error!("{}", err);
-       error = err.to_string();
-     });
-     let reply = ResponseResult { error: "".to_string() };
-     Ok(Response::new(reply))
-   }
+    async fn login(&self, request: Request<User>) -> Result<Response<ResponseResult>, Status> {
+        let inner = request.into_inner();
+        let username = inner.username;
+        let password = inner.password;
+        let mut error: String = "".to_string();
+        user::login("lucle.db", &username, &password).unwrap_or_else(|err| {
+            tracing::error!("{}", err);
+            error = err.to_string();
+        });
+        let reply = ResponseResult { error: error };
+        Ok(Response::new(reply))
+    }
 
     async fn is_created_user(
         &self,
@@ -119,6 +124,7 @@ impl Lucle for LucleApi {
     ) -> Result<Response<ResponseResult>, Status> {
         let mut db_error = "".to_string();
         if user::is_default_user("lucle.db") {
+            tracing::info!("ok");
         } else {
             db_error = "test".to_string();
         }
@@ -163,13 +169,12 @@ pub async fn start_rpc_server(
     cert: &mut BufReader<File>,
     key: &mut BufReader<File>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-
     let addr = SocketAddr::from(([0, 0, 0, 0], 50051));
 
     let api = LucleApi::default();
     let api = LucleServer::new(api);
 
-    tracing::info!("RPCServer listening on {}", addr); 
+    tracing::info!("RPCServer listening on {}", addr);
     let cors_layer = CorsLayer::new().allow_origin(Any).allow_headers(Any);
 
     Server::builder()
@@ -180,7 +185,7 @@ pub async fn start_rpc_server(
         .serve(addr)
         .await?;
 
-        Ok(())
+    Ok(())
 
     /*utils::generate_ca_cert();
 

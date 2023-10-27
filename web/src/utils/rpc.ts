@@ -27,7 +27,7 @@ export const db_connection = async (client: any, db: number) => {
   if (error) throw error;
 };
 
-export const login = async (
+export const Connection = async (
   client: any,
   username: string,
   password: string,
