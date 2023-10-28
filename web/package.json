@@ -17,7 +17,7 @@
     "@emotion/react": "11.11.1",
     "@emotion/styled": "11.11.0",
     "@mui/icons-material": "5.14.15",
-    "@mui/material": "5.14.14",
+    "@mui/material": "5.14.15",
     "@mui/styles": "5.14.15",
     "@types/prop-types": "^15.7.5",
     "axios": "1.5.1",
