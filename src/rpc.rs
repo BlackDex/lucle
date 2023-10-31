@@ -1,17 +1,18 @@
-use crate::utils;
-
 use super::database;
 use super::user;
+use crate::database::{handle_error, Backend};
+use crate::database_errors::DatabaseError;
+use crate::models::Users;
+use crate::schema::users;
+use crate::utils;
+use diesel::prelude::*;
+use email_address_parser::EmailAddress;
+use hyper::server::conn::Http;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Database, DatabaseType, Empty, Message, ResponseResult, User,
+    Database, DatabaseType, Empty, Message, ResponseResult, User, ResetPassword,
 };
 use std::{fs::File, io::BufReader, net::SocketAddr};
-use tonic::{transport::Server, Request, Response, Status};
-use tonic_web::GrpcWebLayer;
-use tower_http::cors::{Any, CorsLayer};
-
-use hyper::server::conn::Http;
 use std::{pin::Pin, sync::Arc};
 use tokio::net::TcpListener;
 use tokio::sync::mpsc;
@@ -20,6 +21,9 @@ use tokio_rustls::{
     TlsAcceptor,
 };
 use tokio_stream::{wrappers::ReceiverStream, Stream};
+use tonic::{transport::Server, Request, Response, Status};
+use tonic_web::GrpcWebLayer;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::ServiceBuilderExt;
 
 pub mod luclerpc {
@@ -93,11 +97,18 @@ impl Lucle for LucleApi {
         let inner = request.into_inner();
         let username = inner.username;
         let password = inner.password;
+        let email = inner.email;
         let mut db_error: String = "".to_string();
-        user::create_user("lucle.db", username, password).unwrap_or_else(|err| {
-            tracing::error!("{}", err);
-            db_error = err.to_string();
-        });
+        if EmailAddress::is_valid(&email.clone().unwrap(), None) {
+            user::create_user("lucle.db", username, password, email.unwrap()).unwrap_or_else(
+                |err| {
+                    tracing::error!("{}", err);
+                    db_error = err.to_string();
+                },
+            );
+        } else {
+            db_error = "email not valid".to_string();
+        }
         let reply = ResponseResult { error: db_error };
         Ok(Response::new(reply))
     }
@@ -129,11 +140,56 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
-    async fn forgot_password(&self, request: Request<User>) -> Result<Response<ResponseResult>, Status> {
-    utils::generate_jwt();
-    let reply = ResponseResult { error: "".to_string() };
-    Ok(Response::new(reply))
-}
+    async fn forgot_password(
+        &self,
+        request: Request<ResetPassword>,
+    ) -> Result<Response<ResponseResult>, Status> {
+        let inner = request.into_inner();
+        let database_url = "lucle.db";
+        let email = inner.email.as_str();
+        let mut error: String = "".to_string();
+        let mail_exist;
+        if EmailAddress::is_valid(email, None) {
+            match Backend::for_url(database_url) {
+                Backend::Pg => {
+                    let conn =
+                        &mut PgConnection::establish(database_url).unwrap_or_else(handle_error);
+                    mail_exist = users::table
+                        .filter(users::dsl::email.eq(email))
+                        .select(Users::as_select())
+                        .first(conn)
+                        .optional();
+                }
+                Backend::Mysql => {
+                    let conn =
+                        &mut MysqlConnection::establish(database_url).unwrap_or_else(handle_error);
+                    mail_exist = users::table
+                        .filter(users::dsl::email.eq(email))
+                        .select(Users::as_select())
+                        .first(conn)
+                        .optional();
+                }
+                Backend::Sqlite => {
+                    let conn =
+                        &mut SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
+                    mail_exist = users::table
+                        .filter(users::dsl::email.eq(email))
+                        .select(Users::as_select())
+                        .first(conn)
+                        .optional();
+                }
+            }
+            match mail_exist {
+                Ok(Some(val)) => utils::generate_jwt(),
+                Ok(None) => error = "Unknow email".to_string(),
+                Err(err) => error = "Connection failed".to_string(),
+            }
+        } else {
+            error = "Not a valid email".to_string();
+        }
+        let reply = ResponseResult { error: error };
+        Ok(Response::new(reply))
+    }
 
     type ServerStreamingEchoStream = ResponseStream;
 
@@ -151,7 +207,7 @@ impl Lucle for LucleApi {
         tokio::spawn(async move {
             match tx.send(Result::<_, Status>::Ok(message)).await {
                 Ok(_) => (),
-                Err(item) => ()
+                Err(item) => (),
             }
         });
 

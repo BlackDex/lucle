@@ -6,6 +6,7 @@ diesel::table! {
         email -> Text,
         created_at -> Timestamp,
         modified_at -> Timestamp,
-        privilege -> Text
+        privilege -> Text,
+        reset_token -> Text,
     }
 }

@@ -9,7 +9,7 @@ service Lucle {
   rpc create_user (User) returns (ResponseResult);
   rpc is_created_user (Database) returns (ResponseResult);
   rpc create_table (Database) returns (Empty);
-  rpc forgot_password (User) returns (ResponseResult);
+  rpc forgot_password (ResetPassword) returns (ResponseResult);
   rpc ServerStreamingEcho (Empty) returns (stream Message);
 }
 
@@ -65,10 +65,13 @@ message Database {
 }
 
 message User {
-  string database_path = 1;
-  string username = 2;
-  string password = 3;
-  optional string email = 4;
+  string username = 1;
+  string password = 2;
+  optional string email = 3;
+}
+
+message ResetPassword {
+  string email = 1;
 }
 
 message Message {

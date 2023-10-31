@@ -4,7 +4,7 @@ import TextField from "@mui/material/TextField";
 
 import PasswordStrengthBar from "react-password-strength-bar";
 
-export default function CreateDefaultUser({ user, passwd }) {
+export default function CreateDefaultUser({ user, passwd, email }) {
   const [password, setPassword] = useState<string>();
   const [confirmpassword, setConfirmPassword] = useState<string>();
   const [matchpassword, setMatchPassword] = useState<boolean>(false);
@@ -56,6 +56,14 @@ export default function CreateDefaultUser({ user, passwd }) {
       />
       {matchpassword ? "Password doesn't match !" : null}
       <PasswordStrengthBar password={password} />
+      <TextField
+        id="email"
+        label="email"
+        variant="standard"
+        onChange={(event) => {
+          email(event.target.value);
+        }}
+      />
     </Box>
   );
 }

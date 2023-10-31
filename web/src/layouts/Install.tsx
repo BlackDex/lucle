@@ -25,6 +25,7 @@ const steps = ["Create Database", "Create default user"];
 export default function Install() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [client, setClient] = useState<any>();
   const [error, setError] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
@@ -46,6 +47,7 @@ export default function Install() {
           <CreateDefaultUser
             user={(user: string) => setUsername(user)}
             passwd={(pass: string) => setPassword(pass)}
+            email={(mail: string) => setEmail(mail)}
           />
         );
       default:
@@ -135,7 +137,7 @@ export default function Install() {
                 {
                   activeStep === steps.length - 1
                     ? (hash_password(password).then((passwd: string) =>
-                        create_user(client, username, passwd),
+                        create_user(client, username, passwd, email),
                       ),
                       setTimeout(() => navigate("/"), 10000))
                     : null;

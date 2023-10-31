@@ -11,7 +11,12 @@ use diesel::{
 };
 use std::path::Path;
 
-pub fn create_user(database_url: &str, username: String, password: String) -> DatabaseResult<()> {
+pub fn create_user(
+    database_url: &str,
+    username: String,
+    password: String,
+    email: String,
+) -> DatabaseResult<()> {
     match Backend::for_url(database_url) {
         Backend::Pg => {
             let conn = &mut PgConnection::establish(database_url).unwrap_or_else(handle_error);
@@ -24,7 +29,7 @@ pub fn create_user(database_url: &str, username: String, password: String) -> Da
                 password: &password,
                 created_at: now,
                 modified_at: now,
-                email: "allo",
+                email: &email,
                 privilege: "admin",
             };
 
@@ -43,7 +48,7 @@ pub fn create_user(database_url: &str, username: String, password: String) -> Da
                 password: &password,
                 created_at: now,
                 modified_at: now,
-                email: "allo",
+                email: &email,
                 privilege: "admin",
             };
 
@@ -62,7 +67,7 @@ pub fn create_user(database_url: &str, username: String, password: String) -> Da
                 password: &password,
                 created_at: now,
                 modified_at: now,
-                email: "allo",
+                email: &email,
                 privilege: "admin",
             };
 
@@ -109,9 +114,8 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
             Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
             if val.privilege == "admin" {
                 return Ok(());
-            }
-            else {
-                return Err(DatabaseError::NotAuthorized)
+            } else {
+                return Err(DatabaseError::NotAuthorized);
             }
         }
         Ok(None) => return Err(DatabaseError::UserNotFound),
