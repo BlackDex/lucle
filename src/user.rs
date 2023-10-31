@@ -2,10 +2,18 @@ use crate::database::{handle_error, Backend};
 use crate::database_errors::{DatabaseError, DatabaseResult};
 use crate::models::{NewUser, Users};
 use crate::schema::users;
-use argon2::{self, password_hash::PasswordVerifier, Argon2, PasswordHash};
+use argon2::{
+    self,
+    password_hash::{
+        rand_core::OsRng,
+        PasswordHash, PasswordHasher, SaltString, PasswordVerifier
+    },
+    Argon2
+};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::SelectableHelper;
+use diesel_logger::LoggingConnection;
 use diesel::{
     select, Connection, MysqlConnection, PgConnection, QueryDsl, RunQueryDsl, SqliteConnection,
 };
@@ -17,6 +25,9 @@ pub fn create_user(
     password: String,
     email: String,
 ) -> DatabaseResult<()> {
+    let salt = SaltString::generate(&mut OsRng);
+    let argon2 = Argon2::default();
+    let password_hash = argon2.hash_password(password.as_bytes(), &salt)?.to_string();
     match Backend::for_url(database_url) {
         Backend::Pg => {
             let conn = &mut PgConnection::establish(database_url).unwrap_or_else(handle_error);
@@ -26,7 +37,7 @@ pub fn create_user(
 
             let new_user = NewUser {
                 username: &username,
-                password: &password,
+                password: &password_hash,
                 created_at: now,
                 modified_at: now,
                 email: &email,
@@ -45,7 +56,7 @@ pub fn create_user(
 
             let new_user = NewUser {
                 username: &username,
-                password: &password,
+                password: &password_hash,
                 created_at: now,
                 modified_at: now,
                 email: &email,
@@ -64,7 +75,7 @@ pub fn create_user(
 
             let new_user = NewUser {
                 username: &username,
-                password: &password,
+                password: &password_hash,
                 created_at: now,
                 modified_at: now,
                 email: &email,
@@ -100,11 +111,12 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
                 .optional();
         }
         Backend::Sqlite => {
-            let conn = &mut SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
+            let conn = SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
+            let mut conn = LoggingConnection::new(conn);
             user = users::table
                 .filter(users::dsl::username.eq(username))
                 .select(Users::as_select())
-                .first(conn)
+                .first(&mut conn)
                 .optional();
         }
     }

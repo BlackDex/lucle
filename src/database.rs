@@ -1,10 +1,9 @@
 use super::query_helper;
 use crate::config::Config;
 use crate::database_errors::{DatabaseError, DatabaseResult};
-use crate::models::NewUser;
 use crate::print_schema;
-use chrono::NaiveDateTime;
 use chrono::Utc;
+use diesel_logger::LoggingConnection;
 use diesel::{
     backend::Backend as DieselBackend, dsl::select, dsl::sql, mysql::MysqlConnection,
     pg::PgConnection, result, sql_types::Bool, sqlite::SqliteConnection, Connection,
@@ -90,7 +89,8 @@ fn create_database(database_url: &str) -> DatabaseResult<()> {
         Backend::Pg => {
             if PgConnection::establish(database_url).is_err() {
                 let (database, postgres_url) = change_database_of_url(database_url, "postgres");
-                let mut conn = PgConnection::establish(&postgres_url)?;
+                let conn = PgConnection::establish(&postgres_url)?;
+                let mut conn = LoggingConnection::new(conn);
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
         }
@@ -104,7 +104,8 @@ fn create_database(database_url: &str) -> DatabaseResult<()> {
             if MysqlConnection::establish(database_url).is_err() {
                 let (database, mysql_url) =
                     change_database_of_url(database_url, "information_schema");
-                let mut conn = MysqlConnection::establish(&mysql_url)?;
+                let conn = MysqlConnection::establish(&mysql_url)?;
+                let mut conn = LoggingConnection::new(conn);
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
         }
@@ -180,7 +181,8 @@ pub fn drop_database(database_url: &str) -> DatabaseResult<()> {
     match Backend::for_url(database_url) {
         Backend::Pg => {
             let (database, postgres_url) = change_database_of_url(database_url, "postgres");
-            let mut conn = PgConnection::establish(&postgres_url)?;
+            let conn = PgConnection::establish(&postgres_url)?;
+            let mut conn = LoggingConnection::new(conn);
             if pg_database_exists(&mut conn, &database)? {
                 println!("Dropping database: {database}");
                 query_helper::drop_database(&database)
@@ -196,7 +198,8 @@ pub fn drop_database(database_url: &str) -> DatabaseResult<()> {
         }
         Backend::Mysql => {
             let (database, mysql_url) = change_database_of_url(database_url, "information_schema");
-            let mut conn = MysqlConnection::establish(&mysql_url)?;
+            let conn = MysqlConnection::establish(&mysql_url)?;
+            let mut conn = LoggingConnection::new(conn);
             if mysql_database_exists(&mut conn, &database)? {
                 println!("Dropping database: {database}");
                 query_helper::drop_database(&database)
@@ -208,7 +211,7 @@ pub fn drop_database(database_url: &str) -> DatabaseResult<()> {
     Ok(())
 }
 
-fn pg_database_exists(conn: &mut PgConnection, database_name: &str) -> QueryResult<bool> {
+fn pg_database_exists(conn: &mut LoggingConnection<PgConnection>, database_name: &str) -> QueryResult<bool> {
     use self::pg_database::dsl::*;
 
     pg_database
@@ -220,7 +223,7 @@ fn pg_database_exists(conn: &mut PgConnection, database_name: &str) -> QueryResu
         .map(|x| x.is_some())
 }
 
-fn mysql_database_exists(conn: &mut MysqlConnection, database_name: &str) -> QueryResult<bool> {
+fn mysql_database_exists(conn: &mut LoggingConnection<MysqlConnection>, database_name: &str) -> QueryResult<bool> {
     use self::schemata::dsl::*;
 
     schemata
@@ -236,7 +239,6 @@ fn create_schema_table_and_run_migrations(
     migrations_dir: &Path,
 ) -> DatabaseResult<()> {
     if !schema_table_exists(database_url).unwrap_or_else(handle_error) {
-        tracing::info!("{}", migrations_dir.display());
         let migrations =
             FileBasedMigrations::from_path(migrations_dir).unwrap_or_else(handle_error);
         let mut conn = LucleDBConnection::establish(database_url)?;

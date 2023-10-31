@@ -4,7 +4,15 @@ import TextField from "@mui/material/TextField";
 
 import PasswordStrengthBar from "react-password-strength-bar";
 
-export default function CreateDefaultUser({ user, passwd, email }) {
+export default function CreateDefaultUser({
+  user,
+  passwd,
+  email,
+}: {
+  user: any;
+  passwd: any;
+  email: any;
+}) {
   const [password, setPassword] = useState<string>();
   const [confirmpassword, setConfirmPassword] = useState<string>();
   const [matchpassword, setMatchPassword] = useState<boolean>(false);

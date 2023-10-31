@@ -7,6 +7,6 @@ diesel::table! {
         created_at -> Timestamp,
         modified_at -> Timestamp,
         privilege -> Text,
-        reset_token -> Text,
+        reset_token -> Nullable<Text>,
     }
 }

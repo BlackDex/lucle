@@ -44,7 +44,7 @@ argon2 = "0.5.2"
 lettre = { version = "0.11.1", features = ["file-transport"] }
 jsonwebtoken = "9.1.0"
 email-address-parser = "2.0.0"
-diesel_logger = "0.3.0"
+diesel_logger = { git = "https://github.com/weiznich/diesel-logger/", branch = "multiconnection_compatibility" }
 
 [build-dependencies]
 tonic-build = { version = "0.10.0", features = ["prost"] } 

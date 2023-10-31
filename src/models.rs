@@ -13,7 +13,7 @@ pub struct Users {
     pub created_at: NaiveDateTime,
     pub modified_at: NaiveDateTime,
     pub privilege: String,
-    pub reset_token: String,
+    pub reset_token: Option<String>,
 }
 
 #[derive(Insertable)]

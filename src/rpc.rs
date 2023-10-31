@@ -99,8 +99,8 @@ impl Lucle for LucleApi {
         let password = inner.password;
         let email = inner.email;
         let mut db_error: String = "".to_string();
-        if EmailAddress::is_valid(&email.clone().unwrap(), None) {
-            user::create_user("lucle.db", username, password, email.unwrap()).unwrap_or_else(
+        if EmailAddress::is_valid(&email.clone(), None) {
+            user::create_user("lucle.db", username, password, email).unwrap_or_else(
                 |err| {
                     tracing::error!("{}", err);
                     db_error = err.to_string();
@@ -119,7 +119,7 @@ impl Lucle for LucleApi {
         let password = inner.password;
         let mut error: String = "".to_string();
         user::login("lucle.db", &username, &password).unwrap_or_else(|err| {
-            tracing::error!("{}", err);
+            tracing::error!("12 : {}", err);
             error = err.to_string();
         });
         let reply = ResponseResult { error: error };

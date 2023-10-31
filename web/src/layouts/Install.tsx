@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import libsodium from "libsodium-wrappers-sumo";
 
 // MUI
 import Box from "@mui/material/Box";
@@ -53,19 +52,6 @@ export default function Install() {
       default:
         break;
     }
-  };
-
-  const hash_password = async (plain_password: string) => {
-    await libsodium.ready;
-    const sodium = libsodium;
-
-    var hashed_password = sodium.crypto_pwhash_str(
-      plain_password,
-      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
-    );
-
-    return hashed_password;
   };
 
   useEffect(() => {
@@ -136,9 +122,7 @@ export default function Install() {
                 }
                 {
                   activeStep === steps.length - 1
-                    ? (hash_password(password).then((passwd: string) =>
-                        create_user(client, username, passwd, email),
-                      ),
+                    ? (create_user(client, username, password, email),
                       setTimeout(() => navigate("/"), 10000))
                     : null;
                 }
