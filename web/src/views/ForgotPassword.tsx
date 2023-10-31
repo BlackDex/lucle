@@ -9,7 +9,7 @@ import { createPromiseClient } from "@connectrpc/connect";
 import { Lucle } from "gen/lucle_connect";
 
 //RPC
-import { forgot_password } from 'utils/rpc';
+import { forgot_password } from "utils/rpc";
 
 function ForgotPassword() {
   const [email, setEmail] = useState<string>("");

@@ -14,16 +14,13 @@ import { createPromiseClient } from "@connectrpc/connect";
 import { Lucle } from "gen/lucle_connect";
 
 function App() {
-  const [isLogged, setIsLogged] = useState<boolean>(false);
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
   const [client, setClient] = useState<any>();
 
   const location = useLocation();
-  const content = useRoutes(routes(isInstalled, isLogged));
+  const content = useRoutes(routes(isInstalled));
 
   useEffect(() => {
-    // TODO: check if credentials are stored
-    setIsLogged(false);
     const transport = createGrpcWebTransport({
       baseUrl: `http://127.0.0.1:50051`,
     });

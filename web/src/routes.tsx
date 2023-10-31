@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import Dashboard from "layouts/Dashboard";
 import Install from "layouts/Install";
@@ -25,39 +26,43 @@ const UninstalledRoutes = ({ isInstalled }: { isInstalled: boolean }) => {
   return isInstalled ? <Navigate to="/" replace /> : <Outlet />;
 };
 
-const routes = (isInstalled: boolean, isLogged: boolean) => [
-  {
-    element: <AnonymousRoutes isLogged={isLogged} />,
-    children: [
-      { path: "/login", element: <Login /> },
-      { path: "/", element: <Index /> },
-      { path: "/install", element: <Install /> },
-      { path: "/forgot", element: <ForgotPassword /> },
-    ],
-  },
-  {
-    element: <InstalledRoutes isInstalled={isInstalled} />,
-    children: [
-      {
-        element: <PrivateRoutes isLogged={isLogged} />,
-        children: [
-          {
-            path: "admin",
-            element: <Dashboard />,
-            children: [
-              { index: true, element: <AdminIndex /> },
-              { path: "editor", element: <OnlineEditor /> },
-              { path: "tables", element: <Tables /> },
-            ],
-          },
-        ],
-      },
-      {
-        element: <UninstalledRoutes isInstalled={isInstalled} />,
-        children: [{ path: "/install", element: <Install /> }],
-      },
-    ],
-  },
-];
+const routes = (isInstalled: boolean) => {
+  const [isLogged, setIsLogged] = useState(false);
+
+  return [
+    {
+      element: <AnonymousRoutes isLogged={isLogged} />,
+      children: [
+        { path: "/login", element: <Login setIsLogged={setIsLogged} /> },
+        { path: "/", element: <Index /> },
+        { path: "/install", element: <Install /> },
+        { path: "/forgot", element: <ForgotPassword /> },
+      ],
+    },
+    {
+      element: <InstalledRoutes isInstalled={isInstalled} />,
+      children: [
+        {
+          element: <PrivateRoutes isLogged={isLogged} />,
+          children: [
+            {
+              path: "admin",
+              element: <Dashboard />,
+              children: [
+                { index: true, element: <AdminIndex /> },
+                { path: "editor", element: <OnlineEditor /> },
+                { path: "tables", element: <Tables /> },
+              ],
+            },
+          ],
+        },
+        {
+          element: <UninstalledRoutes isInstalled={isInstalled} />,
+          children: [{ path: "/install", element: <Install /> }],
+        },
+      ],
+    },
+  ];
+};
 
 export default routes;

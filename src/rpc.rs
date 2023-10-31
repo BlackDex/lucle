@@ -46,25 +46,22 @@ impl Lucle for LucleApi {
         let password = inner.password;
         let hostname = inner.hostname;
         let port = inner.port;
-        let name;
+       // let name;
         let mut db_error: String = "".to_string();
         let migrations_dir =
             database::create_migrations_dir(migration_path).unwrap_or_else(database::handle_error);
         let mut database_url: &str = "";
         match DatabaseType::try_from(db_type) {
-            Ok(DatabaseType::Sqlite) => {
-                name = db_name.unwrap_or("lucle.db".to_string());
-                database_url = name.as_str();
-            }
+            Ok(DatabaseType::Sqlite) => database_url = "lucle.db",
             Ok(DatabaseType::Mysql) => database_url = "mysql://",
             Ok(DatabaseType::Postgresql) => database_url = "postgres://",
             _ => {}
         }
 
-        database::setup_database(database_url, &migrations_dir).unwrap_or_else(|err| {
-            tracing::error!("{}", err);
+          database::setup_database(database_url, &migrations_dir).unwrap_or_else(|err| {
+            tracing::error!("test : {}", err);
             db_error = err.to_string();
-        });
+        }); 
         let reply = ResponseResult { error: db_error };
         Ok(Response::new(reply))
     }

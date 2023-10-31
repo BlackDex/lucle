@@ -14,7 +14,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 // RPC Connect
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { createPromiseClient } from "@connectrpc/connect";
+import { AnyClient, createPromiseClient } from "@connectrpc/connect";
 import { Lucle } from "gen/lucle_connect";
 
 //RPC
@@ -22,7 +22,7 @@ import { Connection } from "utils/rpc";
 
 const theme = createTheme();
 
-function Login() {
+function Login({ setIsLogged }: { setIsLogged: any }) {
   const [login, setLogin] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<any>();
@@ -44,7 +44,7 @@ function Login() {
     }
     Connection(client, login, password)
       .then(() => {
-        <Navigate to="/admin" />;
+        setIsLogged(true);
       })
       .catch((error) => setError(error));
   };
@@ -110,9 +110,7 @@ function Login() {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link to="/forgot">
-                  Forgot password?
-                </Link>
+                <Link to="/forgot">Forgot password?</Link>
               </Grid>
             </Grid>
             {error}

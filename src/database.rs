@@ -159,7 +159,6 @@ fn create_default_migration(database_url: &str, migrations_dir: &Path) -> Databa
         }
         _ => {}
     }
-
     Ok(())
 }
 
@@ -237,6 +236,7 @@ fn create_schema_table_and_run_migrations(
     migrations_dir: &Path,
 ) -> DatabaseResult<()> {
     if !schema_table_exists(database_url).unwrap_or_else(handle_error) {
+        tracing::info!("{}", migrations_dir.display());
         let migrations =
             FileBasedMigrations::from_path(migrations_dir).unwrap_or_else(handle_error);
         let mut conn = LucleDBConnection::establish(database_url)?;
