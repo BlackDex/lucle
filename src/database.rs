@@ -3,12 +3,12 @@ use crate::config::Config;
 use crate::database_errors::{DatabaseError, DatabaseResult};
 use crate::print_schema;
 use chrono::Utc;
-use diesel_logger::LoggingConnection;
 use diesel::{
     backend::Backend as DieselBackend, dsl::select, dsl::sql, mysql::MysqlConnection,
     pg::PgConnection, result, sql_types::Bool, sqlite::SqliteConnection, Connection,
     ExpressionMethods, OptionalExtension, QueryDsl, QueryResult, RunQueryDsl,
 };
+use diesel_logger::LoggingConnection;
 use diesel_migrations::{FileBasedMigrations, MigrationError, MigrationHarness};
 use std::{
     env,
@@ -211,7 +211,10 @@ pub fn drop_database(database_url: &str) -> DatabaseResult<()> {
     Ok(())
 }
 
-fn pg_database_exists(conn: &mut LoggingConnection<PgConnection>, database_name: &str) -> QueryResult<bool> {
+fn pg_database_exists(
+    conn: &mut LoggingConnection<PgConnection>,
+    database_name: &str,
+) -> QueryResult<bool> {
     use self::pg_database::dsl::*;
 
     pg_database
@@ -223,7 +226,10 @@ fn pg_database_exists(conn: &mut LoggingConnection<PgConnection>, database_name:
         .map(|x| x.is_some())
 }
 
-fn mysql_database_exists(conn: &mut LoggingConnection<MysqlConnection>, database_name: &str) -> QueryResult<bool> {
+fn mysql_database_exists(
+    conn: &mut LoggingConnection<MysqlConnection>,
+    database_name: &str,
+) -> QueryResult<bool> {
     use self::schemata::dsl::*;
 
     schemata

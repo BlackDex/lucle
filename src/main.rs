@@ -1,3 +1,5 @@
+use dlopen2::wrapper::{Container, WrapperApi};
+use minisign_verify::{PublicKey, Signature};
 use std::path::{Path, PathBuf};
 use std::{fs::write, fs::File, io::BufReader};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -15,6 +17,11 @@ pub mod schema;
 mod user;
 mod utils;
 
+#[derive(WrapperApi)]
+struct Api {
+    smtp_server: fn(),
+}
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
@@ -31,6 +38,25 @@ async fn main() {
                 .with_file(false),
         )
         .init();
+
+    //TODO: create a module for load plugin
+    let public_key =
+        PublicKey::from_base64("RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3")
+            .expect("Unable to decode the public key");
+    let signature = Signature::decode(
+     "untrusted comment: signature from minisign secret key
+        RWQf6LRCGA9i59SLOFxz6NxvASXDJeRtuZykwQepbDEGt87ig1BNpWaVWuNrm73YiIiJbq71Wi+dP9eKL8OC351vwIasSSbXxwA=
+        trusted comment: timestamp:1555779966\tfile:test
+        QtKMXWyYcwdpZAlPF7tE2ENJkRd1ujvKjlj1m9RtHTBnZPa5WKU5uWRs5GoP5M/VqE81QFuMKI5k/SfNQUaOAA==",
+            ).expect("Unable to decode the signature");
+    let bin = b"test";
+    public_key
+        .verify(bin, &signature, false)
+        .expect("Signature didn't verify");
+
+    let container: Container<Api> = unsafe { Container::load("libexample.so") }
+        .expect("Could not open library or load symbols");
+    container.smtp_server();
 
     //    let dir = openssl_probe::probe().cert_dir.unwrap();
     //    tracing::info!("ssl path : {}", dir.into_os_string().into_string().unwrap());

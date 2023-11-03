@@ -10,7 +10,7 @@ use email_address_parser::EmailAddress;
 use hyper::server::conn::Http;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Database, DatabaseType, Empty, Message, ResponseResult, User, ResetPassword,
+    Database, DatabaseType, Empty, Message, ResetPassword, ResponseResult, User,
 };
 use std::{fs::File, io::BufReader, net::SocketAddr};
 use std::{pin::Pin, sync::Arc};
@@ -50,7 +50,7 @@ impl Lucle for LucleApi {
         let password = inner.password;
         let hostname = inner.hostname;
         let port = inner.port;
-       // let name;
+        // let name;
         let mut db_error: String = "".to_string();
         let migrations_dir =
             database::create_migrations_dir(migration_path).unwrap_or_else(database::handle_error);
@@ -62,10 +62,10 @@ impl Lucle for LucleApi {
             _ => {}
         }
 
-          database::setup_database(database_url, &migrations_dir).unwrap_or_else(|err| {
+        database::setup_database(database_url, &migrations_dir).unwrap_or_else(|err| {
             tracing::error!("test : {}", err);
             db_error = err.to_string();
-        }); 
+        });
         let reply = ResponseResult { error: db_error };
         Ok(Response::new(reply))
     }
@@ -100,12 +100,10 @@ impl Lucle for LucleApi {
         let email = inner.email;
         let mut db_error: String = "".to_string();
         if EmailAddress::is_valid(&email.clone(), None) {
-            user::create_user("lucle.db", username, password, email).unwrap_or_else(
-                |err| {
-                    tracing::error!("{}", err);
-                    db_error = err.to_string();
-                },
-            );
+            user::create_user("lucle.db", username, password, email).unwrap_or_else(|err| {
+                tracing::error!("{}", err);
+                db_error = err.to_string();
+            });
         } else {
             db_error = "email not valid".to_string();
         }

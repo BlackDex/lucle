@@ -4,19 +4,16 @@ use crate::models::{NewUser, Users};
 use crate::schema::users;
 use argon2::{
     self,
-    password_hash::{
-        rand_core::OsRng,
-        PasswordHash, PasswordHasher, SaltString, PasswordVerifier
-    },
-    Argon2
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
 };
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::SelectableHelper;
-use diesel_logger::LoggingConnection;
 use diesel::{
     select, Connection, MysqlConnection, PgConnection, QueryDsl, RunQueryDsl, SqliteConnection,
 };
+use diesel_logger::LoggingConnection;
 use std::path::Path;
 
 pub fn create_user(
@@ -27,7 +24,9 @@ pub fn create_user(
 ) -> DatabaseResult<()> {
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
-    let password_hash = argon2.hash_password(password.as_bytes(), &salt)?.to_string();
+    let password_hash = argon2
+        .hash_password(password.as_bytes(), &salt)?
+        .to_string();
     match Backend::for_url(database_url) {
         Backend::Pg => {
             let conn = &mut PgConnection::establish(database_url).unwrap_or_else(handle_error);
