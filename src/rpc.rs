@@ -8,12 +8,12 @@ use crate::utils;
 use diesel::prelude::*;
 use email_address_parser::EmailAddress;
 use hyper::server::conn::Http;
+use jsonwebtoken::errors::ErrorKind;
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
     Database, DatabaseType, Empty, Message, ResetPassword, ResponseResult, User,
 };
-use jsonwebtoken::errors::ErrorKind;
-use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use std::{fs::File, io::BufReader, net::SocketAddr};
 use std::{pin::Pin, sync::Arc};
 use tokio::net::TcpListener;
