@@ -73,12 +73,12 @@ pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
     return tls;
 }
 
-pub fn generate_jwt() {
+pub fn generate_jwt(username: String, email: String) -> String {
     let key = b"secret";
     let my_claims = Claims {
-        aud: "me".to_owned(),
-        sub: "b@b.com".to_owned(),
-        company: "ACME".to_owned(),
+        aud: username.to_owned(),
+        sub: email.to_owned(),
+        company: "lucle".to_owned(),
         exp: 10000000000,
     };
     let token = match encode(
@@ -86,7 +86,7 @@ pub fn generate_jwt() {
         &my_claims,
         &EncodingKey::from_secret(key),
     ) {
-        Ok(t) => println!("12 {}", t),
+        Ok(t) => return t,
         Err(_) => panic!(),
     };
 }

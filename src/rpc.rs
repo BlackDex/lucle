@@ -12,6 +12,8 @@ use luclerpc::{
     lucle_server::{Lucle, LucleServer},
     Database, DatabaseType, Empty, Message, ResetPassword, ResponseResult, User,
 };
+use jsonwebtoken::errors::ErrorKind;
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use std::{fs::File, io::BufReader, net::SocketAddr};
 use std::{pin::Pin, sync::Arc};
 use tokio::net::TcpListener;
@@ -175,12 +177,25 @@ impl Lucle for LucleApi {
                         .select(Users::as_select())
                         .first(conn)
                         .optional();
+
+                    match mail_exist {
+                        Ok(Some(val)) => {
+                            let token = utils::generate_jwt(val.username, val.email.clone());
+                            if diesel::update(
+                                users::table.filter(users::dsl::email.eq(val.email.clone())),
+                            )
+                            .set(users::dsl::reset_token.eq(token))
+                            .returning(Users::as_returning())
+                            .get_result(conn)
+                            .is_ok()
+                            {
+                                utils::send_mail("a@a.com", &val.email, "test", "hi");
+                            }
+                        }
+                        Ok(None) => error = "Unknow email".to_string(),
+                        Err(err) => error = "Connection failed".to_string(),
+                    }
                 }
-            }
-            match mail_exist {
-                Ok(Some(val)) => utils::generate_jwt(),
-                Ok(None) => error = "Unknow email".to_string(),
-                Err(err) => error = "Connection failed".to_string(),
             }
         } else {
             error = "Not a valid email".to_string();

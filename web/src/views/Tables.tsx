@@ -19,7 +19,6 @@ import SaveIcon from "@mui/icons-material/Save";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import CreateIcon from "@mui/icons-material/Create";
-import { get, adelete } from "utils/Api";
 
 interface Data {
   id: number;
@@ -40,25 +39,6 @@ const CreateData = (
 function Tables() {
   const [rows, setRows] = useState<Data[]>([]);
   const [editingIndex, setEditingIndex] = useState<any>(-1);
-
-  useEffect(() => {
-    get("/diesel/table")
-      .then((value: any) => {
-        for (let i = 0; i < value.data.length; i + 1) {
-          setRows((state) => [
-            ...state,
-            CreateData(
-              value.data[i].id,
-              value.data[i].username,
-              value.data[i].email,
-              value.data[i].role,
-              value.data[i].createdat,
-            ),
-          ]);
-        }
-      })
-      .catch();
-  }, [setRows]);
 
   const addRow = (index: any) => {
     setRows((state) => [...state, CreateData(index, " ", " ", " ", " ")]);
@@ -87,80 +67,6 @@ function Tables() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row: any) => (
-              <TableRow key={row.id.toString()}>
-                <TableCell>{row.id}</TableCell>
-                <TableCell>
-                  {editingIndex === row.id ? (
-                    <TextField
-                      id="newusername"
-                      margin="dense"
-                      fullWidth
-                      variant="outlined"
-                    />
-                  ) : (
-                    row.username
-                  )}
-                </TableCell>
-                <TableCell>
-                  {editingIndex === row.id ? (
-                    <TextField
-                      id="newemail"
-                      margin="dense"
-                      fullWidth
-                      variant="outlined"
-                    />
-                  ) : (
-                    row.email
-                  )}
-                </TableCell>
-                <TableCell>
-                  {editingIndex === row.id ? (
-                    <div>
-                      <FormControl fullWidth>
-                        <InputLabel id="demo-simple-select-label">
-                          role
-                        </InputLabel>
-                        <Select
-                          labelId="demo-simple-select-label"
-                          id="demo-simple-select"
-                          label="role"
-                        >
-                          <MenuItem value="normal">normal</MenuItem>
-                          <MenuItem value="admin">admin</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </div>
-                  ) : (
-                    row.role
-                  )}
-                </TableCell>
-                <TableCell>{row.createdAt}</TableCell>
-                <TableCell>
-                  {editingIndex === row.id ? (
-                    <div>
-                      <IconButton aria-label="save">
-                        <SaveIcon />
-                      </IconButton>
-                      <IconButton aria-label="clear">
-                        <ClearIcon />
-                      </IconButton>
-                    </div>
-                  ) : (
-                    <div>
-                      <IconButton aria-label="modify">
-                        <CreateIcon />
-                      </IconButton>
-                      <IconButton aria-label="delete">
-                        <DeleteIcon
-                          onClick={() => adelete(`/diesel/${row.id}`)}
-                        />
-                      </IconButton>
-                    </div>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
           </TableBody>
         </Table>
       </TableContainer>
