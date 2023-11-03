@@ -66,8 +66,7 @@ function Tables() {
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-          </TableBody>
+          <TableBody></TableBody>
         </Table>
       </TableContainer>
     </div>

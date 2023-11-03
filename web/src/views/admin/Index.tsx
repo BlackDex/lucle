@@ -9,7 +9,6 @@ import TableRow from "@mui/material/TableRow";
 import TableBody from "@mui/material/TableBody";
 
 function Index() {
-
   return (
     <div>
       <Button variant="contained">Create Table</Button>
@@ -22,8 +21,7 @@ function Index() {
                   <TableCell key="table">Tables</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
-              </TableBody>
+              <TableBody></TableBody>
             </Table>
           </TableContainer>
         </Paper>
