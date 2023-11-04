@@ -117,7 +117,7 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
                 .first(&mut conn)
                 .optional();
         }
-    }
+    
     match user {
         Ok(Some(val)) => {
             let parsed_hash = PasswordHash::new(&val.password).unwrap();
@@ -130,6 +130,7 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
         }
         Ok(None) => Err(DatabaseError::UserNotFound),
         Err(err) => Err(DatabaseError::QueryError(err)),
+    }
     }
 }
 
