@@ -1,8 +1,9 @@
 use jsonwebtoken::errors::ErrorKind;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use lettre::{
-    message::header::ContentType, transport::smtp::authentication::Credentials, FileTransport,
-    Message, SmtpTransport, Transport,
+    message::{header, MultiPart, SinglePart},
+    transport::smtp::authentication::Credentials,
+    FileTransport, Message, SmtpTransport, Transport,
 };
 use rcgen::Certificate;
 use serde::{Deserialize, Serialize};
@@ -14,14 +15,37 @@ struct Claims {
     company: String,
     exp: usize,
 }
+use tera::{Context, Tera};
 
 pub fn send_mail(from: &str, dest: &str, subject: &str, body: &str) {
+    let mut context = Context::new();
+    let tera = match Tera::new("templates/*.html") {
+        Ok(t) => t,
+        Err(e) => {
+            println!("Parsing error(s): {}", e);
+            ::std::process::exit(1);
+        }
+    };
+
+    let rendered_content = tera.render("email.html", &context).unwrap();
+
     let email = Message::builder()
         .from(from.parse().unwrap())
         .to(dest.parse().unwrap())
         .subject(subject)
-        .header(ContentType::TEXT_PLAIN)
-        .body(String::from(body))
+        .multipart(
+            MultiPart::alternative()
+                .singlepart(
+                    SinglePart::builder()
+                        .header(header::ContentType::TEXT_PLAIN)
+                        .body(String::from("Hello from Lettre! A mailer library for Rust")), // Every message should have a plain text fallback.
+                )
+                .singlepart(
+                    SinglePart::builder()
+                        .header(header::ContentType::TEXT_HTML)
+                        .body(rendered_content),
+                ),
+        )
         .unwrap();
 
     let mailer = FileTransport::new("./");
@@ -51,9 +75,7 @@ pub fn generate_ca_cert() -> Certificate {
         rcgen::KeyUsagePurpose::CrlSign,
     ];
     ca_params.alg = alg;
-    let ca_cert = Certificate::from_params(ca_params).unwrap();
-
-    return ca_cert;
+    Certificate::from_params(ca_params).unwrap()
 }
 
 pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
@@ -66,11 +88,10 @@ pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
     let server_cert = Certificate::from_params(server_ee_params).unwrap();
     let server_cert_string = server_cert.serialize_pem_with_signer(&ca_cert).unwrap();
     let server_key_string = server_cert.serialize_private_key_pem();
-    let tls = TlsServer {
+    TlsServer {
         cert: server_cert_string,
         private_key: server_key_string,
-    };
-    return tls;
+    }
 }
 
 pub fn generate_jwt(username: String, email: String) -> String {

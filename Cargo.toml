@@ -47,6 +47,7 @@ email-address-parser = "2.0.0"
 diesel_logger = { git = "https://github.com/weiznich/diesel-logger/", branch = "multiconnection_compatibility" }
 dlopen2 = "0.6.1"
 minisign-verify = "0.2.1"
+tera = "1.19.1"
 
 [build-dependencies]
 tonic-build = { version = "0.10.0", features = ["prost"] } 
