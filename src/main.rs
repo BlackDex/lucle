@@ -106,7 +106,7 @@ async fn main() {
     let key_file = File::open(".tls/server_private_key.pem").unwrap();
     key_buf = BufReader::new(key_file);
 
-    match tokio::join!(
+    tokio::join!(
         http::serve(
             http::using_serve_dir(),
             PathBuf::from(".tls/server_cert.pem"),
@@ -114,8 +114,6 @@ async fn main() {
         ),
         rpc::start_rpc_server(&mut cert_buf, &mut key_buf)
     )
-    .0
-    {
-        _ => {}
-    };
+    .0;
+    {};
 }

@@ -104,13 +104,13 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
                     let parsed_hash = PasswordHash::new(&val.password).unwrap();
                     Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
                     if val.privilege == "admin" {
-                        return Ok(());
+                        Ok(())
                     } else {
-                        return Err(DatabaseError::NotAuthorized);
+                        Err(DatabaseError::NotAuthorized)
                     }
                 }
-                Ok(None) => return Err(DatabaseError::UserNotFound),
-                Err(err) => return Err(DatabaseError::QueryError(err)),
+                Ok(None) => Err(DatabaseError::UserNotFound),
+                Err(err) => Err(DatabaseError::QueryError(err)),
             }
         }
         Backend::Mysql => {
@@ -125,13 +125,13 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
                     let parsed_hash = PasswordHash::new(&val.password).unwrap();
                     Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
                     if val.privilege == "admin" {
-                        return Ok(());
+                        Ok(())
                     } else {
-                        return Err(DatabaseError::NotAuthorized);
+                        Err(DatabaseError::NotAuthorized)
                     }
                 }
-                Ok(None) => return Err(DatabaseError::UserNotFound),
-                Err(err) => return Err(DatabaseError::QueryError(err)),
+                Ok(None) => Err(DatabaseError::UserNotFound),
+                Err(err) => Err(DatabaseError::QueryError(err)),
             }
         }
         Backend::Sqlite => {
