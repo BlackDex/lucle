@@ -431,7 +431,7 @@ fn do_migrations(
     let dir = migrations_dir(migration_dir).unwrap_or_else(handle_error);
     let dir = FileBasedMigrations::from_path(dir).unwrap_or_else(handle_error);
     run_migrations(&mut conn, dir)?;
-    //regenerate_schema(database_url, None)?;
+    regenerate_schema(database_url, None)?;
 
     Ok(())
 }
