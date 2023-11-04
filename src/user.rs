@@ -91,7 +91,6 @@ pub fn create_user(
 }
 
 pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResult<()> {
-    let user;
     match Backend::for_url(database_url) {
         Backend::Pg => {
             let conn = &mut PgConnection::establish(database_url).unwrap_or_else(handle_error);
@@ -112,7 +111,7 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
         Backend::Sqlite => {
             let conn = SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
             let mut conn = LoggingConnection::new(conn);
-            user = users::table
+            let user = users::table
                 .filter(users::dsl::username.eq(username))
                 .select(Users::as_select())
                 .first(&mut conn)
@@ -124,13 +123,13 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
             let parsed_hash = PasswordHash::new(&val.password).unwrap();
             Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
             if val.privilege == "admin" {
-                return Ok(());
+                Ok(())
             } else {
-                return Err(DatabaseError::NotAuthorized);
+                Err(DatabaseError::NotAuthorized)
             }
         }
-        Ok(None) => return Err(DatabaseError::UserNotFound),
-        Err(err) => return Err(DatabaseError::QueryError(err)),
+        Ok(None) => Err(DatabaseError::UserNotFound),
+        Err(err) => Err(DatabaseError::QueryError(err)),
     }
 }
 

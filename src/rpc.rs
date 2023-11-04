@@ -1,32 +1,31 @@
 use super::database;
 use super::user;
 use crate::database::{handle_error, Backend};
-use crate::database_errors::DatabaseError;
+
 use crate::models::Users;
 use crate::schema::users;
 use crate::utils;
 use diesel::prelude::*;
 use email_address_parser::EmailAddress;
-use hyper::server::conn::Http;
-use jsonwebtoken::errors::ErrorKind;
-use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+
+
+
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
     Database, DatabaseType, Empty, Message, ResetPassword, ResponseResult, User,
 };
 use std::{fs::File, io::BufReader, net::SocketAddr};
-use std::{pin::Pin, sync::Arc};
-use tokio::net::TcpListener;
+use std::{pin::Pin};
+
 use tokio::sync::mpsc;
 use tokio_rustls::{
-    rustls::{Certificate, PrivateKey, ServerConfig},
-    TlsAcceptor,
+    rustls::{Certificate},
 };
 use tokio_stream::{wrappers::ReceiverStream, Stream};
 use tonic::{transport::Server, Request, Response, Status};
 use tonic_web::GrpcWebLayer;
 use tower_http::cors::{Any, CorsLayer};
-use tower_http::ServiceBuilderExt;
+
 
 pub mod luclerpc {
     tonic::include_proto!("luclerpc");
@@ -46,12 +45,12 @@ impl Lucle for LucleApi {
     ) -> Result<Response<ResponseResult>, Status> {
         let inner = request.into_inner();
         let db_type = inner.db_type;
-        let db_name = inner.db_name;
+        let _db_name = inner.db_name;
         let migration_path = inner.migration_path;
-        let username = inner.username;
-        let password = inner.password;
-        let hostname = inner.hostname;
-        let port = inner.port;
+        let _username = inner.username;
+        let _password = inner.password;
+        let _hostname = inner.hostname;
+        let _port = inner.port;
         // let name;
         let mut db_error: String = "".to_string();
         let migrations_dir =
@@ -72,7 +71,7 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
-    async fn create_table(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
+    async fn create_table(&self, _request: Request<Database>) -> Result<Response<Empty>, Status> {
         let reply = Empty {};
         Ok(Response::new(reply))
     }
@@ -81,7 +80,7 @@ impl Lucle for LucleApi {
         &self,
         request: Request<Database>,
     ) -> Result<Response<ResponseResult>, Status> {
-        let inner = request.into_inner();
+        let _inner = request.into_inner();
         let database_url = "lucle.db";
         let mut db_error: String = "".to_string();
         database::drop_database(database_url).unwrap_or_else(|err| {
@@ -122,13 +121,13 @@ impl Lucle for LucleApi {
             tracing::error!("12 : {}", err);
             error = err.to_string();
         });
-        let reply = ResponseResult { error: error };
+        let reply = ResponseResult { error };
         Ok(Response::new(reply))
     }
 
     async fn is_created_user(
         &self,
-        request: Request<Database>,
+        _request: Request<Database>,
     ) -> Result<Response<ResponseResult>, Status> {
         let mut db_error = "".to_string();
         if user::is_default_user("lucle.db") {
@@ -193,14 +192,14 @@ impl Lucle for LucleApi {
                             }
                         }
                         Ok(None) => error = "Unknow email".to_string(),
-                        Err(err) => error = "Connection failed".to_string(),
+                        Err(_err) => error = "Connection failed".to_string(),
                     }
                 }
             }
         } else {
             error = "Not a valid email".to_string();
         }
-        let reply = ResponseResult { error: error };
+        let reply = ResponseResult { error };
         Ok(Response::new(reply))
     }
 
@@ -220,7 +219,7 @@ impl Lucle for LucleApi {
         tokio::spawn(async move {
             match tx.send(Result::<_, Status>::Ok(message)).await {
                 Ok(_) => (),
-                Err(item) => (),
+                Err(_item) => (),
             }
         });
 
@@ -238,8 +237,8 @@ struct ConnInfo {
 }
 
 pub async fn start_rpc_server(
-    cert: &mut BufReader<File>,
-    key: &mut BufReader<File>,
+    _cert: &mut BufReader<File>,
+    _key: &mut BufReader<File>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let addr = SocketAddr::from(([0, 0, 0, 0], 50051));
 

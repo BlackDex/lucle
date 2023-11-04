@@ -1,5 +1,5 @@
 use axum::Router;
-use axum_server::tls_rustls::RustlsConfig;
+
 use std::{net::SocketAddr, path::PathBuf};
 use tower_http::{
     services::{ServeDir, ServeFile},
@@ -20,7 +20,7 @@ pub fn using_serve_dir() -> Router {
         .fallback_service(serve_dir)
 }
 
-pub async fn serve(app: Router, cert: PathBuf, key: PathBuf) {
+pub async fn serve(app: Router, _cert: PathBuf, _key: PathBuf) {
     /*    let acceptor = state.axum_acceptor(state.default_rustls_config());
 
     tokio::spawn(async move {

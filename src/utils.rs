@@ -1,9 +1,8 @@
-use jsonwebtoken::errors::ErrorKind;
-use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+
+use jsonwebtoken::{encode, EncodingKey, Header};
 use lettre::{
     message::{header, MultiPart, SinglePart},
-    transport::smtp::authentication::Credentials,
-    FileTransport, Message, SmtpTransport, Transport,
+    FileTransport, Message, Transport,
 };
 use rcgen::Certificate;
 use serde::{Deserialize, Serialize};
@@ -17,8 +16,8 @@ struct Claims {
 }
 use tera::{Context, Tera};
 
-pub fn send_mail(from: &str, dest: &str, subject: &str, body: &str) {
-    let mut context = Context::new();
+pub fn send_mail(from: &str, dest: &str, subject: &str, _body: &str) {
+    let context = Context::new();
     let tera = match Tera::new("templates/*.html") {
         Ok(t) => t,
         Err(e) => {
@@ -102,12 +101,12 @@ pub fn generate_jwt(username: String, email: String) -> String {
         company: "lucle".to_owned(),
         exp: 10000000000,
     };
-    let token = match encode(
+    match encode(
         &Header::default(),
         &my_claims,
         &EncodingKey::from_secret(key),
     ) {
-        Ok(t) => return t,
+        Ok(t) => t,
         Err(_) => panic!(),
-    };
+    }
 }
