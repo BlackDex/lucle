@@ -27,8 +27,8 @@ pub fn remove_unsafe_foreign_keys_for_codegen(
         .filter(|fk| safe_tables.contains(&fk.child_table))
         .filter(|fk| fk.foreign_key_columns.len() == 1)
         .filter(|fk| {
-            let pk_columns = get_primary_keys(conn, &fk.parent_table).unwrap_or_else(|_| panic!("Error loading primary keys for `{}`",
-                fk.parent_table));
+            let pk_columns = get_primary_keys(conn, &fk.parent_table)
+                .unwrap_or_else(|_| panic!("Error loading primary keys for `{}`", fk.parent_table));
             pk_columns.len() == 1 && Some(&pk_columns[0]) == fk.primary_key_columns.get(0)
         })
         .filter(|fk| !duplicates.contains(&fk.ordered_tables()))

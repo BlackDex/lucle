@@ -1,4 +1,3 @@
-
 use jsonwebtoken::{encode, EncodingKey, Header};
 use lettre::{
     message::{header, MultiPart, SinglePart},

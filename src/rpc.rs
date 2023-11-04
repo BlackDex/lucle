@@ -8,24 +8,19 @@ use crate::utils;
 use diesel::prelude::*;
 use email_address_parser::EmailAddress;
 
-
-
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
     Database, DatabaseType, Empty, Message, ResetPassword, ResponseResult, User,
 };
+use std::pin::Pin;
 use std::{fs::File, io::BufReader, net::SocketAddr};
-use std::{pin::Pin};
 
 use tokio::sync::mpsc;
-use tokio_rustls::{
-    rustls::{Certificate},
-};
+use tokio_rustls::rustls::Certificate;
 use tokio_stream::{wrappers::ReceiverStream, Stream};
 use tonic::{transport::Server, Request, Response, Status};
 use tonic_web::GrpcWebLayer;
 use tower_http::cors::{Any, CorsLayer};
-
 
 pub mod luclerpc {
     tonic::include_proto!("luclerpc");

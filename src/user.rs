@@ -99,6 +99,19 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
                 .select(Users::as_select())
                 .first(conn)
                 .optional();
+            match user {
+                Ok(Some(val)) => {
+                    let parsed_hash = PasswordHash::new(&val.password).unwrap();
+                    Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
+                    if val.privilege == "admin" {
+                        return Ok(());
+                    } else {
+                        return Err(DatabaseError::NotAuthorized);
+                    }
+                }
+                Ok(None) => return Err(DatabaseError::UserNotFound),
+                Err(err) => return Err(DatabaseError::QueryError(err)),
+            }
         }
         Backend::Mysql => {
             let conn = &mut MysqlConnection::establish(database_url).unwrap_or_else(handle_error);
@@ -107,6 +120,19 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
                 .select(Users::as_select())
                 .first(conn)
                 .optional();
+            match user {
+                Ok(Some(val)) => {
+                    let parsed_hash = PasswordHash::new(&val.password).unwrap();
+                    Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
+                    if val.privilege == "admin" {
+                        return Ok(());
+                    } else {
+                        return Err(DatabaseError::NotAuthorized);
+                    }
+                }
+                Ok(None) => return Err(DatabaseError::UserNotFound),
+                Err(err) => return Err(DatabaseError::QueryError(err)),
+            }
         }
         Backend::Sqlite => {
             let conn = SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
@@ -116,21 +142,20 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
                 .select(Users::as_select())
                 .first(&mut conn)
                 .optional();
-        }
-    
-    match user {
-        Ok(Some(val)) => {
-            let parsed_hash = PasswordHash::new(&val.password).unwrap();
-            Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
-            if val.privilege == "admin" {
-                Ok(())
-            } else {
-                Err(DatabaseError::NotAuthorized)
+            match user {
+                Ok(Some(val)) => {
+                    let parsed_hash = PasswordHash::new(&val.password).unwrap();
+                    Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
+                    if val.privilege == "admin" {
+                        Ok(())
+                    } else {
+                        Err(DatabaseError::NotAuthorized)
+                    }
+                }
+                Ok(None) => Err(DatabaseError::UserNotFound),
+                Err(err) => Err(DatabaseError::QueryError(err)),
             }
         }
-        Ok(None) => Err(DatabaseError::UserNotFound),
-        Err(err) => Err(DatabaseError::QueryError(err)),
-    }
     }
 }
 
