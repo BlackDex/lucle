@@ -94,7 +94,7 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
     match Backend::for_url(database_url) {
         Backend::Pg => {
             let conn = &mut PgConnection::establish(database_url).unwrap_or_else(handle_error);
-            user = users::table
+            let user = users::table
                 .filter(users::dsl::username.eq(username))
                 .select(Users::as_select())
                 .first(conn)
@@ -102,7 +102,7 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
         }
         Backend::Mysql => {
             let conn = &mut MysqlConnection::establish(database_url).unwrap_or_else(handle_error);
-            user = users::table
+            let user = users::table
                 .filter(users::dsl::username.eq(username))
                 .select(Users::as_select())
                 .first(conn)
