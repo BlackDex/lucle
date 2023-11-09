@@ -12,3 +12,4 @@ Cargo.lock
 web/src/gen/lucle_connect.ts
 web/src/gen/lucle_pb.ts
 .tls/
+plugins/
