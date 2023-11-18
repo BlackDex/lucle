@@ -3,12 +3,12 @@ use std::{fs::write, fs::File, io::BufReader};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod config;
-mod plugins;
 mod database;
 mod database_errors;
 mod http;
 mod infer_schema_internals;
 pub mod models;
+mod plugins;
 mod print_schema;
 mod query_helper;
 mod rpc;
@@ -33,9 +33,8 @@ async fn main() {
         )
         .init();
 
-        //load plugin
-        plugins::verify_plugins().await;
-
+    //load plugin
+    plugins::verify_plugins().await;
 
     //    let dir = openssl_probe::probe().cert_dir.unwrap();
     //    tracing::info!("ssl path : {}", dir.into_os_string().into_string().unwrap());
