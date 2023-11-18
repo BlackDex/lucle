@@ -1,0 +1,6 @@
+Add the following DNS records to your domain in order to enable DKIM, SPF and DMARC:
+
+stalwart._domainkey.localhost. IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApWchtjWzZy5BVC3qFqmCqP0NZYI+olE3mOODRF9DVly+ZcYrdv6fs2+1A9oxpWry5PWoYonhimMEEHDDE328spj9uycaoiXAGBpPIdFgnu0zQocUi8q2ZTBlxWATQ0oIpWqF/HovxqLFhiX+MvQJdF3yWAd8od1Q6jp3/CP8bLj9zxM/Y9q5pMtkCzANgccHNAnraHuNxM/fsZay85viVRE4vZ+jHMtw1fEHas5cVaEKptcaWsgQeCWoSJp2uOb2rAGhdHjPa8uWbhPd8ZI/PtoltQeD5WrJ8j3aN6iCe9zG2RFMLByJJPaO/0Fg3IYmdwlt2UJBN0DrBOpAAysz8wIDAQAB"
+localhost. IN TXT "v=spf1 a:mail.localhost mx -all ra=postmaster"
+mail.localhost. IN TXT "v=spf1 a -all ra=postmaster"
+_dmarc.localhost. IN TXT "v=DMARC1; p=none; rua=mailto:postmaster@localhost; ruf=mailto:postmaster@localhost"

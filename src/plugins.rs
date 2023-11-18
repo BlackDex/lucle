@@ -1,11 +1,13 @@
 use std::fs::{self, File};
 use std::io::Read;
+use std::future::Future;
+use std::pin::Pin;
 use minisign_verify::{PublicKey, Signature};
 use dlopen2::wrapper::{Container, WrapperApi};
 
 #[derive(WrapperApi)]
 struct Api {
-    run: fn(),
+    run: fn() -> Pin<Box<dyn Future<Output = ()>>>,
 }
 
 fn download_plugin() {
@@ -23,13 +25,16 @@ fn load_signature() -> Signature {
 }
 
 pub async fn verify_plugins() {
-    let mut plugin = File::open("plugins/mail/libsmtp_server.so").unwrap();
+    /*let mut plugin = File::open("plugins/mail/libsmtp_server.so").unwrap();
     let mut data = vec![];
     plugin.read_to_end(&mut data).unwrap();
     let pkey = load_publickey();
-    let signature = load_signature();
-    if pkey.verify(&data, &signature, false).is_ok() {
+    let signature = load_signature();*/
+//    if pkey.verify(&data, &signature, false).is_ok() {
     let container: Container<Api> = unsafe { Container::load("plugins/mail/libsmtp_server.so") }
         .expect("Could not open library");
-    container.run();
-    }}
+    
+    let future = Box::pin(container.run());
+    future.await;
+    //}
+}
