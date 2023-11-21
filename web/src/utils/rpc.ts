@@ -1,7 +1,6 @@
 import { createPromiseClient } from "@connectrpc/connect";
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { Lucle } from "gen/lucle_connect";
-import { json } from "react-router";
 
 export const connect = (url: string, port: string) => {
   const client = createPromiseClient(
