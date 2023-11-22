@@ -28,11 +28,9 @@ pub async fn verify_plugins() {
     plugin.read_to_end(&mut data).unwrap();
     let pkey = load_publickey();
     let signature = load_signature();*/
-    //    if pkey.verify(&data, &signature, false).is_ok() {
+    //if pkey.verify(&data, &signature, false).is_ok() {
     let container: Container<Api> = unsafe { Container::load("plugins/mail/libsmtp_server.so") }
         .expect("Could not open library");
-
-    let future = Box::pin(container.run());
-    future.await;
+    container.run();
     //}
 }
