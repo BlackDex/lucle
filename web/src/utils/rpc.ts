@@ -60,4 +60,3 @@ export const create_user = async (
   });
   if (error) throw error;
 };
-
