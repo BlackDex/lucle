@@ -15,7 +15,7 @@ service Lucle {
 
 service Repo {
   rpc init (RepositoryPath) returns (ResponseResult);
-  rpc status (RepositoryPath) returns (stream StatusResult);
+  rpc Status (RepositoryPath) returns (stream StatusResult);
   rpc set_current_version (Version) returns (ResponseResult);
   rpc register_version (Version) returns (ResponseResult);
   rpc unregister_version (Version) returns (ResponseResult);
