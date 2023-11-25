@@ -151,11 +151,11 @@ fn create_default_migration(database_url: &str, migrations_dir: &Path) -> Databa
     }
 
     if let Backend::Pg = Backend::for_url(database_url) {
-            fs::create_dir_all(&initial_migration_path)?;
-            //          let mut up_sql = File::create(initial_migration_path.join("up.sql"))?;
-            //          up_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/up.sql"))?;
-            //          let mut down_sql = File::create(initial_migration_path.join("down.sql"))?;
-            //          down_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/down.sql"))?; 
+        fs::create_dir_all(&initial_migration_path)?;
+        //          let mut up_sql = File::create(initial_migration_path.join("up.sql"))?;
+        //          up_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/up.sql"))?;
+        //          let mut down_sql = File::create(initial_migration_path.join("down.sql"))?;
+        //          down_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/down.sql"))?;
     }
     Ok(())
 }
