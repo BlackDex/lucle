@@ -10,8 +10,6 @@ struct Api {
     run: fn() -> Pin<Box<dyn Future<Output = ()>>>,
 }
 
-fn download_plugin() {}
-
 fn load_publickey() -> PublicKey {
     let pk_content = fs::read_to_string("plugins/mail/minisign.key").unwrap();
     PublicKey::from_base64(&pk_content).unwrap()
