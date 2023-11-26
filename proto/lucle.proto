@@ -39,6 +39,10 @@ message ResetPassword {
   string email = 1;
 }
 
+message ResponseResult {
+  string error = 1;
+}
+
 message Message {
   string plugin = 1;
 }
