@@ -27,8 +27,44 @@ pub async fn verify_plugins() {
     let pkey = load_publickey();
     let signature = load_signature();*/
     //if pkey.verify(&data, &signature, false).is_ok() {
-    let container: Container<Api> = unsafe { Container::load("plugins/mail/libsmtp_server.so") }
-        .expect("Could not open library");
-    container.run();
-    //}
+
+    let path = "plugins/";
+    let extension = "so";
+
+    match fs::read_dir(path) {
+        Ok(entries) => {
+            for entry in entries {
+                if let Ok(entry) = entry {
+                    let subfolder = entry.path();
+                    if let Ok(subfolder) = fs::read_dir(&subfolder) {
+                        for file in subfolder {
+                            if let Ok(file) = file {
+                                if file.path().is_file()
+                                    && file.path().extension().map_or(false, |e| e == extension)
+                                {
+                                    let container: Result<Container<Api>, _> = unsafe {
+                                        Container::load(file.path())
+                                    };
+                                    match container {
+                                        Ok(container) => {
+                                            tracing::info!("Load library successfully !");
+                                            container.run();
+                                        }
+                                        Err(err) => {
+                                            tracing::error!("Could not open library : {}", err);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    tracing::error!("Path error");
+                }
+            }
+        }
+        Err(e) => {
+            tracing::error!("Path error : {:?}", e);
+        }
+    }
 }
