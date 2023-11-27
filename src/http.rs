@@ -17,8 +17,8 @@ pub fn using_serve_dir() -> Router {
 pub async fn serve(app: Router, _cert: PathBuf, _key: PathBuf) {
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     tracing::info!("HTTP server starting on {}", addr);
-    axum::Server::bind(&addr)
-        .serve(app.layer(TraceLayer::new_for_http()).into_make_service())
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app.layer(TraceLayer::new_for_http()))
         .await
         .unwrap();
 }
