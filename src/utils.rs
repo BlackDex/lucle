@@ -5,6 +5,14 @@ use lettre::{
 };
 use rcgen::Certificate;
 use serde::{Deserialize, Serialize};
+use tokio_rustls::rustls::ServerConfig;
+use std::os::unix::fs::OpenOptionsExt;
+use std::{
+    io,
+    fs,
+    process,
+};
+use nix::unistd::{self, Uid};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -109,3 +117,48 @@ pub fn generate_jwt(username: String, email: String) -> String {
         Err(_) => panic!(),
     }
 }
+
+pub fn save_cert_to_system_store(cert: Vec<u8>) -> io::Result<()> {
+    if unistd::geteuid() != Uid::from_raw(0) {
+
+        match unistd::seteuid(Uid::from_raw(0)) {
+            Ok(_) => {
+
+                let result = save_cert(cert);
+                unistd::seteuid(unistd::geteuid()).expect("Impossible de restaurer les droits de l'utilisateur d'origine");
+                return result;
+            }
+            Err(err) => return Err(io::Error::new(io::ErrorKind::Other, format!("Erreur lors de la modification des droits root : {}", err))),
+        }
+    } else {
+       Err()
+    }
+
+}
+
+fn save_cert(cert: Vec<u8>) -> io::Result<()> {
+    let cert_path = "/etc/ssl/certs/certificate.pem";
+
+    let mut cert_file = fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .mode(0o644) 
+        .open(cert_path)?;
+
+    for cert in cert_chain {
+        cert.write_pem(&mut cert_file)?;
+    }
+
+    let update_command = process::Command::new("update-ca-certificates").output();
+    match update_command {
+        Ok(output) => {
+            if !output.status.success() {
+                return Err(io::Error::new(io::ErrorKind::Other, "Échec de la mise à jour du magasin de certificats système"));
+            }
+        }
+        Err(err) => return Err(io::Error::new(io::ErrorKind::Other, format!("Erreur lors de la mise à jour du magasin de certificats système : {}", err))),
+    }
+
+    Ok(())
+}
+

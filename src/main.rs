@@ -1,6 +1,11 @@
+
 use std::path::{Path, PathBuf};
-use std::{fs::write, fs::File, io::BufReader};
+use std::{fs::write, fs::File, io::{BufReader, Read}};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use rustls_pemfile::{certs, rsa_private_keys};
+use tokio_rustls::rustls::{PrivateKey, Certificate};
+use rustls_pemfile::pkcs8_private_keys;
+use tokio_rustls::rustls::ServerConfig;
 
 mod config;
 mod database;
@@ -36,8 +41,10 @@ async fn main() {
     //load plugin
     plugins::verify_plugins().await;
 
-    //    let dir = openssl_probe::probe().cert_dir.unwrap();
-    //    tracing::info!("ssl path : {}", dir.into_os_string().into_string().unwrap());
+    //let dir = openssl_probe::probe().cert_dir.unwrap();
+    let dir = PathBuf::from("/usr/lib/ssl/certs/ca-certificates.crt");
+    tracing::info!("ssl path : {}", dir.clone().into_os_string().into_string().unwrap());
+
 
     /*let mut child = std::process::Command::new("ls").uid(0).spawn().expect("failed to execute child");
     let stdout = child.stdout.take().unwrap();
@@ -81,8 +88,26 @@ async fn main() {
     }
     let cert_file = File::open(".tls/server_cert.pem").unwrap();
     cert_buf = BufReader::new(cert_file);
+    let cert_chain = certs(&mut cert_buf).unwrap().into_iter().map(Certificate).collect();
+    let mut bytes = Vec::new();
+    cert_buf.read_to_end(&mut bytes).expect("Unable to read data");
+    
     let key_file = File::open(".tls/server_private_key.pem").unwrap();
     key_buf = BufReader::new(key_file);
+    let mut private_keys = pkcs8_private_keys(&mut BufReader::new(key_file)).unwrap();
+    let private_key = private_keys.remove(0);
+    let tokio_private_key = PrivateKey(private_key);
+
+    let mut config = ServerConfig::builder()
+    .with_safe_defaults()
+    .with_no_client_auth()
+    .with_single_cert(cert_chain, tokio_private_key).unwrap();
+
+    if let Err(e) = utils::save_cert_to_system_store(bytes) {
+        tracing::error!("error when saving cert into system store : {}", e);
+    } else {
+        tracing::info!("Adding certificate into system store successful !");
+    }
 
     tokio::join!(
         http::serve(
