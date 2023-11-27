@@ -17,7 +17,7 @@ use std::{fs::File, io::BufReader, net::SocketAddr};
 
 use tokio::sync::mpsc;
 use tokio_stream::{wrappers::ReceiverStream, Stream};
-use tonic::{transport::Server, Request, Response, Status};
+use tonic::{transport::{Server, server::RoutesBuilder}, Request, Response, Status};
 use tonic_web::GrpcWebLayer;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -236,11 +236,14 @@ pub async fn start_rpc_server(
     tracing::info!("RPCServer listening on {}", addr);
     let cors_layer = CorsLayer::new().allow_origin(Any).allow_headers(Any);
 
+    let mut routes_builder = RoutesBuilder::default();
+    routes_builder.add_service(api);
+
     Server::builder()
         .accept_http1(true)
         .layer(cors_layer)
         .layer(GrpcWebLayer::new())
-        .add_service(api)
+        .add_routes(routes_builder.routes())
         .serve(addr)
         .await?;
 
