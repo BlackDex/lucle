@@ -16,7 +16,7 @@ pub mod models;
 mod plugins;
 mod print_schema;
 mod query_helper;
-mod rpc;
+//mod rpc;
 pub mod schema;
 mod user;
 mod utils;
@@ -93,12 +93,12 @@ async fn main() {
     cert_buf.read_to_end(&mut bytes).expect("Unable to read data");
     
     let key_file = File::open(".tls/server_private_key.pem").unwrap();
-    key_buf = BufReader::new(key_file);
+    key_buf = BufReader::new(key_file.try_clone().unwrap());
     let mut private_keys = pkcs8_private_keys(&mut BufReader::new(key_file)).unwrap();
     let private_key = private_keys.remove(0);
     let tokio_private_key = PrivateKey(private_key);
 
-    let mut config = ServerConfig::builder()
+    let config = ServerConfig::builder()
     .with_safe_defaults()
     .with_no_client_auth()
     .with_single_cert(cert_chain, tokio_private_key).unwrap();
@@ -112,10 +112,9 @@ async fn main() {
     tokio::join!(
         http::serve(
             http::using_serve_dir(),
-            PathBuf::from(".tls/server_cert.pem"),
-            PathBuf::from(".tls/server_private_key.pem")
+            config
         ),
-        rpc::start_rpc_server(&mut cert_buf, &mut key_buf)
+       // rpc::start_rpc_server(&mut cert_buf, &mut key_buf)
     )
     .0;
     {};

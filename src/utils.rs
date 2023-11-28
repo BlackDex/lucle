@@ -6,7 +6,7 @@ use lettre::{
 use rcgen::Certificate;
 use serde::{Deserialize, Serialize};
 use tokio_rustls::rustls::ServerConfig;
-use std::os::unix::fs::OpenOptionsExt;
+use std::{os::unix::fs::OpenOptionsExt, io::Write};
 use std::{
     io,
     fs,
@@ -131,9 +131,9 @@ pub fn save_cert_to_system_store(cert: Vec<u8>) -> io::Result<()> {
             Err(err) => return Err(io::Error::new(io::ErrorKind::Other, format!("Erreur lors de la modification des droits root : {}", err))),
         }
     } else {
-       Err()
+       tracing::error!("error");
+       Ok(())
     }
-
 }
 
 fn save_cert(cert: Vec<u8>) -> io::Result<()> {
@@ -145,9 +145,7 @@ fn save_cert(cert: Vec<u8>) -> io::Result<()> {
         .mode(0o644) 
         .open(cert_path)?;
 
-    for cert in cert_chain {
-        cert.write_pem(&mut cert_file)?;
-    }
+        cert_file.write_all(&cert).unwrap();
 
     let update_command = process::Command::new("update-ca-certificates").output();
     match update_command {
