@@ -1,18 +1,17 @@
 use axum::{
-    BoxError,
     extract::Host,
-    response::Redirect,
     handler::HandlerWithoutStateExt,
-    Router,
     http::{StatusCode, Uri},
+    response::Redirect,
+    BoxError, Router,
 };
 
 use std::net::SocketAddr;
+use tokio_rustls::rustls::ServerConfig;
 use tower_http::{
     services::{ServeDir, ServeFile},
     trace::TraceLayer,
 };
-use tokio_rustls::rustls::ServerConfig;
 
 #[derive(Clone, Copy)]
 struct Ports {

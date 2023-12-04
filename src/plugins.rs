@@ -20,6 +20,38 @@ fn load_signature() -> Signature {
     Signature::decode(&signature_content).expect("error when reading signature")
 }
 
+pub async fn find_front_plugins(extension: &'static str) -> Vec<String> {
+    let path = "plugins/";
+    let mut plugins: Vec<String> = vec![];
+
+    match fs::read_dir(path) {
+        Ok(entries) => {
+            for entry in entries {
+                if let Ok(entry) = entry {
+                    let subfolder = entry.path();
+                    if let Ok(subfolder) = fs::read_dir(&subfolder) {
+                        for file in subfolder {
+                            if let Ok(file) = file {
+                                if file.path().is_file()
+                                    && file.path().extension().map_or(false, |e| e == extension)
+                                {
+                                    plugins.push(file.path().display().to_string())
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    tracing::error!("Path error");
+                }
+            }
+        }
+        Err(e) => {
+            tracing::error!("Path error : {:?}", e);
+        }
+    }
+    return plugins;
+}
+
 pub async fn verify_plugins() {
     /*let mut plugin = File::open("plugins/mail/libsmtp_server.so").unwrap();
     let mut data = vec![];
@@ -42,9 +74,8 @@ pub async fn verify_plugins() {
                                 if file.path().is_file()
                                     && file.path().extension().map_or(false, |e| e == extension)
                                 {
-                                    let container: Result<Container<Api>, _> = unsafe {
-                                        Container::load(file.path())
-                                    };
+                                    let container: Result<Container<Api>, _> =
+                                        unsafe { Container::load(file.path()) };
                                     match container {
                                         Ok(container) => {
                                             tracing::info!("Load library successfully !");

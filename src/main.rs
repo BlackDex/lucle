@@ -1,11 +1,13 @@
-
+use rustls_pemfile::{certs, pkcs8_private_keys};
 use std::path::{Path, PathBuf};
-use std::{fs::write, fs::File, io::{BufReader, Read}};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use rustls_pemfile::{certs, rsa_private_keys};
-use tokio_rustls::rustls::{PrivateKey, Certificate};
-use rustls_pemfile::pkcs8_private_keys;
+use std::{
+    fs::write,
+    fs::File,
+    io::{BufReader, Read},
+};
 use tokio_rustls::rustls::ServerConfig;
+use tokio_rustls::rustls::{Certificate, PrivateKey};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod config;
 mod database;
@@ -43,17 +45,13 @@ async fn main() {
 
     //let dir = openssl_probe::probe().cert_dir.unwrap();
     let dir = PathBuf::from("/usr/lib/ssl/certs/ca-certificates.crt");
-    tracing::info!("ssl path : {}", dir.clone().into_os_string().into_string().unwrap());
-
-
-    /*let mut child = std::process::Command::new("ls").uid(0).spawn().expect("failed to execute child");
-    let stdout = child.stdout.take().unwrap();
-    tracing::info!("{:?}", stdout);*/
+    tracing::info!(
+        "ssl path : {}",
+        dir.clone().into_os_string().into_string().unwrap()
+    );
 
     let ca_cert;
     let server_cert_key;
-    let mut cert_buf: BufReader<File>;
-    let mut key_buf: BufReader<File>;
 
     if !Path::new(".tls/cert.pem").exists()
         || !Path::new(".tls/server_cert.pem").exists()
@@ -86,35 +84,33 @@ async fn main() {
             Err(err) => tracing::error!("{}", err),
         }
     }
+    let mut cert_reader = BufReader::new(File::open(".tls/server_cert.pem").unwrap());
+
     let cert_file = File::open(".tls/server_cert.pem").unwrap();
-    cert_buf = BufReader::new(cert_file);
-    let cert_chain = certs(&mut cert_buf).unwrap().into_iter().map(Certificate).collect();
-    let mut bytes = Vec::new();
-    cert_buf.read_to_end(&mut bytes).expect("Unable to read data");
-    
+    let mut cert_buf = BufReader::new(cert_file);
+    let certs = certs(&mut cert_reader)
+        .map(Certificate)
+        .collect();
+
     let key_file = File::open(".tls/server_private_key.pem").unwrap();
-    key_buf = BufReader::new(key_file.try_clone().unwrap());
-    let mut private_keys = pkcs8_private_keys(&mut BufReader::new(key_file)).unwrap();
-    let private_key = private_keys.remove(0);
-    let tokio_private_key = PrivateKey(private_key);
+    let mut key_buf = BufReader::new(key_file);
+    let mut private_key = PrivateKey(pkcs8_private_keys(&mut key_buf).unwrap().remove(0));
 
     let config = ServerConfig::builder()
-    .with_safe_defaults()
-    .with_no_client_auth()
-    .with_single_cert(cert_chain, tokio_private_key).unwrap();
+        .with_safe_defaults()
+        .with_no_client_auth()
+        .with_single_cert(certs, private_key)
+        .unwrap();
 
-    if let Err(e) = utils::save_cert_to_system_store(bytes) {
-        tracing::error!("error when saving cert into system store : {}", e);
-    } else {
-        tracing::info!("Adding certificate into system store successful !");
-    }
+//    if let Err(e) = utils::save_cert_to_system_store(bytes) {
+//        tracing::error!("error when saving cert into system store : {}", e);
+//    } else {
+//        tracing::info!("Adding certificate into system store successful !");
+//    }
 
     tokio::join!(
-        http::serve(
-            http::using_serve_dir(),
-            config
-        ),
-       // rpc::start_rpc_server(&mut cert_buf, &mut key_buf)
+        http::serve(http::using_serve_dir(), config),
+        // rpc::start_rpc_server(&mut cert_buf, &mut key_buf)
     )
     .0;
     {};

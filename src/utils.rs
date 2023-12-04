@@ -5,14 +5,9 @@ use lettre::{
 };
 use rcgen::Certificate;
 use serde::{Deserialize, Serialize};
+use std::{fs, io, process};
+use std::{io::Write, os::unix::fs::OpenOptionsExt};
 use tokio_rustls::rustls::ServerConfig;
-use std::{os::unix::fs::OpenOptionsExt, io::Write};
-use std::{
-    io,
-    fs,
-    process,
-};
-use nix::unistd::{self, Uid};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -118,23 +113,27 @@ pub fn generate_jwt(username: String, email: String) -> String {
     }
 }
 
-pub fn save_cert_to_system_store(cert: Vec<u8>) -> io::Result<()> {
+/*pub fn save_cert_to_system_store(cert: Vec<u8>) -> io::Result<()> {
     if unistd::geteuid() != Uid::from_raw(0) {
-
         match unistd::seteuid(Uid::from_raw(0)) {
             Ok(_) => {
-
                 let result = save_cert(cert);
-                unistd::seteuid(unistd::geteuid()).expect("Impossible de restaurer les droits de l'utilisateur d'origine");
+                unistd::seteuid(unistd::geteuid())
+                    .expect("Impossible de restaurer les droits de l'utilisateur d'origine");
                 return result;
             }
-            Err(err) => return Err(io::Error::new(io::ErrorKind::Other, format!("Erreur lors de la modification des droits root : {}", err))),
+            Err(err) => {
+                return Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    format!("Erreur lors de la modification des droits root : {}", err),
+                ))
+            }
         }
     } else {
-       tracing::error!("error");
-       Ok(())
+        tracing::error!("error");
+        Ok(())
     }
-}
+}*/
 
 fn save_cert(cert: Vec<u8>) -> io::Result<()> {
     let cert_path = "/etc/ssl/certs/certificate.pem";
@@ -142,21 +141,31 @@ fn save_cert(cert: Vec<u8>) -> io::Result<()> {
     let mut cert_file = fs::OpenOptions::new()
         .write(true)
         .create(true)
-        .mode(0o644) 
+        .mode(0o644)
         .open(cert_path)?;
 
-        cert_file.write_all(&cert).unwrap();
+    cert_file.write_all(&cert).unwrap();
 
     let update_command = process::Command::new("update-ca-certificates").output();
     match update_command {
         Ok(output) => {
             if !output.status.success() {
-                return Err(io::Error::new(io::ErrorKind::Other, "Échec de la mise à jour du magasin de certificats système"));
+                return Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    "Échec de la mise à jour du magasin de certificats système",
+                ));
             }
         }
-        Err(err) => return Err(io::Error::new(io::ErrorKind::Other, format!("Erreur lors de la mise à jour du magasin de certificats système : {}", err))),
+        Err(err) => {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!(
+                    "Erreur lors de la mise à jour du magasin de certificats système : {}",
+                    err
+                ),
+            ))
+        }
     }
 
     Ok(())
 }
-
