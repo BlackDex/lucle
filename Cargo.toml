@@ -9,13 +9,12 @@ axum = "0.7.1"
 axum-server = { version = "0.5", features = ["tls-rustls"] }
 chrono = { version = "0.4.24", default-features = false, features = ["clock", "std"] }
 ftp = "3.0.1"
-diesel = { version = "2.1.1", features = ["chrono", "sqlite", "returning_clauses_for_sqlite_3_35"] }
+diesel = { version = "2.1.1", features = ["postgres", "mysql", "chrono", "sqlite", "returning_clauses_for_sqlite_3_35"] }
 diesel_migrations = "2.0.0"
-diesel-async = { version = "0.3.1", features = ["postgres", "mysql"] }
 diffy = "0.3.0"
 prost = "0.12"
 tokio = { version = "1.27", features = ["full"] }
-tokio-rustls = "0.24.1"
+tokio-rustls = "0.25.0-alpha.4"
 tonic = { version = "0.10.2", features = ["transport", "tls"] }
 tonic-web = "0.10.2"
 tokio-stream = "0.1"
@@ -49,6 +48,8 @@ minisign-verify = "0.2.1"
 tera = "1.19.1"
 futures-util = "0.3.29"
 rustls-native-certs = "0.6.3"
+hyper-util = "0.1.1"
+tower-service = "0.3.2"
 
 [build-dependencies]
 tonic-build = { version = "0.10.0", features = ["prost"] } 

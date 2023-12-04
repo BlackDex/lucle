@@ -1,17 +1,18 @@
 use axum::{
-    extract::Host,
-    handler::HandlerWithoutStateExt,
-    http::{StatusCode, Uri},
-    response::Redirect,
-    BoxError, Router,
+    extract::Request,
+    Router
 };
-
-use std::net::SocketAddr;
-use tokio_rustls::rustls::ServerConfig;
-use tower_http::{
-    services::{ServeDir, ServeFile},
-    trace::TraceLayer,
+use futures_util::pin_mut;
+use tokio::net::TcpListener;
+use hyper::body::Incoming;
+use hyper_util::rt::{TokioExecutor, TokioIo};
+use tokio_rustls::{
+    rustls::ServerConfig,
+    TlsAcceptor,
 };
+use tower_service::Service;
+use tower_http::services::{ServeDir, ServeFile};
+use std::sync::Arc;
 
 #[derive(Clone, Copy)]
 struct Ports {
@@ -27,45 +28,38 @@ pub fn using_serve_dir() -> Router {
         .fallback_service(serve_dir)
 }
 
-pub async fn serve(app: Router, config: ServerConfig) {
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
-    tracing::info!("HTTP server starting on {}", addr);
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app.layer(TraceLayer::new_for_http()))
-        .await
-        .unwrap();
-}
+pub async fn serve(app: Router, rustls_config: ServerConfig) {
+    let tls_acceptor = TlsAcceptor::from(Arc::new(rustls_config));
+    let bind = "[::1]:8080";
+    let tcp_listener = TcpListener::bind(bind).await.unwrap();
+    tracing::info!("HTTPS server listening on {}", bind);
 
-async fn redirect_http_to_https(ports: Ports) {
-    fn make_https(host: String, uri: Uri, ports: Ports) -> Result<Uri, BoxError> {
-        let mut parts = uri.into_parts();
+    pin_mut!(tcp_listener);
+    loop {
+        let tower_service = app.clone();
+        let tls_acceptor = tls_acceptor.clone();
 
-        parts.scheme = Some(axum::http::uri::Scheme::HTTPS);
+        let (cnx, addr) = tcp_listener.accept().await.unwrap();
 
-        if parts.path_and_query.is_none() {
-            parts.path_and_query = Some("/".parse().unwrap());
-        }
+        tokio::spawn(async move {
+            let Ok(stream) = tls_acceptor.accept(cnx).await else {
+                tracing::error!("error during tls handshake connection from {}", addr);
+                return;
+            };
 
-        let https_host = host.replace(&ports.http.to_string(), &ports.https.to_string());
-        parts.authority = Some(https_host.parse()?);
+            let stream = TokioIo::new(stream);
 
-        Ok(Uri::from_parts(parts)?)
-    }
+            let hyper_service = hyper::service::service_fn(move |request: Request<Incoming>| {
+                tower_service.clone().call(request)
+            });
 
-    let redirect = move |Host(host): Host, uri: Uri| async move {
-        match make_https(host, uri, ports) {
-            Ok(uri) => Ok(Redirect::permanent(&uri.to_string())),
-            Err(error) => {
-                tracing::warn!(%error, "failed to convert URI to HTTPS");
-                Err(StatusCode::BAD_REQUEST)
+            let ret = hyper_util::server::conn::auto::Builder::new(TokioExecutor::new())
+                .serve_connection_with_upgrades(stream, hyper_service)
+                .await;
+
+            if let Err(err) = ret {
+                tracing::warn!("error serving connection from {}: {}", addr, err);
             }
-        }
-    };
-
-    let addr = SocketAddr::from(([127, 0, 0, 1], ports.http));
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    tracing::debug!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, redirect.into_make_service())
-        .await
-        .unwrap();
+        });
+    }
 }

@@ -89,8 +89,8 @@ async fn main() {
     let cert_file = File::open(".tls/server_cert.pem").unwrap();
     let mut cert_buf = BufReader::new(cert_file);
     let certs = certs(&mut cert_reader)
-        .map(Certificate)
-        .collect();
+    .map(|result| result.unwrap());
+    //.collect();
 
     let key_file = File::open(".tls/server_private_key.pem").unwrap();
     let mut key_buf = BufReader::new(key_file);
