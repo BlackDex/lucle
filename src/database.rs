@@ -3,13 +3,15 @@ use crate::config::Config;
 use crate::database_errors::{DatabaseError, DatabaseResult};
 use crate::print_schema;
 use chrono::Utc;
+use diesel::{ConnectionError, ConnectionResult};
 use diesel::{
-    backend::Backend as DieselBackend, dsl::select, dsl::sql, mysql::MysqlConnection,
-    pg::PgConnection, result, sql_types::Bool, sqlite::SqliteConnection, Connection,
-    ExpressionMethods, OptionalExtension, QueryDsl, QueryResult, RunQueryDsl,
+    backend::Backend as DieselBackend, dsl::select, dsl::sql,
+    result, sql_types::Bool, sqlite::SqliteConnection, Connection,
+    ExpressionMethods, OptionalExtension, QueryDsl, QueryResult,
 };
 use diesel_logger::LoggingConnection;
 use diesel_migrations::{FileBasedMigrations, MigrationError, MigrationHarness};
+use diesel_async::{RunQueryDsl, AsyncConnection, AsyncPgConnection, AsyncMysqlConnection};
 use std::{
     env,
     error::Error,
@@ -19,6 +21,12 @@ use std::{
     path::{Path, PathBuf},
 };
 use url::Url;
+use futures_util::future::BoxFuture;
+use tokio_rustls::rustls::{
+    RootCertStore,
+    ClientConfig,
+};
+use rustls_native_certs::load_native_certs;
 
 pub static TIMESTAMP_FORMAT: &str = "%Y-%m-%d-%H%M%S";
 
@@ -57,9 +65,9 @@ impl Backend {
 
 #[derive(diesel::MultiConnection)]
 pub enum LucleDBConnection {
-    Pg(PgConnection),
+    Pg(AsyncPgConnection),
     Sqlite(SqliteConnection),
-    Mysql(MysqlConnection),
+    Mysql(AsyncMysqlConnection),
 }
 
 impl LucleDBConnection {
@@ -87,9 +95,9 @@ pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResu
 fn create_database(database_url: &str) -> DatabaseResult<()> {
     match Backend::for_url(database_url) {
         Backend::Pg => {
-            if PgConnection::establish(database_url).is_err() {
+            if AsyncPgConnection::establish(database_url).is_err() {
                 let (database, postgres_url) = change_database_of_url(database_url, "postgres");
-                let conn = PgConnection::establish(&postgres_url)?;
+                let conn = AsyncPgConnection::establish(&postgres_url)?;
                 let mut conn = LoggingConnection::new(conn);
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
@@ -101,10 +109,10 @@ fn create_database(database_url: &str) -> DatabaseResult<()> {
             }
         }
         Backend::Mysql => {
-            if MysqlConnection::establish(database_url).is_err() {
+            if AsyncMysqlConnection::establish(database_url).is_err() {
                 let (database, mysql_url) =
                     change_database_of_url(database_url, "information_schema");
-                let conn = MysqlConnection::establish(&mysql_url)?;
+                let conn = AsyncMysqlConnection::establish(&mysql_url)?;
                 let mut conn = LoggingConnection::new(conn);
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
@@ -178,7 +186,7 @@ pub fn drop_database(database_url: &str) -> DatabaseResult<()> {
     match Backend::for_url(database_url) {
         Backend::Pg => {
             let (database, postgres_url) = change_database_of_url(database_url, "postgres");
-            let conn = PgConnection::establish(&postgres_url)?;
+            let conn = AsyncPgConnection::establish(&postgres_url)?;
             let mut conn = LoggingConnection::new(conn);
             if pg_database_exists(&mut conn, &database)? {
                 println!("Dropping database: {database}");
@@ -195,7 +203,7 @@ pub fn drop_database(database_url: &str) -> DatabaseResult<()> {
         }
         Backend::Mysql => {
             let (database, mysql_url) = change_database_of_url(database_url, "information_schema");
-            let conn = MysqlConnection::establish(&mysql_url)?;
+            let conn = AsyncMysqlConnection::establish(&mysql_url)?;
             let mut conn = LoggingConnection::new(conn);
             if mysql_database_exists(&mut conn, &database)? {
                 println!("Dropping database: {database}");
@@ -209,7 +217,7 @@ pub fn drop_database(database_url: &str) -> DatabaseResult<()> {
 }
 
 fn pg_database_exists(
-    conn: &mut LoggingConnection<PgConnection>,
+    conn: &mut LoggingConnection<AsyncPgConnection>,
     database_name: &str,
 ) -> QueryResult<bool> {
     use self::pg_database::dsl::*;
@@ -224,7 +232,7 @@ fn pg_database_exists(
 }
 
 fn mysql_database_exists(
-    conn: &mut LoggingConnection<MysqlConnection>,
+    conn: &mut LoggingConnection<AsyncMysqlConnection>,
     database_name: &str,
 ) -> QueryResult<bool> {
     use self::schemata::dsl::*;
@@ -510,4 +518,32 @@ fn regenerate_schema(
         }
     }
     Ok(())
+}
+
+fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
+    let fut = async {
+        let rustls_config = ClientConfig::builder()
+            .with_safe_defaults()
+            .with_root_certificates(root_certs())
+            .with_no_client_auth();
+        let tls = tokio_postgres_rustls::MakeRustlsConnect::new(rustls_config);
+        let (client, conn) = tokio_postgres::connect(config, tls)
+            .await
+            .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
+        tokio::spawn(async move {
+            if let Err(e) = conn.await {
+                tracing::error!("Database connection: {e}");
+            }
+        });
+        AsyncPgConnection::try_from(client).await
+    };
+    fut.boxed()
+}
+
+fn root_certs() -> RootCertStore {
+    let mut roots = RootCertStore::empty();
+    let certs = load_native_certs().expect("Certs not loadable!");
+    let certs: Vec<_> = certs.into_iter().map(|cert| cert.0).collect();
+    roots.add_parsable_certificates(&certs);
+    roots
 }
