@@ -4,9 +4,9 @@ use crate::database_errors::{DatabaseError, DatabaseResult};
 use crate::print_schema;
 use chrono::Utc;
 use diesel::{
-    backend::Backend as DieselBackend, dsl::select, dsl::sql, PgConnection, MysqlConnection,
-    result, sql_types::Bool, sqlite::SqliteConnection, Connection, RunQueryDsl,
-    ExpressionMethods, QueryDsl, QueryResult, OptionalExtension
+    backend::Backend as DieselBackend, dsl::select, dsl::sql, result, sql_types::Bool,
+    sqlite::SqliteConnection, Connection, ExpressionMethods, MysqlConnection, OptionalExtension,
+    PgConnection, QueryDsl, QueryResult, RunQueryDsl,
 };
 use diesel_logger::LoggingConnection;
 use diesel_migrations::{FileBasedMigrations, MigrationError, MigrationHarness};

@@ -10,6 +10,7 @@ service Lucle {
   rpc is_created_user (Database) returns (ResponseResult);
   rpc create_table (Database) returns (Empty);
   rpc forgot_password (ResetPassword) returns (ResponseResult);
+  rpc plugins (Empty) returns (Plugins);
   rpc ServerStreamingEcho (Empty) returns (stream Message);
 }
 
@@ -41,6 +42,10 @@ message ResetPassword {
 
 message ResponseResult {
   string error = 1;
+}
+
+message Plugins {
+  repeated string path = 1;
 }
 
 message Message {

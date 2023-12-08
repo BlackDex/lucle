@@ -7,7 +7,7 @@ use rcgen::Certificate;
 use serde::{Deserialize, Serialize};
 use std::{fs, io, process};
 use std::{io::Write, os::unix::fs::OpenOptionsExt};
-use tokio_rustls::rustls::ServerConfig;
+
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {

@@ -1,18 +1,12 @@
-use axum::{
-    extract::Request,
-    Router
-};
+use axum::{extract::Request, Router};
 use futures_util::pin_mut;
-use tokio::net::TcpListener;
 use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
-use tokio_rustls::{
-    rustls::ServerConfig,
-    TlsAcceptor,
-};
-use tower_service::Service;
-use tower_http::services::{ServeDir, ServeFile};
 use std::sync::Arc;
+use tokio::net::TcpListener;
+use tokio_rustls::{rustls::ServerConfig, TlsAcceptor};
+use tower_http::services::{ServeDir, ServeFile};
+use tower_service::Service;
 
 #[derive(Clone, Copy)]
 struct Ports {

@@ -10,7 +10,7 @@ use email_address_parser::EmailAddress;
 
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Database, DatabaseType, Empty, Message, ResetPassword, ResponseResult, User,
+    Database, DatabaseType, Empty, Message, ResetPassword, ResponseResult, User, Plugins
 };
 use std::pin::Pin;
 use std::{fs::File, io::BufReader, net::SocketAddr};
@@ -196,6 +196,10 @@ impl Lucle for LucleApi {
         let reply = ResponseResult { error };
         Ok(Response::new(reply))
     }
+
+    async fn plugins(&self, request: Request<Empty>) -> Result<Response<Plugins>, Status> {
+
+    } 
 
     type ServerStreamingEchoStream = ResponseStream;
 

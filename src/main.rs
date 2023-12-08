@@ -1,12 +1,12 @@
-use rustls_pemfile::{certs, pkcs8_private_keys};
+
+use rustls_pemfile::{certs};
 use std::path::{Path, PathBuf};
 use std::{
     fs::write,
     fs::File,
-    io::{BufReader, Read},
+    io::{BufReader},
 };
 use tokio_rustls::rustls::ServerConfig;
-use tokio_rustls::rustls::{Certificate, PrivateKey};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod config;
@@ -84,29 +84,26 @@ async fn main() {
             Err(err) => tracing::error!("{}", err),
         }
     }
-    let mut cert_reader = BufReader::new(File::open(".tls/server_cert.pem").unwrap());
+    let _cert_reader = BufReader::new(File::open(".tls/server_cert.pem").unwrap());
 
     let cert_file = File::open(".tls/server_cert.pem").unwrap();
     let mut cert_buf = BufReader::new(cert_file);
-    let certs = certs(&mut cert_reader)
-    .map(|result| result.unwrap());
-    //.collect();
+    let certs = certs(&mut cert_buf).map(|result| result.unwrap()).collect();
 
     let key_file = File::open(".tls/server_private_key.pem").unwrap();
     let mut key_buf = BufReader::new(key_file);
-    let mut private_key = PrivateKey(pkcs8_private_keys(&mut key_buf).unwrap().remove(0));
+    let private_key = rustls_pemfile::private_key(&mut key_buf).unwrap().unwrap();
 
     let config = ServerConfig::builder()
-        .with_safe_defaults()
         .with_no_client_auth()
         .with_single_cert(certs, private_key)
         .unwrap();
 
-//    if let Err(e) = utils::save_cert_to_system_store(bytes) {
-//        tracing::error!("error when saving cert into system store : {}", e);
-//    } else {
-//        tracing::info!("Adding certificate into system store successful !");
-//    }
+    //    if let Err(e) = utils::save_cert_to_system_store(bytes) {
+    //        tracing::error!("error when saving cert into system store : {}", e);
+    //    } else {
+    //        tracing::info!("Adding certificate into system store successful !");
+    //    }
 
     tokio::join!(
         http::serve(http::using_serve_dir(), config),
