@@ -5,9 +5,10 @@ use lettre::{
 };
 use rcgen::Certificate;
 use serde::{Deserialize, Serialize};
-use std::{fs, io, process};
-use std::{io::Write, os::unix::fs::OpenOptionsExt};
-
+use std::{fs, io, process::Command};
+use tera::{Context, Tera};
+use users::{get_effective_uid, get_user_by_uid};
+use which::which;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -16,7 +17,6 @@ struct Claims {
     company: String,
     exp: usize,
 }
-use tera::{Context, Tera};
 
 pub fn send_mail(from: &str, dest: &str, subject: &str, _body: &str) {
     let context = Context::new();
@@ -113,59 +113,25 @@ pub fn generate_jwt(username: String, email: String) -> String {
     }
 }
 
-/*pub fn save_cert_to_system_store(cert: Vec<u8>) -> io::Result<()> {
-    if unistd::geteuid() != Uid::from_raw(0) {
-        match unistd::seteuid(Uid::from_raw(0)) {
-            Ok(_) => {
-                let result = save_cert(cert);
-                unistd::seteuid(unistd::geteuid())
-                    .expect("Impossible de restaurer les droits de l'utilisateur d'origine");
-                return result;
-            }
-            Err(err) => {
-                return Err(io::Error::new(
-                    io::ErrorKind::Other,
-                    format!("Erreur lors de la modification des droits root : {}", err),
-                ))
+pub fn save_cert_to_system_store() {
+    let mut command = "update-ca-certificate";
+    let euid = get_effective_uid();
+
+    if which("sudo").is_ok() {
+        if let Some(user) = get_user_by_uid(euid) {
+            if user.uid() != 0 {
+                command = "sudo"
+            } else {
+                command = ""
             }
         }
     } else {
-        tracing::error!("error");
-        Ok(())
-    }
-}*/
-
-fn save_cert(cert: Vec<u8>) -> io::Result<()> {
-    let cert_path = "/etc/ssl/certs/certificate.pem";
-
-    let mut cert_file = fs::OpenOptions::new()
-        .write(true)
-        .create(true)
-        .mode(0o644)
-        .open(cert_path)?;
-
-    cert_file.write_all(&cert).unwrap();
-
-    let update_command = process::Command::new("update-ca-certificates").output();
-    match update_command {
-        Ok(output) => {
-            if !output.status.success() {
-                return Err(io::Error::new(
-                    io::ErrorKind::Other,
-                    "Échec de la mise à jour du magasin de certificats système",
-                ));
-            }
-        }
-        Err(err) => {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                format!(
-                    "Erreur lors de la mise à jour du magasin de certificats système : {}",
-                    err
-                ),
-            ))
-        }
+        tracing::error!("sudo is not installed")
     }
 
-    Ok(())
+    if let Err(status) = Command::new(command).status() {
+        tracing::error!("{}", status);
+    } else {
+        tracing::info!("Certificate added successully to system store");
+    }
 }

@@ -1,11 +1,6 @@
-
-use rustls_pemfile::{certs};
+use rustls_pemfile::certs;
 use std::path::{Path, PathBuf};
-use std::{
-    fs::write,
-    fs::File,
-    io::{BufReader},
-};
+use std::{fs::write, fs::File, io::BufReader};
 use tokio_rustls::rustls::ServerConfig;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -99,11 +94,7 @@ async fn main() {
         .with_single_cert(certs, private_key)
         .unwrap();
 
-    //    if let Err(e) = utils::save_cert_to_system_store(bytes) {
-    //        tracing::error!("error when saving cert into system store : {}", e);
-    //    } else {
-    //        tracing::info!("Adding certificate into system store successful !");
-    //    }
+    utils::save_cert_to_system_store();
 
     tokio::join!(
         http::serve(http::using_serve_dir(), config),
