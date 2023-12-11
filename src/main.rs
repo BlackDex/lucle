@@ -1,5 +1,5 @@
 use rustls_pemfile::certs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::{fs::write, fs::File, io::BufReader};
 use tokio_rustls::rustls::ServerConfig;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -38,13 +38,6 @@ async fn main() {
     //load plugin
     plugins::verify_plugins().await;
 
-    //let dir = openssl_probe::probe().cert_dir.unwrap();
-    let dir = PathBuf::from("/usr/lib/ssl/certs/ca-certificates.crt");
-    tracing::info!(
-        "ssl path : {}",
-        dir.clone().into_os_string().into_string().unwrap()
-    );
-
     let ca_cert;
     let server_cert_key;
 
@@ -68,6 +61,10 @@ async fn main() {
 
         server_cert_key = utils::generate_server_cert_key(ca_cert);
         match write(".tls/server_cert.pem", server_cert_key.cert.as_bytes()) {
+            Ok(_) => {}
+            Err(err) => tracing::error!("{}", err),
+        }
+        match write(".tls/server_cert.crt", server_cert_key.cert.as_bytes()) {
             Ok(_) => {}
             Err(err) => tracing::error!("{}", err),
         }

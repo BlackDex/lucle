@@ -35,7 +35,6 @@ libsqlite3-sys = { version = "0.27.0", features = ["bundled"] }
 pki-types = { package = "rustls-pki-types", version = "1" }
 rcgen = "0.11.3"
 rustls-pemfile = "2.0.0"
-openssl-probe = "0.1.5"
 rustls-acme = { git = "https://github.com/ludea/rustls-acme", branch = "tokio_util", features = ["axum"] }
 argon2 = "0.5.2"
 #rustls-acme = { version = "0.7.6", features = ["axum", "tokio"] }

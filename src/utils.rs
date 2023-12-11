@@ -5,7 +5,7 @@ use lettre::{
 };
 use rcgen::Certificate;
 use serde::{Deserialize, Serialize};
-use std::{fs, io, process::Command};
+use std::{fs::File, io::Write, process::Command};
 use tera::{Context, Tera};
 use users::{get_effective_uid, get_user_by_uid};
 use which::which;
@@ -114,24 +114,35 @@ pub fn generate_jwt(username: String, email: String) -> String {
 }
 
 pub fn save_cert_to_system_store() {
-    let mut command = "update-ca-certificate";
+    let mut sudo = "update-ca-certificates";
     let euid = get_effective_uid();
 
-    if which("sudo").is_ok() {
-        if let Some(user) = get_user_by_uid(euid) {
-            if user.uid() != 0 {
-                command = "sudo"
+    if let Some(user) = get_user_by_uid(euid) {
+        if user.uid() != 0 {
+            if which("sudo").is_ok() {
+                sudo = "sudo"
             } else {
-                command = ""
+                tracing::error!("sudo is not installed")
             }
+        } else {
+            sudo = ""
         }
-    } else {
-        tracing::error!("sudo is not installed")
     }
 
-    if let Err(status) = Command::new(command).status() {
-        tracing::error!("{}", status);
-    } else {
-        tracing::info!("Certificate added successully to system store");
+    start_command(sudo, "update-ca-certificates");
+}
+
+fn start_command(command: &'static str, arg: &'static str) {
+    let output = Command::new(command).arg(arg).output();
+
+    if let Ok(output) = output {
+        if output.status.success() {
+            let mut file = File::create("/dev/null").unwrap();
+            file.write_all(&output.stdout).unwrap();
+            file.write_all(&output.stderr).unwrap();
+            tracing::info!("Certificate added successully to system store");
+        } else {
+            tracing::error!("{}", String::from_utf8_lossy(&output.stderr));
+        }
     }
 }
