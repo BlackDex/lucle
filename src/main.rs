@@ -64,10 +64,6 @@ async fn main() {
             Ok(_) => {}
             Err(err) => tracing::error!("{}", err),
         }
-        match write(".tls/server_cert.crt", server_cert_key.cert.as_bytes()) {
-            Ok(_) => {}
-            Err(err) => tracing::error!("{}", err),
-        }
         match write(
             ".tls/server_private_key.pem",
             server_cert_key.private_key.as_bytes(),

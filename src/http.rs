@@ -8,12 +8,6 @@ use tokio_rustls::{rustls::ServerConfig, TlsAcceptor};
 use tower_http::services::{ServeDir, ServeFile};
 use tower_service::Service;
 
-#[derive(Clone, Copy)]
-struct Ports {
-    http: u16,
-    https: u16,
-}
-
 pub fn using_serve_dir() -> Router {
     let serve_dir = ServeDir::new("web/dist").fallback(ServeFile::new("web/dist/index.html"));
 

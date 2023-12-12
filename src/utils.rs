@@ -3,12 +3,13 @@ use lettre::{
     message::{header, MultiPart, SinglePart},
     FileTransport, Message, Transport,
 };
-use rcgen::Certificate;
+use rcgen::{Certificate, KeyUsagePurpose, DnType};
 use serde::{Deserialize, Serialize};
 use std::{fs::File, io::Write, process::Command};
 use tera::{Context, Tera};
 use users::{get_effective_uid, get_user_by_uid};
 use which::which;
+use time::{Duration, OffsetDateTime};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -61,31 +62,34 @@ pub struct TlsServer {
 }
 
 pub fn generate_ca_cert() -> Certificate {
-    let alg = &rcgen::PKCS_ECDSA_P256_SHA256;
     let mut ca_params = rcgen::CertificateParams::new(Vec::new());
+    let (yesterday, tomorrow) = validity_period();
     ca_params
         .distinguished_name
-        .push(rcgen::DnType::OrganizationName, "Rustls Server Acceptor");
+        .push(DnType::OrganizationName, "Rustls Server Acceptor");
     ca_params
         .distinguished_name
-        .push(rcgen::DnType::CommonName, "Example CA");
+        .push(DnType::CommonName, "Example CA");
     ca_params.is_ca = rcgen::IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
     ca_params.key_usages = vec![
-        rcgen::KeyUsagePurpose::KeyCertSign,
-        rcgen::KeyUsagePurpose::DigitalSignature,
-        rcgen::KeyUsagePurpose::CrlSign,
+        KeyUsagePurpose::KeyCertSign,
+        KeyUsagePurpose::DigitalSignature,
+        KeyUsagePurpose::CrlSign,
     ];
-    ca_params.alg = alg;
+    ca_params.not_before = yesterday;
+	ca_params.not_after = tomorrow;
     Certificate::from_params(ca_params).unwrap()
 }
 
 pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
-    let alg = &rcgen::PKCS_ECDSA_P256_SHA256;
-    // Create a server end entity cert issued by the CA.
     let mut server_ee_params = rcgen::CertificateParams::new(vec!["localhost".to_string()]);
     server_ee_params.is_ca = rcgen::IsCa::NoCa;
-    server_ee_params.extended_key_usages = vec![rcgen::ExtendedKeyUsagePurpose::ServerAuth];
-    server_ee_params.alg = alg;
+	let (yesterday, tomorrow) = validity_period();
+	server_ee_params.distinguished_name.push(DnType::CommonName, "localhost");
+	server_ee_params.use_authority_key_identifier_extension = true;
+	server_ee_params.key_usages.push(KeyUsagePurpose::DigitalSignature);
+    server_ee_params.not_before = yesterday;
+	server_ee_params.not_after = tomorrow;
     let server_cert = Certificate::from_params(server_ee_params).unwrap();
     let server_cert_string = server_cert.serialize_pem_with_signer(&ca_cert).unwrap();
     let server_key_string = server_cert.serialize_private_key_pem();
@@ -93,6 +97,13 @@ pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
         cert: server_cert_string,
         private_key: server_key_string,
     }
+}
+
+fn validity_period() -> (OffsetDateTime, OffsetDateTime) {
+	let day = Duration::new(86400, 0);
+	let yesterday = OffsetDateTime::now_utc().checked_sub(day).unwrap();
+	let tomorrow = OffsetDateTime::now_utc().checked_add(day).unwrap();
+	(yesterday, tomorrow)
 }
 
 pub fn generate_jwt(username: String, email: String) -> String {
@@ -114,7 +125,7 @@ pub fn generate_jwt(username: String, email: String) -> String {
 }
 
 pub fn save_cert_to_system_store() {
-    let mut sudo = "update-ca-certificates";
+    let mut sudo = "";
     let euid = get_effective_uid();
 
     if let Some(user) = get_user_by_uid(euid) {
@@ -124,11 +135,11 @@ pub fn save_cert_to_system_store() {
             } else {
                 tracing::error!("sudo is not installed")
             }
-        } else {
-            sudo = ""
         }
     }
 
+    Command::new(sudo).arg("cp").arg(".tls/ca_cert.pem").arg("/usr/local/share/ca-certificates/localhost/ca_cert.crt").output();
+    //start_command(sudo, "cp .tls/ca_cert.pem /usr/local/share/ca-certificates/localhost/ca_cert.crt");
     start_command(sudo, "update-ca-certificates");
 }
 
@@ -137,9 +148,9 @@ fn start_command(command: &'static str, arg: &'static str) {
 
     if let Ok(output) = output {
         if output.status.success() {
-            let mut file = File::create("/dev/null").unwrap();
-            file.write_all(&output.stdout).unwrap();
-            file.write_all(&output.stderr).unwrap();
+           // let mut file = File::create("/dev/null").unwrap();
+           // file.write_all(&output.stdout).unwrap();
+           // file.write_all(&output.stderr).unwrap();
             tracing::info!("Certificate added successully to system store");
         } else {
             tracing::error!("{}", String::from_utf8_lossy(&output.stderr));
