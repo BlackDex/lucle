@@ -3,13 +3,13 @@ use lettre::{
     message::{header, MultiPart, SinglePart},
     FileTransport, Message, Transport,
 };
-use rcgen::{Certificate, KeyUsagePurpose, DnType};
+use rcgen::{Certificate, DnType, KeyUsagePurpose};
 use serde::{Deserialize, Serialize};
 use std::{fs::File, io::Write, process::Command};
 use tera::{Context, Tera};
+use time::{Duration, OffsetDateTime};
 use users::{get_effective_uid, get_user_by_uid};
 use which::which;
-use time::{Duration, OffsetDateTime};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -77,19 +77,23 @@ pub fn generate_ca_cert() -> Certificate {
         KeyUsagePurpose::CrlSign,
     ];
     ca_params.not_before = yesterday;
-	ca_params.not_after = tomorrow;
+    ca_params.not_after = tomorrow;
     Certificate::from_params(ca_params).unwrap()
 }
 
 pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
     let mut server_ee_params = rcgen::CertificateParams::new(vec!["localhost".to_string()]);
     server_ee_params.is_ca = rcgen::IsCa::NoCa;
-	let (yesterday, tomorrow) = validity_period();
-	server_ee_params.distinguished_name.push(DnType::CommonName, "localhost");
-	server_ee_params.use_authority_key_identifier_extension = true;
-	server_ee_params.key_usages.push(KeyUsagePurpose::DigitalSignature);
+    let (yesterday, tomorrow) = validity_period();
+    server_ee_params
+        .distinguished_name
+        .push(DnType::CommonName, "localhost");
+    server_ee_params.use_authority_key_identifier_extension = true;
+    server_ee_params
+        .key_usages
+        .push(KeyUsagePurpose::DigitalSignature);
     server_ee_params.not_before = yesterday;
-	server_ee_params.not_after = tomorrow;
+    server_ee_params.not_after = tomorrow;
     let server_cert = Certificate::from_params(server_ee_params).unwrap();
     let server_cert_string = server_cert.serialize_pem_with_signer(&ca_cert).unwrap();
     let server_key_string = server_cert.serialize_private_key_pem();
@@ -100,10 +104,10 @@ pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
 }
 
 fn validity_period() -> (OffsetDateTime, OffsetDateTime) {
-	let day = Duration::new(86400, 0);
-	let yesterday = OffsetDateTime::now_utc().checked_sub(day).unwrap();
-	let tomorrow = OffsetDateTime::now_utc().checked_add(day).unwrap();
-	(yesterday, tomorrow)
+    let day = Duration::new(86400, 0);
+    let yesterday = OffsetDateTime::now_utc().checked_sub(day).unwrap();
+    let tomorrow = OffsetDateTime::now_utc().checked_add(day).unwrap();
+    (yesterday, tomorrow)
 }
 
 pub fn generate_jwt(username: String, email: String) -> String {
@@ -138,8 +142,18 @@ pub fn save_cert_to_system_store() {
         }
     }
 
-    Command::new(sudo).arg("cp").arg(".tls/ca_cert.pem").arg("/usr/local/share/ca-certificates/localhost/ca_cert.crt").output();
-    //start_command(sudo, "cp .tls/ca_cert.pem /usr/local/share/ca-certificates/localhost/ca_cert.crt");
+    if let Ok(result) = Command::new(sudo)
+        .arg("cp")
+        .arg(".tls/ca_cert.pem")
+        .arg("/usr/local/share/ca-certificates/ca_cert.crt")
+        .output()
+    {
+        if result.status.success() {
+            tracing::info!("CA Cert copied successfully to certificates path");
+        } else {
+            tracing::error!("{}", String::from_utf8_lossy(&result.stderr));
+        }
+    }
     start_command(sudo, "update-ca-certificates");
 }
 
@@ -148,9 +162,6 @@ fn start_command(command: &'static str, arg: &'static str) {
 
     if let Ok(output) = output {
         if output.status.success() {
-           // let mut file = File::create("/dev/null").unwrap();
-           // file.write_all(&output.stdout).unwrap();
-           // file.write_all(&output.stderr).unwrap();
             tracing::info!("Certificate added successully to system store");
         } else {
             tracing::error!("{}", String::from_utf8_lossy(&output.stderr));
