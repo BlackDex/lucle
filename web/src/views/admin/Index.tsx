@@ -21,7 +21,7 @@ function Index() {
                   <TableCell key="table">Tables</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody></TableBody>
+              <TableBody />
             </Table>
           </TableContainer>
         </Paper>

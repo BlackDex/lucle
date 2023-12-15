@@ -11,9 +11,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import theme from "assets/theme";
 import Presentation from "layouts/pages/presentation";
 
-// Material Kit 2 React routes
-import routes from "routes";
-
 export default function Index() {
   const { pathname } = useLocation();
 

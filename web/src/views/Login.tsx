@@ -9,15 +9,14 @@ import Box from "@mui/material/Box";
 import { Link } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import { Navigate } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 // RPC Connect
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { AnyClient, createPromiseClient } from "@connectrpc/connect";
+import { createPromiseClient } from "@connectrpc/connect";
 import { Lucle } from "gen/lucle_connect";
 
-//RPC
+// RPC
 import { Connection } from "utils/rpc";
 
 const theme = createTheme();
@@ -33,8 +32,8 @@ function Login({ setIsLogged }: { setIsLogged: any }) {
     const transport = createGrpcWebTransport({
       baseUrl: `http://127.0.0.1:50051`,
     });
-    const client = createPromiseClient(Lucle, transport);
-    setClient(client);
+    const newclient = createPromiseClient(Lucle, transport);
+    setClient(newclient);
   }, []);
 
   const handleLogin = () => {

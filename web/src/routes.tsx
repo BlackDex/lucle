@@ -8,7 +8,6 @@ import Index from "views/Index";
 import OnlineEditor from "views/Editor";
 import Tables from "views/Tables";
 import Login from "views/Login";
-import Speedupdate from "views/Speedupdate";
 
 const AnonymousRoutes = ({ isLogged }: { isLogged: boolean }) => {
   return isLogged ? <Navigate to="/admin" replace /> : <Outlet />;
