@@ -2,10 +2,13 @@ use axum::{extract::Request, Router};
 use futures_util::pin_mut;
 use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
-use std::sync::Arc;
+use std::{net::SocketAddr, sync::Arc};
 use tokio::net::TcpListener;
 use tokio_rustls::{rustls::ServerConfig, TlsAcceptor};
-use tower_http::services::{ServeDir, ServeFile};
+use tower_http::{
+    services::{ServeDir, ServeFile},
+    trace::TraceLayer,
+};
 use tower_service::Service;
 
 pub fn using_serve_dir() -> Router {
@@ -16,7 +19,19 @@ pub fn using_serve_dir() -> Router {
         .fallback_service(serve_dir)
 }
 
-pub async fn serve(app: Router, rustls_config: ServerConfig) {
+pub async fn serve_http(app: Router, port: u16) {
+    let addr = SocketAddr::from(([127, 0, 0, 1], port));
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    tracing::info!(
+        "HTTP server listening on {}",
+        listener.local_addr().unwrap()
+    );
+    axum::serve(listener, app.layer(TraceLayer::new_for_http()))
+        .await
+        .unwrap();
+}
+
+pub async fn serve_https(app: Router, rustls_config: ServerConfig) {
     let tls_acceptor = TlsAcceptor::from(Arc::new(rustls_config));
     let bind = "[::1]:8080";
     let tcp_listener = TcpListener::bind(bind).await.unwrap();

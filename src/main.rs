@@ -89,10 +89,11 @@ async fn main() {
 
     utils::save_cert_to_system_store();
 
-    tokio::join!(
-        http::serve(http::using_serve_dir(), config),
-        // rpc::start_rpc_server(&mut cert_buf, &mut key_buf)
-    )
+    /*     tokio::join!(
+        http::serve_https(http::using_serve_dir(), config),
+         rpc::start_rpc_server(&mut cert_buf, &mut key_buf)
+    );
     .0;
-    {};
+    {}; */
+    tokio::join!(http::serve_http(http::using_serve_dir(), 8080));
 }
