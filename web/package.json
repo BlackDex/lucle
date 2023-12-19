@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "buf:generate": "buf generate ../proto/lucle.proto",
-    "lint": "eslint .",
+    "lint": "yarn buf:generate && eslint .",
     "prettier": "prettier --check .",
     "dev": "yarn buf:generate && vite",
     "build": "yarn buf:generate && vite build",
