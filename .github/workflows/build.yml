@@ -16,8 +16,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: cd web && yarn install
-     # - name: lint
-     #   run: cd web && yarn lint
+      - name: lint
+        run: cd web && yarn lint
       - name: prettier
         run: cd web && yarn prettier
       - name: Build frontend (js side)
