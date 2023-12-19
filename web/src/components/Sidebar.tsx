@@ -43,7 +43,7 @@ function Sidebar({ onMobileClose, openMobile }: any) {
     if (openMobile && onMobileClose) {
       onMobileClose();
     }
-  }, [location.pathname]);
+  }, [location.pathname, onMobileClose, openMobile]);
 
   const content = (
     <Box

@@ -8,8 +8,8 @@ import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { createPromiseClient } from "@connectrpc/connect";
 import { Lucle } from "gen/lucle_connect";
 
-//RPC
-import { forgot_password } from "utils/rpc";
+// RPC
+import { forgotPassword } from "utils/rpc";
 
 function ForgotPassword() {
   const [email, setEmail] = useState<string>("");
@@ -19,8 +19,8 @@ function ForgotPassword() {
     const transport = createGrpcWebTransport({
       baseUrl: `http://127.0.0.1:50051`,
     });
-    const client = createPromiseClient(Lucle, transport);
-    setClient(client);
+    const newclient = createPromiseClient(Lucle, transport);
+    setClient(newclient);
   }, []);
 
   return (
@@ -42,7 +42,7 @@ function ForgotPassword() {
         fullWidth
         variant="contained"
         sx={{ mt: 3, mb: 2 }}
-        onClick={() => forgot_password(client, email)}
+        onClick={() => forgotPassword(client, email)}
       >
         Send
       </Button>

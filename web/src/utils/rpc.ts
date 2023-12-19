@@ -12,51 +12,51 @@ export const connect = (url: string, port: string) => {
   return client;
 };
 
-export const check_if_installed = async (client: any) => {
+export const checkIfInstalled = async (client: any) => {
   const { error } = await client.is_created_user({
     dbType: 2,
   });
   if (error) throw error;
 };
 
-export const db_connection = async (client: any, db: number) => {
+export const dbConnection = async (client: any, db: number) => {
   const { error } = await client.create_db({
     dbType: db,
   });
   if (error) throw error;
 };
 
-export const forgot_password = async (client: any, email: string) => {
+export const forgotPassword = async (client: any, user_mail: string) => {
   const { error } = await client.forgot_password({
-    email: email,
+    email: user_mail,
   });
   if (error) throw error;
 };
 
-export const Connection = async (
+export const connection = async (
   client: any,
-  username: string,
-  password: string,
+  login: string,
+  user_password: string,
 ) => {
   const { error } = await client.login({
-    username: username,
-    password: password,
+    username: login,
+    password: user_password,
   });
   if (error) throw error;
 };
 
-export const create_user = async (
+export const createUser = async (
   client: any,
-  username: string,
-  password: string,
-  email: string,
+  login: string,
+  user_password: string,
+  user_mail: string,
 ) => {
   const { error } = await client.create_user({
-    //TODO: delete this var
+    // TODO: delete this var
     database_path: "lucle.db",
-    username: username,
-    password: password,
-    email: email,
+    username: login,
+    password: user_password,
+    email: user_mail,
   });
   if (error) throw error;
 };

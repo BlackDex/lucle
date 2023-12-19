@@ -17,7 +17,7 @@ import { createPromiseClient } from "@connectrpc/connect";
 import { Lucle } from "gen/lucle_connect";
 
 // RPC
-import { Connection } from "utils/rpc";
+import { connection } from "utils/rpc";
 
 const theme = createTheme();
 
@@ -41,11 +41,11 @@ function Login({ setIsLogged }: { setIsLogged: any }) {
       localStorage.setItem("username", login);
       localStorage.setItem("password", password);
     }
-    Connection(client, login, password)
+    connection(client, login, password)
       .then(() => {
         setIsLogged(true);
       })
-      .catch((error) => setError(error));
+      .catch((err) => setError(err));
   };
 
   return (

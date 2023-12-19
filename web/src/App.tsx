@@ -5,7 +5,7 @@ import GlobalStyles from "components/GlobalStyles";
 import theme from "theme/Index";
 
 // Components
-import { check_if_installed } from "utils/rpc";
+import { checkIfInstalled } from "utils/rpc";
 
 // RPC Connect
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
@@ -27,7 +27,7 @@ function App() {
     const client = createPromiseClient(Lucle, transport);
 
     if (location.pathname === "/admin") {
-      check_if_installed(client)
+      checkIfInstalled(client)
         .then(() => setIsInstalled(true))
         .catch(() => setIsInstalled(false));
     }

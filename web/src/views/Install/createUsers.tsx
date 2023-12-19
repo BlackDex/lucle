@@ -55,11 +55,9 @@ export default function CreateDefaultUser({
           setConfirmPassword(event.target.value);
           console.log(password);
           console.log(confirmpassword);
-          {
-            password !== confirmpassword
-              ? setMatchPassword(false)
-              : setMatchPassword(true);
-          }
+          password !== confirmpassword
+            ? setMatchPassword(false)
+            : setMatchPassword(true);
         }}
       />
       {matchpassword ? "Password doesn't match !" : null}

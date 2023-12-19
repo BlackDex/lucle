@@ -4,7 +4,7 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 
 // Material Kit 2 React components
-import MKTypography from "components/MKTypography";
+import Typography from "components/Typography";
 
 // Images
 import logoCT from "assets/images/logo-ct-dark.png";
@@ -99,9 +99,9 @@ export default {
     },
   ],
   copyright: (
-    <MKTypography variant="button" fontWeight="regular">
+    <Typography variant="button" fontWeight="regular">
       All rights reserved. Copyright &copy; {date} Material Kit by{" "}
-      <MKTypography
+      <Typography
         component="a"
         href="https://www.creative-tim.com"
         target="_blank"
@@ -110,8 +110,8 @@ export default {
         fontWeight="regular"
       >
         Creative Tim
-      </MKTypography>
+      </Typography>
       .
-    </MKTypography>
+    </Typography>
   ),
 };

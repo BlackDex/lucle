@@ -17,7 +17,7 @@ import { Lucle } from "gen/lucle_connect";
 // Components
 import CreateDB from "views/Install/createDB";
 import CreateDefaultUser from "views/Install/createUsers";
-import { create_user, db_connection } from "utils/rpc";
+import { createUser, dbConnection } from "utils/rpc";
 
 const steps = ["Create Database", "Create default user"];
 
@@ -55,13 +55,11 @@ export default function Install() {
   };
 
   useEffect(() => {
-    //const newclient = connect("127.0.0.1", "3000");
-
     const transport = createGrpcWebTransport({
       baseUrl: `http://127.0.0.1:50051`,
     });
-    const client = createPromiseClient(Lucle, transport);
-    setClient(client);
+    const newclient = createPromiseClient(Lucle, transport);
+    setClient(newclient);
   }, []);
 
   const isStepFailed = (step: number) => step === activeStep;
@@ -113,19 +111,15 @@ export default function Install() {
               disabled={error}
               onClick={() => {
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
-                {
-                  activeStep === 0
-                    ? db_connection(client, selectedDB).catch((err) => {
-                        setError(err);
-                      })
-                    : null;
-                }
-                {
-                  activeStep === steps.length - 1
-                    ? (create_user(client, username, password, email),
-                      setTimeout(() => navigate("/"), 10000))
-                    : null;
-                }
+                activeStep === 0
+                  ? dbConnection(client, selectedDB).catch((err) =>
+                      setError(err),
+                    )
+                  : null;
+                activeStep === steps.length - 1
+                  ? (createUser(client, username, password, email),
+                    setTimeout(() => navigate("/"), 10000))
+                  : null;
               }}
             >
               {activeStep === steps.length - 1 ? "Finish" : "Next"}
