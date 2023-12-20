@@ -16,7 +16,7 @@
     "@connectrpc/connect-web": "^1.1.2",
     "@emotion/react": "11.11.1",
     "@emotion/styled": "11.11.0",
-    "@mui/icons-material": "5.15.0",
+    "@mui/icons-material": "5.15.1",
     "@mui/material": "5.15.1",
     "@mui/styles": "5.15.0",
     "@types/prop-types": "^15.7.5",
