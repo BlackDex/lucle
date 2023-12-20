@@ -7,9 +7,8 @@ import PropTypes from "prop-types";
 import MKSocialButtonRoot from "components/SocialButton/SocialButtonRoot";
 
 const SocialButton = forwardRef(
-  ({ color, size, iconOnly, circular, children, ...rest }, ref) => (
+  ({ color, size, iconOnly, circular, children }, ref) => (
     <MKSocialButtonRoot
-      {...rest}
       ref={ref}
       variant="contained"
       color="primary"

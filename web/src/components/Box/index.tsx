@@ -8,20 +8,10 @@ import BoxRoot from "components/Box/BoxRoot";
 
 const Box = forwardRef(
   (
-    {
-      variant,
-      bgColor,
-      color,
-      opacity,
-      borderRadius,
-      shadow,
-      coloredShadow,
-      ...rest
-    },
+    { variant, bgColor, color, opacity, borderRadius, shadow, coloredShadow },
     ref,
   ) => (
     <BoxRoot
-      {...rest}
       ref={ref}
       ownerState={{
         variant,

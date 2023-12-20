@@ -7,11 +7,11 @@ import CountUp from "react-countup";
 import Box from "components/Box";
 import Typography from "components/Typography";
 
-function DefaultCounterCard({ color, count, title, description, ...rest }) {
+function DefaultCounterCard({ color, count, title, description }) {
   return (
     <Box p={2} textAlign="center" lineHeight={1}>
       <Typography variant="h1" color={color} textGradient>
-        <CountUp end={count} duration={1} {...rest} />
+        <CountUp end={count} duration={1} />
       </Typography>
       {title && (
         <Typography variant="h5" mt={2} mb={1}>

@@ -16,12 +16,10 @@ const Typography = forwardRef(
       textGradient,
       opacity,
       children,
-      ...rest
     },
     ref,
   ) => (
     <TypographyRoot
-      {...rest}
       ref={ref}
       ownerState={{
         color,

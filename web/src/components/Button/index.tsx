@@ -7,9 +7,8 @@ import PropTypes from "prop-types";
 import ButtonRoot from "components/Button/ButtonRoot";
 
 const Button = forwardRef(
-  ({ color, variant, size, circular, iconOnly, children, ...rest }, ref) => (
+  ({ color, variant, size, circular, iconOnly, children }, ref) => (
     <ButtonRoot
-      {...rest}
       ref={ref}
       color="primary"
       variant={variant === "gradient" ? "contained" : variant}

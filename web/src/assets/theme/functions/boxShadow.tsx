@@ -1,7 +1,7 @@
 import rgba from "assets/theme/functions/rgba";
 import pxToRem from "assets/theme/functions/pxToRem";
 
-function boxShadow(color, opacity, inset = "", offset = [], radius = []) {
+function boxShadow(offset = [], radius = [], color, opacity, inset = "") {
   const [x, y] = offset;
   const [blur, spread] = radius;
 

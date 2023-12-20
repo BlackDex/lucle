@@ -8,21 +8,10 @@ import MKBadgeRoot from "components/Badge/BadgeRoot";
 
 const Badge = forwardRef(
   (
-    {
-      color,
-      variant,
-      size,
-      circular,
-      indicator,
-      border,
-      container,
-      children,
-      ...rest
-    },
+    { color, variant, size, circular, indicator, border, container, children },
     ref,
   ) => (
     <MKBadgeRoot
-      {...rest}
       ownerState={{
         color,
         variant,

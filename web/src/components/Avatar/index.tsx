@@ -6,8 +6,8 @@ import PropTypes from "prop-types";
 // Custom styles for MKAvatar
 import AvatarRoot from "components/Avatar/AvatarRoot";
 
-const Avatar = forwardRef(({ bgColor, size, shadow, ...rest }, ref) => (
-  <AvatarRoot ref={ref} ownerState={{ shadow, bgColor, size }} {...rest} />
+const Avatar = forwardRef(({ bgColor, size, shadow }, ref) => (
+  <AvatarRoot ref={ref} ownerState={{ shadow, bgColor, size }} />
 ));
 
 // Setting default values for the props of MKAvatar

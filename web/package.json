@@ -7,7 +7,7 @@
     "lint": "yarn buf:generate && eslint .",
     "prettier": "prettier --check .",
     "dev": "yarn buf:generate && vite",
-    "build": "yarn buf:generate && vite build",
+    "build": "yarn buf:generate && tsc && vite build",
     "serve": "protobuf && vite preview"
   },
   "dependencies": {
