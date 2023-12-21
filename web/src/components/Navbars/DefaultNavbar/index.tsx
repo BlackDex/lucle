@@ -13,6 +13,7 @@ import Popper from "@mui/material/Popper";
 import Grow from "@mui/material/Grow";
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
+
 import MuiLink from "@mui/material/Link";
 
 // Material Kit 2 React components
@@ -74,7 +75,7 @@ function DefaultNavbar({
     return () => window.removeEventListener("resize", displayMobileNavbar);
   }, []);
 
-  /* const renderNavbarItems = routes.map(({ name, icon, href, route, collapse }) => (
+   const renderNavbarItems = routes.map(({ name, icon, href, route, collapse }) => (
     <DefaultNavbarDropdown
       key={name}
       name={name}
@@ -270,7 +271,7 @@ function DefaultNavbar({
     }
 
     return template;
-  }); */
+  }); 
 
   // Routes dropdown menu
   const dropdownMenu = (
@@ -495,7 +496,7 @@ function DefaultNavbar({
             ml="auto"
             mr={center ? "auto" : 0}
           >
-            {/* {renderNavbarItems} */}
+            { {renderNavbarItems} }
           </Box>
           <Box ml={{ xs: "auto", lg: 0 }}>
             {action &&

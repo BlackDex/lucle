@@ -20,6 +20,8 @@ const Button = forwardRef(
   ),
 );
 
+Button.displayName = 'Button';
+
 // Setting default values for the props of MKButton
 Button.defaultProps = {
   size: "medium",

@@ -4,14 +4,14 @@ import { forwardRef } from "react";
 import PropTypes from "prop-types";
 
 // Custom styles for the MKBadge
-import MKBadgeRoot from "components/Badge/BadgeRoot";
+import BadgeRoot from "components/Badge/BadgeRoot";
 
 const Badge = forwardRef(
   (
     { color, variant, size, circular, indicator, border, container, children },
     ref,
   ) => (
-    <MKBadgeRoot
+    <BadgeRoot
       ownerState={{
         color,
         variant,
@@ -26,9 +26,11 @@ const Badge = forwardRef(
       color="default"
     >
       {children}
-    </MKBadgeRoot>
+    </BadgeRoot>
   ),
 );
+
+Badge.displayName = 'Badge';
 
 // Setting default values for the props of MKBadge
 Badge.defaultProps = {
