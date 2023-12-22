@@ -10,21 +10,21 @@ import OnlineEditor from "views/Editor";
 import Tables from "views/Tables";
 import Login from "views/Login";
 
-const AnonymousRoutes = ({ isLogged }: { isLogged: boolean }) => {
+function AnonymousRoutes({ isLogged }: { isLogged: boolean }) {
   return isLogged ? <Navigate to="/admin" replace /> : <Outlet />;
-};
+}
 
-const PrivateRoutes = ({ isLogged }: { isLogged: boolean }) => {
+function PrivateRoutes({ isLogged }: { isLogged: boolean }) {
   return isLogged ? <Outlet /> : <Navigate to="/login" replace />;
-};
+}
 
-const InstalledRoutes = ({ isInstalled }: { isInstalled: boolean }) => {
+function InstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
   return isInstalled ? <Outlet /> : <Navigate to="/install" replace />;
-};
+}
 
-const UninstalledRoutes = ({ isInstalled }: { isInstalled: boolean }) => {
+function UninstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
   return isInstalled ? <Navigate to="/" replace /> : <Outlet />;
-};
+}
 
 const routes = (isInstalled: boolean) => {
   const [isLogged, setIsLogged] = useState(false);

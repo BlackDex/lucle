@@ -35,7 +35,7 @@ export default function Install() {
     setSelectedDB(DBType);
   };
 
-  const InstallStep = (step: number) => {
+  function InstallStep(step: number) {
     switch (step) {
       case 1:
         return (
@@ -52,7 +52,7 @@ export default function Install() {
       default:
         break;
     }
-  };
+  }
 
   useEffect(() => {
     const transport = createGrpcWebTransport({
