@@ -6,7 +6,7 @@ import {
 import Button from "@mui/material/Button";
 import ListItem from "@mui/material/ListItem";
 
-function NavItem({ href, icon: Icon, title, ...rest }: any) {
+function NavItem({ href, icon: Icon, title}: any) {
   const location = useLocation();
 
   const active = href
@@ -26,7 +26,6 @@ function NavItem({ href, icon: Icon, title, ...rest }: any) {
         display: "flex",
         py: 0,
       }}
-      {...rest}
     >
       <Button
         component={RouterLink}
