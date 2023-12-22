@@ -4,7 +4,8 @@ import Dashboard from "layouts/Dashboard";
 import Install from "layouts/Install";
 import ForgotPassword from "views/ForgotPassword";
 import AdminIndex from "views/admin/Index";
-import Index from "views/Index";
+// TODO : improve this
+import PresentationPage from "layouts/Presentation";
 import OnlineEditor from "views/Editor";
 import Tables from "views/Tables";
 import Login from "views/Login";
@@ -33,7 +34,7 @@ const routes = (isInstalled: boolean) => {
       element: <AnonymousRoutes isLogged={isLogged} />,
       children: [
         { path: "/login", element: <Login setIsLogged={setIsLogged} /> },
-        { path: "/", element: <Index /> },
+        { path: "/", element: <PresentationPage /> },
         { path: "/install", element: <Install /> },
         { path: "/forgot", element: <ForgotPassword /> },
       ],
