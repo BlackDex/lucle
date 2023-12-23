@@ -1,11 +1,10 @@
-import { useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import Dashboard from "layouts/Dashboard";
 import Install from "layouts/Install";
 import ForgotPassword from "views/ForgotPassword";
 import AdminIndex from "views/admin/Index";
 // TODO : improve this
-import PresentationPage from "layouts/Presentation";
+import Presentation from "views/Presentation";
 import OnlineEditor from "views/Editor";
 import Tables from "views/Tables";
 import Login from "views/Login";
@@ -27,14 +26,14 @@ function UninstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
 }
 
 const routes = (isInstalled: boolean) => {
-  const [isLogged, setIsLogged] = useState(false);
+  let isLogged;
 
   return [
     {
       element: <AnonymousRoutes isLogged={isLogged} />,
       children: [
-        { path: "/login", element: <Login setIsLogged={setIsLogged} /> },
-        { path: "/", element: <PresentationPage /> },
+        { path: "/login", element: <Login setIsLogged={isLogged} /> },
+        { path: "/", element: <Presentation /> },
         { path: "/install", element: <Install /> },
         { path: "/forgot", element: <ForgotPassword /> },
       ],

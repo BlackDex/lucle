@@ -1,8 +1,5 @@
 import PropTypes from "prop-types";
 
-// react-router-dom components
-import { Link } from "react-router-dom";
-
 // @mui material components
 import Collapse from "@mui/material/Collapse";
 import Icon from "@mui/material/Icon";
@@ -17,27 +14,12 @@ function DefaultNavbarDropdown({
   children,
   collapseStatus,
   light,
-  href,
-  route,
   collapse,
-  ...rest
 }) {
-  const linkComponent = {
-    component: "a",
-    href,
-    target: "_blank",
-    rel: "noreferrer",
-  };
-
-  const routeComponent = {
-    component: Link,
-    to: route,
-  };
 
   return (
     <>
       <Box
-        {...rest}
         mx={1}
         p={1}
         display="flex"
@@ -45,8 +27,6 @@ function DefaultNavbarDropdown({
         color={light ? "white" : "dark"}
         opacity={light ? 1 : 0.6}
         sx={{ cursor: "pointer", userSelect: "none" }}
-        {...(route && routeComponent)}
-        {...(href && linkComponent)}
       >
         <Typography
           variant="body2"
@@ -85,8 +65,6 @@ DefaultNavbarDropdown.defaultProps = {
   children: false,
   collapseStatus: false,
   light: false,
-  href: "",
-  route: "",
 };
 
 // Typechecking props for the DefaultNavbarDropdown
@@ -96,8 +74,6 @@ DefaultNavbarDropdown.propTypes = {
   children: PropTypes.node,
   collapseStatus: PropTypes.bool,
   light: PropTypes.bool,
-  href: PropTypes.string,
-  route: PropTypes.string,
   collapse: PropTypes.bool.isRequired,
 };
 

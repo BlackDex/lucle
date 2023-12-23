@@ -10,11 +10,11 @@ import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/NotificationsOutlined";
 import InputIcon from "@mui/icons-material/Input";
 
-function Navbar({ onMobileNavOpen, ...rest }: any) {
+function Navbar({ onMobileNavOpen }: any) {
   const [notifications] = useState([]);
 
   return (
-    <AppBar elevation={0} {...rest}>
+    <AppBar elevation={0}>
       <Toolbar>
         <RouterLink to="/" />
         <Box sx={{ flexGrow: 1 }} />

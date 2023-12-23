@@ -8,7 +8,7 @@ import Typography from "components/Typography";
 import SocialButton from "components/SocialButton";
 
 // Material Kit 2 React examples
-import DefaultNavbar from "components/Navbars/DefaultNavbar";
+// import DefaultNavbar from "components/Navbars/DefaultNavbar";
 import DefaultFooter from "components/Footers/DefaultFooter";
 import FilledInfoCard from "components/Cards/InfoCards/FilledInfoCard";
 
@@ -24,7 +24,7 @@ import Download from "views/Presentation/sections/Download";
 import BuiltByDevelopers from "views/Presentation/components/BuiltByDevelopers";
 
 // Routes
-import routes from "routes";
+// import routes from "routes";
 import footerRoutes from "footer.routes";
 
 // Images
@@ -33,7 +33,7 @@ import bgImage from "assets/images/bg-presentation.jpg";
 function Presentation() {
   return (
     <>
-      <DefaultNavbar
+  {/*    <DefaultNavbar
         routes={routes}
         action={{
           type: "external",
@@ -42,7 +42,7 @@ function Presentation() {
           color: "info",
         }}
         sticky
-      />
+      /> */}
       <Box
         minHeight="75vh"
         width="100%"

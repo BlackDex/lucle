@@ -7,7 +7,7 @@ import Tooltip from "@mui/material/Tooltip";
 import Box from "components/Box";
 import Typography from "components/Typography";
 
-function ExampleCard({ image, name, count, pro, ...rest }) {
+function ExampleCard({ image, name, count, pro }) {
   const imageTemplate = (
     <Box
       bgColor="white"
@@ -27,7 +27,6 @@ function ExampleCard({ image, name, count, pro, ...rest }) {
             "perspective(999px) rotateX(7deg) translate3d(0px, -4px, 5px)",
         },
       }}
-      {...rest}
     >
       {pro && (
         <Box position="absolute" top={0} right={0} zIndex={2} p={1}>
