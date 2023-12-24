@@ -30,7 +30,7 @@ const Badge = forwardRef(
   ),
 );
 
-Badge.displayName = 'Badge';
+Badge.displayName = "Badge";
 
 // Setting default values for the props of MKBadge
 Badge.defaultProps = {

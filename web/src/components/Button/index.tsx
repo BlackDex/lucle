@@ -20,7 +20,7 @@ const Button = forwardRef(
   ),
 );
 
-Button.displayName = 'Button';
+Button.displayName = "Button";
 
 // Setting default values for the props of MKButton
 Button.defaultProps = {

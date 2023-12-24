@@ -6,7 +6,7 @@ import {
 import Button from "@mui/material/Button";
 import ListItem from "@mui/material/ListItem";
 
-function NavItem({ href, icon: Icon, title}: any) {
+function NavItem({ href, icon: Icon, title }: any) {
   const location = useLocation();
 
   const active = href

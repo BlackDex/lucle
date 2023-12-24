@@ -33,7 +33,7 @@ import bgImage from "assets/images/bg-presentation.jpg";
 function Presentation() {
   return (
     <>
-  {/*    <DefaultNavbar
+      {/*    <DefaultNavbar
         routes={routes}
         action={{
           type: "external",

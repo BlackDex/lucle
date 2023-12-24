@@ -21,6 +21,23 @@ import { createUser, dbConnection } from "utils/rpc";
 
 const steps = ["Create Database", "Create default user"];
 
+function InstallStep(step: number) {
+  switch (step) {
+    case 1:
+      return <CreateDB setSelectedDB={handleDBtype} selectedDB={selectedDB} />;
+    case 2:
+      return (
+        <CreateDefaultUser
+          user={(user: string) => setUsername(user)}
+          passwd={(pass: string) => setPassword(pass)}
+          email={(mail: string) => setEmail(mail)}
+        />
+      );
+    default:
+      break;
+  }
+}
+
 export default function Install() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -34,25 +51,6 @@ export default function Install() {
   const handleDBtype = (DBType = 2) => {
     setSelectedDB(DBType);
   };
-
-  function InstallStep(step: number) {
-    switch (step) {
-      case 1:
-        return (
-          <CreateDB setSelectedDB={handleDBtype} selectedDB={selectedDB} />
-        );
-      case 2:
-        return (
-          <CreateDefaultUser
-            user={(user: string) => setUsername(user)}
-            passwd={(pass: string) => setPassword(pass)}
-            email={(mail: string) => setEmail(mail)}
-          />
-        );
-      default:
-        break;
-    }
-  }
 
   useEffect(() => {
     const transport = createGrpcWebTransport({
@@ -77,7 +75,12 @@ export default function Install() {
           }
           return (
             <Step key={label}>
-              <StepLabel {...stepProps}>{label}</StepLabel>
+              <StepLabel
+                completed={stepProps.completed}
+                error={stepProps.error}
+              >
+                {label}
+              </StepLabel>
             </Step>
           );
         })}
@@ -111,15 +114,19 @@ export default function Install() {
               disabled={error}
               onClick={() => {
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
-                activeStep === 0
-                  ? dbConnection(client, selectedDB).catch((err) =>
+                switch (activeStep) {
+                  case 0:
+                    dbConnection(client, selectedDB).catch((err) =>
                       setError(err),
-                    )
-                  : null;
-                activeStep === steps.length - 1
-                  ? (createUser(client, username, password, email),
-                    setTimeout(() => navigate("/"), 10000))
-                  : null;
+                    );
+                    break;
+                  case steps.length - 1:
+                    createUser(client, username, password, email);
+                    setTimeout(() => navigate("/"), 10000);
+                    break;
+                  default:
+                    break;
+                }
               }}
             >
               {activeStep === steps.length - 1 ? "Finish" : "Next"}

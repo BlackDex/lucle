@@ -20,7 +20,7 @@ const SocialButton = forwardRef(
   ),
 );
 
-SocialButton.displayName = 'SocialButton';
+SocialButton.displayName = "SocialButton";
 
 // Setting default values for the props of MKSocialButton
 SocialButton.defaultProps = {

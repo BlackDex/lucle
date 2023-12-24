@@ -26,7 +26,7 @@ const Box = forwardRef(
   ),
 );
 
-Box.displayName = 'Box';
+Box.displayName = "Box";
 
 // Setting default values for the props of MKBox
 Box.defaultProps = {

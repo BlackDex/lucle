@@ -16,7 +16,6 @@ function DefaultNavbarDropdown({
   light,
   collapse,
 }) {
-
   return (
     <>
       <Box
