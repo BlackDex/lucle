@@ -13,7 +13,7 @@ pub mod models;
 mod plugins;
 mod print_schema;
 mod query_helper;
-//mod rpc;
+mod rpc;
 pub mod schema;
 mod user;
 mod utils;
@@ -36,7 +36,7 @@ async fn main() {
         .init();
 
     //load plugin
-    plugins::verify_plugins().await;
+    plugins::load_backend_plugin();
 
     let ca_cert;
     let server_cert_key;
@@ -89,11 +89,10 @@ async fn main() {
 
     utils::save_cert_to_system_store();
 
-    /*     tokio::join!(
-        http::serve_https(http::using_serve_dir(), config),
+    tokio::join!(
+        http::serve_http(http::using_serve_dir(), 8080),
          rpc::start_rpc_server(&mut cert_buf, &mut key_buf)
-    );
+    )
     .0;
-    {}; */
-    tokio::join!(http::serve_http(http::using_serve_dir(), 8080));
+    {}; 
 }

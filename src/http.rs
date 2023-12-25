@@ -1,7 +1,12 @@
-use axum::{extract::Request, Router};
+use axum::{
+    body::Body,
+    handler::HandlerWithoutStateExt,
+    http::{Request, StatusCode},
+    routing::get,
+    Router,
+};
 use futures_util::pin_mut;
 use hyper::body::Incoming;
-use hyper_util::rt::{TokioExecutor, TokioIo};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::net::TcpListener;
 use tokio_rustls::{rustls::ServerConfig, TlsAcceptor};
@@ -26,12 +31,14 @@ pub async fn serve_http(app: Router, port: u16) {
         "HTTP server listening on {}",
         listener.local_addr().unwrap()
     );
-    axum::serve(listener, app.layer(TraceLayer::new_for_http()))
+
+    axum::Server::bind(&addr)
+        .serve(app.layer(TraceLayer::new_for_http()).into_make_service())
         .await
         .unwrap();
 }
 
-pub async fn serve_https(app: Router, rustls_config: ServerConfig) {
+/* pub async fn serve_https(app: Router, rustls_config: ServerConfig) {
     let tls_acceptor = TlsAcceptor::from(Arc::new(rustls_config));
     let bind = "[::1]:8080";
     let tcp_listener = TcpListener::bind(bind).await.unwrap();
@@ -65,4 +72,4 @@ pub async fn serve_https(app: Router, rustls_config: ServerConfig) {
             }
         });
     }
-}
+} */

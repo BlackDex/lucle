@@ -1,5 +1,6 @@
 use super::database;
 use super::user;
+use super::plugins;
 use crate::database::{handle_error, Backend};
 
 use crate::models::Users;
@@ -14,6 +15,7 @@ use luclerpc::{
 };
 use std::pin::Pin;
 use std::{fs::File, io::BufReader, net::SocketAddr};
+use std::path::Path;
 
 use tokio::sync::mpsc;
 use tokio_stream::{wrappers::ReceiverStream, Stream};
@@ -198,7 +200,11 @@ impl Lucle for LucleApi {
     }
 
     async fn plugins(&self, request: Request<Empty>) -> Result<Response<Plugins>, Status> {
-
+      let plugin_path = plugins::find_plugins(Path::new("/plugins"), "js");
+      let reply = Plugins {
+        path: plugin_path
+      };
+      Ok(Response::new(reply))
     } 
 
     type ServerStreamingEchoStream = ResponseStream;
