@@ -21,16 +21,23 @@ import { createUser, dbConnection } from "utils/rpc";
 
 const steps = ["Create Database", "Create default user"];
 
-function InstallStep(step: number) {
+function InstallStep(
+  step: number,
+  handleDBtype: (DBType: number) => void,
+  selectedDB: number,
+  setUsername: (user: string) => void,
+  setPassword: (pass: string) => void,
+  setEmail: (email: string) => void,
+) {
   switch (step) {
     case 1:
       return <CreateDB setSelectedDB={handleDBtype} selectedDB={selectedDB} />;
     case 2:
       return (
         <CreateDefaultUser
-          user={(user: string) => setUsername(user)}
-          passwd={(pass: string) => setPassword(pass)}
-          email={(mail: string) => setEmail(mail)}
+          user={setUsername}
+          passwd={setPassword}
+          email={setEmail}
         />
       );
     default:
@@ -97,7 +104,14 @@ export default function Install() {
         </>
       ) : (
         <>
-          {InstallStep(activeStep + 1)}
+          {InstallStep(
+            activeStep + 1,
+            handleDBtype,
+            selectedDB,
+            setUsername,
+            setPassword,
+            setEmail,
+          )}
           <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
             <Button
               color="inherit"
