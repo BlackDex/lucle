@@ -1,6 +1,6 @@
 use super::database;
-use super::user;
 use super::plugins;
+use super::user;
 use crate::database::{handle_error, Backend};
 
 use crate::models::Users;
@@ -11,15 +11,18 @@ use email_address_parser::EmailAddress;
 
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Database, DatabaseType, Empty, Message, ResetPassword, ResponseResult, User, Plugins
+    Database, DatabaseType, Empty, Message, Plugins, ResetPassword, ResponseResult, User,
 };
+use std::path::Path;
 use std::pin::Pin;
 use std::{fs::File, io::BufReader, net::SocketAddr};
-use std::path::Path;
 
 use tokio::sync::mpsc;
 use tokio_stream::{wrappers::ReceiverStream, Stream};
-use tonic::{transport::{Server, server::RoutesBuilder}, Request, Response, Status};
+use tonic::{
+    transport::{server::RoutesBuilder, Server},
+    Request, Response, Status,
+};
 use tonic_web::GrpcWebLayer;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -200,12 +203,10 @@ impl Lucle for LucleApi {
     }
 
     async fn plugins(&self, request: Request<Empty>) -> Result<Response<Plugins>, Status> {
-      let plugin_path = plugins::find_plugins(Path::new("/plugins"), "js");
-      let reply = Plugins {
-        path: plugin_path
-      };
-      Ok(Response::new(reply))
-    } 
+        let plugin_path = plugins::find_plugins(Path::new("/plugins"), "js");
+        let reply = Plugins { path: plugin_path };
+        Ok(Response::new(reply))
+    }
 
     type ServerStreamingEchoStream = ResponseStream;
 

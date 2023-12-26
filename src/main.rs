@@ -87,12 +87,12 @@ async fn main() {
         .with_single_cert(certs, private_key)
         .unwrap();
 
-    utils::save_cert_to_system_store();
+//    utils::save_cert_to_system_store();
 
     tokio::join!(
         http::serve_http(http::using_serve_dir(), 8080),
-         rpc::start_rpc_server(&mut cert_buf, &mut key_buf)
+        rpc::start_rpc_server(&mut cert_buf, &mut key_buf)
     )
     .0;
-    {}; 
+    {};
 }
