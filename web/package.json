@@ -1,6 +1,7 @@
 {
   "name": "lucle",
   "version": "0.0.0",
+  "type": "module",
   "license": "Apache-2.0",
   "scripts": {
     "buf:generate": "buf generate ../proto/lucle.proto",
@@ -11,6 +12,7 @@
     "serve": "protobuf && vite preview"
   },
   "dependencies": {
+    "@bufbuild/buf": "^1.28.1",
     "@connectrpc/connect": "^1.1.2",
     "@connectrpc/connect-web": "^1.1.2",
     "@emotion/react": "11.11.3",
