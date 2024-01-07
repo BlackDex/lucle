@@ -117,7 +117,7 @@ impl Lucle for LucleApi {
         let password = inner.password;
         let mut error: String = "".to_string();
         user::login("lucle.db", &username, &password).unwrap_or_else(|err| {
-            tracing::error!("12 : {}", err);
+            tracing::error!("{}", err);
             error = err.to_string();
         });
         let reply = ResponseResult { error };
@@ -129,10 +129,9 @@ impl Lucle for LucleApi {
         _request: Request<Database>,
     ) -> Result<Response<ResponseResult>, Status> {
         let mut db_error = "".to_string();
-        if user::is_default_user("lucle.db") {
-            tracing::info!("ok");
-        } else {
-            db_error = "test".to_string();
+        if !user::is_default_user("lucle.db") {
+            tracing::error!("No admin user");
+            db_error = "No admin user".to_string();
         }
         let reply = ResponseResult { error: db_error };
         Ok(Response::new(reply))

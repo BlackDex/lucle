@@ -26,7 +26,7 @@ function UninstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
   return isInstalled ? <Navigate to="/" replace /> : <Outlet />;
 }
 
-const routes = (isInstalled: boolean) => {
+const Routes = (isInstalled: boolean) => {
   const [isLogged, setIsLogged] = useState<boolean>(false);
 
   const handleConnection = () => {
@@ -69,4 +69,4 @@ const routes = (isInstalled: boolean) => {
   ];
 };
 
-export default routes;
+export default Routes;

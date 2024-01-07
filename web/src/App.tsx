@@ -12,13 +12,13 @@ import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { createPromiseClient } from "@connectrpc/connect";
 import { Lucle } from "gen/lucle_connect";
 
-import routes from "./routes";
+import Routes from "./routes";
 
 function App() {
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
 
   const location = useLocation();
-  const content = useRoutes(routes(isInstalled));
+  const content = useRoutes(Routes(isInstalled));
 
   useEffect(() => {
     const transport = createGrpcWebTransport({
