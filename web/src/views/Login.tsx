@@ -43,7 +43,7 @@ function Login({ setIsLogged }: { setIsLogged: any }) {
     }
     connection(client, login, password)
       .then(() => {
-        setIsLogged(true);
+        setIsLogged();
       })
       .catch((err) => setError(err));
   };

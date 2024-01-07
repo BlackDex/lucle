@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import Dashboard from "layouts/Dashboard";
 import Install from "layouts/Install";
@@ -18,7 +19,7 @@ function PrivateRoutes({ isLogged }: { isLogged: boolean }) {
 }
 
 function InstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
-  return isInstalled ? <Outlet /> : <Navigate to="/install" replace />;
+  return isInstalled ? <Outlet /> : null;
 }
 
 function UninstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
@@ -26,13 +27,17 @@ function UninstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
 }
 
 const routes = (isInstalled: boolean) => {
-  let isLogged;
+  const [isLogged, setIsLogged] = useState<boolean>(false);
+
+  const handleConnection = () => {
+    setIsLogged(true);
+  };
 
   return [
     {
       element: <AnonymousRoutes isLogged={isLogged} />,
       children: [
-        { path: "/login", element: <Login setIsLogged={isLogged} /> },
+        { path: "/login", element: <Login setIsLogged={handleConnection} /> },
         { path: "/", element: <Presentation /> },
         { path: "/install", element: <Install /> },
         { path: "/forgot", element: <ForgotPassword /> },
