@@ -1,6 +1,6 @@
 diesel::table! {
     users (id) {
-        id -> Integer,
+        id -> Nullable<Integer>,
         username -> Text,
         password -> Text,
         email -> Text,
