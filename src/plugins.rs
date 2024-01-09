@@ -38,8 +38,8 @@ pub fn find_plugins(path: &Path, extension: &'static str) -> Vec<String> {
                 }
             }
         }
-        Err(e) => {
-            tracing::error!("Path error : {:?}", e);
+        Err(_) => {
+            tracing::info!("No plugins loaded");
         }
     }
     plugins

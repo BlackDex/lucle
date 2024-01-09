@@ -36,7 +36,7 @@ async fn main() {
         .init();
 
     //load plugin
-//    plugins::load_backend_plugin();
+    plugins::load_backend_plugin();
 
     let ca_cert;
     let server_cert_key;
