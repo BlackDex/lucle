@@ -1,62 +1,46 @@
-import { useState } from "react";
-import { Outlet } from "react-router-dom";
-
-// MUI
-import { styled } from "@mui/material/styles";
+import { useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import PropTypes from "prop-types";
 
 // Components
-import DashboardNavbar from "components/Navbar";
-import DashboardSidebar from "components/Sidebar";
+import DashboardNavbar from "components/admin/DashboardNavBar";
+import Box from "components/admin/Box";
 
-const DashboardLayoutRoot = styled("div")(({ theme }) => ({
-  backgroundColor: theme.palette.background.default,
-  display: "flex",
-  height: "100%",
-  overflow: "hidden",
-  width: "100%",
-}));
-
-const DashboardLayoutWrapper = styled("div")(({ theme }) => ({
-  display: "flex",
-  flex: "1 1 auto",
-  overflow: "hidden",
-  paddingTop: 64,
-  [theme.breakpoints.up("lg")]: {
-    paddingLeft: 256,
-  },
-}));
-
-const DashboardLayoutContainer = styled("div")({
-  display: "flex",
-  flex: "1 1 auto",
-  overflow: "hidden",
-});
-
-const DashboardLayoutContent = styled("div")({
-  flex: "1 1 auto",
-  height: "100%",
-  overflow: "auto",
-});
+import { useMaterialUIController, setLayout } from "context";
 
 function DashboardLayout() {
-  const [isMobileNavOpen, setMobileNavOpen] = useState(false);
+  const [controller, dispatch] = useMaterialUIController();
+  const { miniSidenav } = controller;
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    setLayout(dispatch, "dashboard");
+  }, [pathname, dispatch]);
 
   return (
-    <DashboardLayoutRoot>
-      <DashboardNavbar onMobileNavOpen={() => setMobileNavOpen(true)} />
-      <DashboardSidebar
-        onMobileClose={() => setMobileNavOpen(false)}
-        openMobile={isMobileNavOpen}
-      />
-      <DashboardLayoutWrapper>
-        <DashboardLayoutContainer>
-          <DashboardLayoutContent>
-            <Outlet />
-          </DashboardLayoutContent>
-        </DashboardLayoutContainer>
-      </DashboardLayoutWrapper>
-    </DashboardLayoutRoot>
+    <Box
+      sx={({ breakpoints, transitions, functions: { pxToRem } }) => ({
+        p: 3,
+        position: "relative",
+
+        [breakpoints.up("xl")]: {
+          marginLeft: miniSidenav ? pxToRem(120) : pxToRem(274),
+          transition: transitions.create(["margin-left", "margin-right"], {
+            easing: transitions.easing.easeInOut,
+            duration: transitions.duration.standard,
+          }),
+        },
+      })}
+    >
+      <Outlet />
+      <DashboardNavbar />
+    </Box>
   );
 }
+
+// Typechecking props for the DashboardLayout
+DashboardLayout.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export default DashboardLayout;

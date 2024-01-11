@@ -7,6 +7,8 @@ import theme from "theme/Index";
 // Components
 import { checkIfInstalled } from "utils/rpc";
 
+import { MaterialUIControllerProvider } from "context";
+
 // RPC Connect
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { createPromiseClient } from "@connectrpc/connect";
@@ -37,7 +39,7 @@ function App() {
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
         <GlobalStyles />
-        {content}
+        <MaterialUIControllerProvider>{content}</MaterialUIControllerProvider>
       </ThemeProvider>
     </StyledEngineProvider>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import Dashboard from "layouts/Dashboard";
 import Install from "layouts/Install";
@@ -28,6 +28,13 @@ function UninstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
 
 const Routes = (isInstalled: boolean) => {
   const [isLogged, setIsLogged] = useState<boolean>(false);
+
+  useEffect(() => {
+    const result = localStorage.getItem("token");
+    if (result) {
+      setIsLogged(true);
+    }
+  }, [setIsLogged]);
 
   const handleConnection = () => {
     setIsLogged(true);

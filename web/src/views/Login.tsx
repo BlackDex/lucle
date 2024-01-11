@@ -44,6 +44,7 @@ function Login({ setIsLogged }: { setIsLogged: any }) {
     connection(client, login, password)
       .then(() => {
         setIsLogged();
+        localStorage.setItem("token", "test");
       })
       .catch((err) => setError(err));
   };
