@@ -2,6 +2,7 @@ import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
 
 export default styled(Box)(({ theme, ownerState }) => {
+  console.log(JSON.stringify(theme));
   const { palette, functions, borders, boxShadows } = theme;
   const {
     variant,
