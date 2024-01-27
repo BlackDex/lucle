@@ -5,11 +5,8 @@ use lettre::{
 };
 use rcgen::{Certificate, DnType, KeyUsagePurpose};
 use serde::{Deserialize, Serialize};
-use std::{fs::File, io::Write, process::Command};
 use tera::{Context, Tera};
 use time::{Duration, OffsetDateTime};
-use users::{get_effective_uid, get_user_by_uid};
-use which::which;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -125,46 +122,5 @@ pub fn generate_jwt(username: String, email: String) -> String {
     ) {
         Ok(t) => t,
         Err(_) => panic!(),
-    }
-}
-
-pub fn save_cert_to_system_store() {
-    let mut sudo = "";
-    let euid = get_effective_uid();
-
-    if let Some(user) = get_user_by_uid(euid) {
-        if user.uid() != 0 {
-            if which("sudo").is_ok() {
-                sudo = "sudo"
-            } else {
-                tracing::error!("sudo is not installed")
-            }
-        }
-    }
-
-    if let Ok(result) = Command::new(sudo)
-        .arg("cp")
-        .arg(".tls/ca_cert.pem")
-        .arg("/usr/local/share/ca-certificates/ca_cert.crt")
-        .output()
-    {
-        if result.status.success() {
-            tracing::info!("CA Cert copied successfully to certificates path");
-        } else {
-            tracing::error!("{}", String::from_utf8_lossy(&result.stderr));
-        }
-    }
-    start_command(sudo, "update-ca-certificates");
-}
-
-fn start_command(command: &'static str, arg: &'static str) {
-    let output = Command::new(command).arg(arg).output();
-
-    if let Ok(output) = output {
-        if output.status.success() {
-            tracing::info!("Certificate added successully to system store");
-        } else {
-            tracing::error!("{}", String::from_utf8_lossy(&output.stderr));
-        }
     }
 }

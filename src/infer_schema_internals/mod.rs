@@ -8,7 +8,6 @@ mod sqlite;
 mod table_data;
 
 pub use self::data_structures::*;
-pub use self::data_structures::*;
 pub use self::foreign_keys::*;
 pub use self::inference::*;
 pub use self::table_data::*;
