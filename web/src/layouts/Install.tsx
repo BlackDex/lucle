@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 // MUI
@@ -9,15 +9,13 @@ import StepLabel from "@mui/material/StepLabel";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 
-// RPC Connect
-import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { createPromiseClient } from "@connectrpc/connect";
-import { Lucle } from "gen/lucle_connect";
-
 // Components
 import CreateDB from "views/Install/createDB";
-import CreateDefaultUser from "views/Install/createUsers";
+import CreateDefaultUser from "views/Install/createUser";
 import { createUser, dbConnection } from "utils/rpc";
+
+// Context 
+import { CLientConnectBuf } from "context"; 
 
 const steps = ["Create Database", "Create default user"];
 
@@ -49,23 +47,15 @@ export default function Install() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [client, setClient] = useState<any>();
   const [error, setError] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
   const [selectedDB, setSelectedDB] = useState<number>(2);
   const navigate = useNavigate();
+  const client = useContext(CLientConnectBuf);
 
   const handleDBtype = (DBType = 2) => {
     setSelectedDB(DBType);
   };
-
-  useEffect(() => {
-    const transport = createGrpcWebTransport({
-      baseUrl: `http://127.0.0.1:50051`,
-    });
-    const newclient = createPromiseClient(Lucle, transport);
-    setClient(newclient);
-  }, []);
 
   const isStepFailed = (step: number) => step === activeStep;
 

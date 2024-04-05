@@ -1,48 +1,63 @@
-import { useState, useEffect } from "react";
-import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { useRoutes, useLocation } from "react-router-dom";
-import GlobalStyles from "components/GlobalStyles";
-import theme from "theme/Index";
+/**
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
 
-// Components
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
+import { useState, useEffect } from "react";
+
+// react-router components
+import { useLocation, useRoutes } from "react-router-dom";
+
+// RPC Components
 import { checkIfInstalled } from "utils/rpc";
 
-import { MaterialUIControllerProvider } from "context";
+// Material Dashboard 2 React routes
+import { SiteRoutes } from "routes";
 
-// RPC Connect
-import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { createPromiseClient } from "@connectrpc/connect";
-import { Lucle } from "gen/lucle_connect";
+// @mui material components
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 
-import Routes from "./routes";
+// Material Dashboard 2 React themes
+import theme from "assets/theme";
 
-function App() {
+// Material Dashboard 2 React Dark Mode themes
+import themeDark from "assets/theme-dark";
+
+// Material Dashboard 2 React contexts
+import { useMaterialUIController, CLientConnectBuf } from "context";
+
+export default function App() {
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
+  const content = useRoutes(SiteRoutes(isInstalled));
+  const { pathname } = useLocation();
 
-  const location = useLocation();
-  const content = useRoutes(Routes(isInstalled));
+  const [controller, dispatch] = useMaterialUIController();
+  const { darkMode } = controller;
 
   useEffect(() => {
-    const transport = createGrpcWebTransport({
-      baseUrl: `http://127.0.0.1:50051`,
-    });
-    const client = createPromiseClient(Lucle, transport);
 
-    if (location.pathname === "/admin") {
+    /* if (location.pathname === "/admin") {
       checkIfInstalled(client)
         .then(() => setIsInstalled(true))
         .catch(() => setIsInstalled(false));
-    }
-  }, [location.pathname]);
+    } */
+  }, [pathname]);
 
   return (
-    <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={theme}>
-        <GlobalStyles />
-        <MaterialUIControllerProvider>{content}</MaterialUIControllerProvider>
-      </ThemeProvider>
-    </StyledEngineProvider>
+    <ThemeProvider theme={darkMode ? themeDark : theme}>
+      <CssBaseline />
+      {content}
+    </ThemeProvider>
   );
 }
-
-export default App;

@@ -1,11 +1,27 @@
+/**
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
+// Material Dashboard 2 React base styles
 import colors from "assets/theme/base/colors";
 
-// Material Kit 2 React helper functions
+// Material Dashboard 2 React helper functions
 import rgba from "assets/theme/functions/rgba";
 
 const { info, white, gradients } = colors;
 
-export default {
+const flatpickr = {
   ".flatpickr-day:hover, .flatpickr-day:focus, .flatpickr-day.nextMonthDay:hover, .flatpickr-day.nextMonthDay:focus":
     {
       background: rgba(info.main, 0.28),
@@ -35,3 +51,5 @@ export default {
       fill: `${info.main} !important`,
     },
 };
+
+export default flatpickr;

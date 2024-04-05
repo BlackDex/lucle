@@ -225,6 +225,7 @@ impl Lucle for LucleApi {
                 Ok(_) => (),
                 Err(_item) => (),
             }
+            tracing::info!("client disconnected from {:?}", req.remote_addr().unwrap());
         });
 
         let output_stream = ReceiverStream::new(rx);

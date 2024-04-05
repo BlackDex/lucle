@@ -1,10 +1,28 @@
+/**
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
 import { forwardRef } from "react";
 
 // prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
 
-// Custom styles for MKTypography
+// Custom styles for MDTypography
 import TypographyRoot from "components/Typography/TypographyRoot";
+
+// Material Dashboard 2 React contexts
+import { useMaterialUIController } from "context";
 
 const Typography = forwardRef(
   (
@@ -16,28 +34,36 @@ const Typography = forwardRef(
       textGradient,
       opacity,
       children,
+      ...rest
     },
     ref,
-  ) => (
-    <TypographyRoot
-      ref={ref}
-      ownerState={{
-        color,
-        textTransform,
-        verticalAlign,
-        fontWeight,
-        opacity,
-        textGradient,
-      }}
-    >
-      {children}
-    </TypographyRoot>
-  ),
+  ) => {
+    const [controller] = useMaterialUIController();
+    const { darkMode } = controller;
+
+    return (
+      <TypographyRoot
+        {...rest}
+        ref={ref}
+        ownerState={{
+          color,
+          textTransform,
+          verticalAlign,
+          fontWeight,
+          opacity,
+          textGradient,
+          darkMode,
+        }}
+      >
+        {children}
+      </TypographyRoot>
+    );
+  },
 );
 
 Typography.displayName = "Typography";
 
-// Setting default values for the props of MKTypography
+// Setting default values for the props of MDTypography
 Typography.defaultProps = {
   color: "dark",
   fontWeight: false,
@@ -47,7 +73,7 @@ Typography.defaultProps = {
   opacity: 1,
 };
 
-// Typechecking props for the MKTypography
+// Typechecking props for the MDTypography
 Typography.propTypes = {
   color: PropTypes.oneOf([
     "inherit",

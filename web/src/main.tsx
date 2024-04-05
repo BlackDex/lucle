@@ -1,12 +1,34 @@
-import { BrowserRouter } from "react-router-dom";
-import { createRoot } from "react-dom/client";
+/**
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
 
-import App from "./App";
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+=========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import App from "App";
+
+// Material Dashboard 2 React Context Provider
+import { MaterialUIControllerProvider, BufProvider } from "context";
 
 const container = document.getElementById("root");
-const root = createRoot(container!);
+const root = createRoot(container);
+
 root.render(
   <BrowserRouter>
-    <App />
+    <MaterialUIControllerProvider>
+      <BufProvider>
+      <App />
+      </BufProvider>
+    </MaterialUIControllerProvider>
   </BrowserRouter>,
 );

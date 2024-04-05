@@ -1,11 +1,28 @@
+/* eslint-disable prefer-destructuring */
+/**
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
+// @mui material components
 import Button from "@mui/material/Button";
 import { styled } from "@mui/material/styles";
 
 export default styled(Button)(({ theme, ownerState }) => {
   const { palette, functions, borders, boxShadows } = theme;
-  const { color, variant, size, circular, iconOnly } = ownerState;
+  const { color, variant, size, circular, iconOnly, darkMode } = ownerState;
 
-  const { white, text, transparent, gradients, dark } = palette;
+  const { white, text, transparent, gradients, grey } = palette;
   const { boxShadow, linearGradient, pxToRem, rgba } = functions;
   const { borderRadius } = borders;
   const { colored } = boxShadows;
@@ -32,12 +49,7 @@ export default styled(Button)(({ theme, ownerState }) => {
 
     // boxShadow value when button is hovered
     const hoveredBoxShadowValue = colored[color]
-      ? `${boxShadow(
-          [0, 14],
-          [26, -12],
-          palette[color].main,
-          0.4,
-        )}, ${boxShadow(
+      ? `${boxShadow([0, 14], [26, -12], palette[color].main, 0.4)}, ${boxShadow(
           [0, 4],
           [23, 0],
           palette[color].main,
@@ -48,19 +60,23 @@ export default styled(Button)(({ theme, ownerState }) => {
     // color value
     let colorValue = white.main;
 
-    if (color === "default" || !palette[color]) {
+    if (
+      !darkMode &&
+      (color === "white" || color === "light" || !palette[color])
+    ) {
       colorValue = text.main;
-    } else if (color === "white" || color === "light") {
-      colorValue = dark.main;
+    } else if (
+      darkMode &&
+      (color === "white" || color === "light" || !palette[color])
+    ) {
+      colorValue = grey[600];
     }
 
     // color value when button is focused
     let focusedColorValue = white.main;
 
-    if (color === "darfault") {
+    if (color === "white") {
       focusedColorValue = text.main;
-    } else if (color === "white") {
-      focusedColorValue = dark.main;
     } else if (color === "primary" || color === "error" || color === "dark") {
       focusedColorValue = white.main;
     }
@@ -160,12 +176,7 @@ export default styled(Button)(({ theme, ownerState }) => {
 
     // boxShadow value when button is hovered
     const hoveredBoxShadowValue = colored[color]
-      ? `${boxShadow(
-          [0, 14],
-          [26, -12],
-          palette[color].main,
-          0.4,
-        )}, ${boxShadow(
+      ? `${boxShadow([0, 14], [26, -12], palette[color].main, 0.4)}, ${boxShadow(
           [0, 4],
           [23, 0],
           palette[color].main,
@@ -188,7 +199,6 @@ export default styled(Button)(({ theme, ownerState }) => {
       boxShadow: boxShadowValue,
 
       "&:hover": {
-        backgroundColor: white.main,
         boxShadow: hoveredBoxShadowValue,
       },
 

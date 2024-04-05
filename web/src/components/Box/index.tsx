@@ -1,17 +1,42 @@
+/**
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
 import { forwardRef } from "react";
 
 // prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
 
-// Custom styles for MKBox
+// Custom styles for MDBox
 import BoxRoot from "components/Box/BoxRoot";
 
 const Box = forwardRef(
   (
-    { variant, bgColor, color, opacity, borderRadius, shadow, coloredShadow },
+    {
+      variant,
+      bgColor,
+      color,
+      opacity,
+      borderRadius,
+      shadow,
+      coloredShadow,
+      ...rest
+    },
     ref,
   ) => (
     <BoxRoot
+      {...rest}
       ref={ref}
       ownerState={{
         variant,
@@ -28,7 +53,7 @@ const Box = forwardRef(
 
 Box.displayName = "Box";
 
-// Setting default values for the props of MKBox
+// Setting default values for the props of MDBox
 Box.defaultProps = {
   variant: "contained",
   bgColor: "transparent",
@@ -39,7 +64,7 @@ Box.defaultProps = {
   coloredShadow: "none",
 };
 
-// Typechecking props for the MKBox
+// Typechecking props for the MDBox
 Box.propTypes = {
   variant: PropTypes.oneOf(["contained", "gradient"]),
   bgColor: PropTypes.string,

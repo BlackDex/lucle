@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import Icon from "@mui/material/Icon";
+
 import Dashboard from "layouts/Dashboard";
+import Landing from "layouts/Landing";
 import Install from "layouts/Install";
 import ForgotPassword from "views/ForgotPassword";
-import AdminIndex from "views/admin/Index";
-// TODO : improve this
-import Presentation from "views/Presentation";
+import AdminIndex from "views/AdminIndex";
 import OnlineEditor from "views/Editor";
 import Tables from "views/Tables";
 import Login from "views/Login";
@@ -26,7 +27,7 @@ function UninstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
   return isInstalled ? <Navigate to="/" replace /> : <Outlet />;
 }
 
-const Routes = (isInstalled: boolean) => {
+const SiteRoutes = (isInstalled: boolean) => {
   const [isLogged, setIsLogged] = useState<boolean>(false);
 
   useEffect(() => {
@@ -45,12 +46,13 @@ const Routes = (isInstalled: boolean) => {
       element: <AnonymousRoutes isLogged={isLogged} />,
       children: [
         { path: "/login", element: <Login setIsLogged={handleConnection} /> },
-        { path: "/", element: <Presentation /> },
+        { path: "/", element: <Landing /> },
         { path: "/install", element: <Install /> },
+        { path: "/admin", element: <Dashboard /> },
         { path: "/forgot", element: <ForgotPassword /> },
       ],
     },
-    {
+/*     {
       element: <InstalledRoutes isInstalled={isInstalled} />,
       children: [
         {
@@ -72,8 +74,19 @@ const Routes = (isInstalled: boolean) => {
           children: [{ path: "/install", element: <Install /> }],
         },
       ],
-    },
+    }, */
   ];
 };
 
-export default Routes;
+const adminroutes = [
+  {
+    type: "collapse",
+    name: "Home",
+    key: "admin",
+    icon: <Icon fontSize="small">dashboard</Icon>,
+    route: "/admin",
+    component: <Dashboard />,
+  },
+];
+
+export { SiteRoutes, adminroutes };

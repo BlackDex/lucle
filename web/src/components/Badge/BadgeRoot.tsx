@@ -1,3 +1,19 @@
+/**
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
+// @mui material components
 import Badge from "@mui/material/Badge";
 import { styled } from "@mui/material/styles";
 
@@ -34,7 +50,7 @@ export default styled(Badge)(({ theme, ownerState }) => {
   const borderValue = border ? `${borderWidth[3]} solid ${white.main}` : "none";
 
   // borderRadius value
-  const borderRadiusValue = circular ? borderRadius.section : borderRadius.lg;
+  const borderRadiusValue = circular ? borderRadius.section : borderRadius.md;
 
   // styles for the badge with indicator={true}
   const indicatorStyles = (sizeProp) => {
@@ -76,7 +92,7 @@ export default styled(Badge)(({ theme, ownerState }) => {
 
   // styles for the badge with variant="contained"
   const containedStyles = (colorProp) => {
-    let backgroundValue = badgeColors[colorProp]
+    const backgroundValue = badgeColors[colorProp]
       ? badgeColors[colorProp].background
       : badgeColors.info.background;
     let colorValue = badgeColors[colorProp]
@@ -85,11 +101,7 @@ export default styled(Badge)(({ theme, ownerState }) => {
 
     if (colorProp === "light") {
       colorValue = dark.main;
-    } else if (colorProp === "white") {
-      backgroundValue = white.main;
-      colorValue = dark.main;
     }
-
     return {
       background: backgroundValue,
       color: colorValue,

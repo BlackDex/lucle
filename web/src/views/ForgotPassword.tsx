@@ -1,27 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useContext } from "react";
 
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 
-// RPC Connect
-import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { createPromiseClient } from "@connectrpc/connect";
-import { Lucle } from "gen/lucle_connect";
+// Context 
+import { CLientConnectBuf } from "context"; 
 
 // RPC
 import { forgotPassword } from "utils/rpc";
 
 function ForgotPassword() {
   const [email, setEmail] = useState<string>("");
-  const [client, setClient] = useState<any>();
-
-  useEffect(() => {
-    const transport = createGrpcWebTransport({
-      baseUrl: `http://127.0.0.1:50051`,
-    });
-    const newclient = createPromiseClient(Lucle, transport);
-    setClient(newclient);
-  }, []);
+  const client = useContext(CLientConnectBuf);
 
   return (
     <div>
