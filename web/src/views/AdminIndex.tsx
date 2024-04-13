@@ -8,10 +8,6 @@ import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import TableBody from "@mui/material/TableBody";
 
-// Plugin
-import createPlugin from '@extism/extism';
-import { useEffect } from "react";
-
 function Index() {
   return (
     <div>

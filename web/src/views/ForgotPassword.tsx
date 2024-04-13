@@ -3,15 +3,15 @@ import { useState, useContext } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 
-// Context 
-import { CLientConnectBuf } from "context"; 
+// Context
+import { LucleRPCProvider } from "context";
 
 // RPC
 import { forgotPassword } from "utils/rpc";
 
 function ForgotPassword() {
   const [email, setEmail] = useState<string>("");
-  const client = useContext(CLientConnectBuf);
+  const client = useContext(LucleRPCProvider);
 
   return (
     <div>

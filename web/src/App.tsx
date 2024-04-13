@@ -22,7 +22,7 @@ import { useLocation, useRoutes } from "react-router-dom";
 import { checkIfInstalled } from "utils/rpc";
 
 // Material Dashboard 2 React routes
-import { SiteRoutes } from "routes";
+import routes from "routes";
 
 // @mui material components
 import { ThemeProvider } from "@mui/material/styles";
@@ -39,14 +39,13 @@ import { useMaterialUIController, CLientConnectBuf } from "context";
 
 export default function App() {
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
-  const content = useRoutes(SiteRoutes(isInstalled));
+  const content = useRoutes(routes(isInstalled));
   const { pathname } = useLocation();
 
   const [controller, dispatch] = useMaterialUIController();
   const { darkMode } = controller;
 
   useEffect(() => {
-
     /* if (location.pathname === "/admin") {
       checkIfInstalled(client)
         .then(() => setIsInstalled(true))

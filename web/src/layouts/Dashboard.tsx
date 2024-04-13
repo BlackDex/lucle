@@ -57,20 +57,9 @@ import {
 } from "context";
 
 // Material Dashboard 2 React routes
-import { adminroutes } from "routes";
-
-// Plugin 
-import createPlugin from '@extism/extism';
+import adminroutes from "adminRoutes";
 
 function Dashboard() {
- // let manifest = 'https://cdn.modsurfer.dylibso.com/api/v1/module/93898457953d30d016f712ccf4336ce7e9971db5f7f3aff1edd252764f75d5d7.wasm'; //"plugins/speedupdate.wasm";
- let manifest = "plugins/speedupdate.wasm" 
- createPlugin(
-      manifest,
-      { useWasi: true }
-  ).then((plug : any) => {
-  plug.call("speedupdate", "12").then((value: any) => console.log(value.text()) );
-  });
   const [controller, dispatch] = useMaterialUIController();
   const {
     miniSidenav,

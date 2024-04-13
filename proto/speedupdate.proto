@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package speedupdate;
+
+service Repo {
+  rpc init (RepositoryPath) returns (ResponseResult);
+  rpc Status (RepositoryPath) returns (stream StatusResult);
+  rpc set_current_version (Version) returns (ResponseResult);
+  rpc register_version (Version) returns (ResponseResult);
+  rpc unregister_version (Version) returns (ResponseResult);
+  rpc register_package (Package) returns (ResponseResult);
+  rpc unregister_package (Package) returns (ResponseResult);
+}
+
+message RepositoryPath {
+  string path = 1;
+}
+
+message ResponseResult {
+  string error = 1;
+}
+
+message StatusResult {
+  bool repoinit = 1;
+  string current_version = 2;
+  repeated string versions = 3;
+  repeated string packages = 4;
+}
+
+message Version {
+  string path = 1;
+  string version = 2;
+}
+
+message Package {
+  string path = 1;
+  string name = 2;
+}

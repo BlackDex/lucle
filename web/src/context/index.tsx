@@ -30,7 +30,8 @@ import { Lucle } from "gen/lucle_connect";
 
 // Material Dashboard 2 React main context
 const MaterialUI = createContext();
-const CLientConnectBuf = createContext();
+const LucleRPC = createContext();
+const SpeedupdateRPC = createContext();
 
 // Setting custom name for the context which is visible on react dev tools
 MaterialUI.displayName = "MaterialUIContext";
@@ -96,13 +97,12 @@ function MaterialUIControllerProvider({ children }) {
   return <MaterialUI.Provider value={value}>{children}</MaterialUI.Provider>;
 }
 
-function BufProvider({ children }) {
+function LucleRPCProvider({ children }) {
   const transport = createGrpcWebTransport({
     baseUrl: `http://127.0.0.1:50051`,
   });
   const client = createPromiseClient(Lucle, transport);
-
-  return <CLientConnectBuf.Provider value={client}>{children}</CLientConnectBuf.Provider>
+  return <LucleRPC.Provider value={client}>{children}</LucleRPC.Provider>;
 }
 
 // Material Dashboard 2 React custom hook for using context
@@ -144,8 +144,8 @@ const setLayout = (dispatch, value) => dispatch({ type: "LAYOUT", value });
 const setDarkMode = (dispatch, value) => dispatch({ type: "DARKMODE", value });
 
 export {
-  BufProvider,
-  CLientConnectBuf,
+  LucleRPCProvider,
+  LucleRPC,
   MaterialUIControllerProvider,
   useMaterialUIController,
   setMiniSidenav,

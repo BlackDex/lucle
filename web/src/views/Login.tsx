@@ -11,8 +11,8 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-// Context 
-import { CLientConnectBuf } from "context"; 
+// Context
+import { LucleRPC } from "context";
 
 // RPC
 import { connection } from "utils/rpc";
@@ -24,7 +24,7 @@ function Login({ setIsLogged }: { setIsLogged: any }) {
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<any>();
   const [error, setError] = useState<string>("");
-  const client = useContext(CLientConnectBuf);
+  const client = useContext(LucleRPC);
 
   const handleLogin = () => {
     if (remember) {

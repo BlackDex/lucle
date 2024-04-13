@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // MUI
@@ -14,8 +14,8 @@ import CreateDB from "views/Install/createDB";
 import CreateDefaultUser from "views/Install/createUser";
 import { createUser, dbConnection } from "utils/rpc";
 
-// Context 
-import { CLientConnectBuf } from "context"; 
+// Context
+import { LucleRPC } from "context";
 
 const steps = ["Create Database", "Create default user"];
 
@@ -51,7 +51,7 @@ export default function Install() {
   const [activeStep, setActiveStep] = useState<number>(0);
   const [selectedDB, setSelectedDB] = useState<number>(2);
   const navigate = useNavigate();
-  const client = useContext(CLientConnectBuf);
+  const client = useContext(LucleRPC);
 
   const handleDBtype = (DBType = 2) => {
     setSelectedDB(DBType);
@@ -120,9 +120,10 @@ export default function Install() {
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
                 switch (activeStep) {
                   case 0:
-                    dbConnection(client, selectedDB).catch((err) =>
-                      setError(err),
-                    );
+                    dbConnection(client, selectedDB).catch((err) => {
+                      setError(true);
+                      console.log(`12 : ${err}`);
+                    });
                     break;
                   case steps.length - 1:
                     createUser(client, username, password, email);
