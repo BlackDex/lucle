@@ -8,9 +8,9 @@ mod config;
 mod database;
 mod database_errors;
 mod http;
+mod mail;
 mod infer_schema_internals;
 pub mod models;
-mod plugins;
 mod print_schema;
 mod query_helper;
 mod rpc;
@@ -34,9 +34,6 @@ async fn main() {
                 .with_file(false),
         )
         .init();
-
-    //load plugin
-    plugins::load_backend_plugin();
 
     let ca_cert;
     let server_cert_key;
@@ -82,7 +79,8 @@ async fn main() {
     let mut key_buf = BufReader::new(key_file);
     let private_key = rustls_pemfile::private_key(&mut key_buf).unwrap().unwrap();
 
-    let config = ServerConfig::builder()
+    //let config = 
+	ServerConfig::builder()
         .with_no_client_auth()
         .with_single_cert(certs, private_key)
         .unwrap();
@@ -91,7 +89,8 @@ async fn main() {
 
     tokio::join!(
         http::serve_http(http::using_serve_dir(), 8080),
-        rpc::start_rpc_server(&mut cert_buf, &mut key_buf)
+        rpc::start_rpc_server(&mut cert_buf, &mut key_buf),
+	mail::start_mail_server()
     )
     .0;
     {};

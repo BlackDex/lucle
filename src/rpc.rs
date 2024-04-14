@@ -1,5 +1,4 @@
 use super::database;
-use super::plugins;
 use super::user;
 use crate::database::{handle_error, Backend};
 
@@ -11,9 +10,8 @@ use email_address_parser::EmailAddress;
 
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Database, DatabaseType, Empty, Message, Plugins, ResetPassword, ResponseResult, User,
+    Database, DatabaseType, Empty, Message, ResetPassword, ResponseResult, User,
 };
-use std::path::Path;
 use std::pin::Pin;
 use std::{fs::File, io::BufReader, net::SocketAddr};
 
@@ -198,12 +196,6 @@ impl Lucle for LucleApi {
             error = "Not a valid email".to_string();
         }
         let reply = ResponseResult { error };
-        Ok(Response::new(reply))
-    }
-
-    async fn plugins(&self, request: Request<Empty>) -> Result<Response<Plugins>, Status> {
-        let plugin_path = plugins::find_plugins(Path::new("/plugins"), "js");
-        let reply = Plugins { path: plugin_path };
         Ok(Response::new(reply))
     }
 
