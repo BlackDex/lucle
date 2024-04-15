@@ -15,9 +15,6 @@ import { DropzoneArea } from "mui2-file-dropzone";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-// Context
-import { SpeedupdateRPC } from "context";
-
 // RPC Connect
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { createPromiseClient } from "@connectrpc/connect";
@@ -46,7 +43,7 @@ function Speedupdate() {
   const [fileObjects, setFileObjects] = useState();
   const [error, setError] = useState<String>("");
 
-  useEffect(() => {
+   useEffect(() => {
     if (client) {
       status(client, path).then((repo: any) => {
         setRepoInit(true);
@@ -55,11 +52,11 @@ function Speedupdate() {
         setListPackages(repo.packages);
       });
     }
-  }, [url, path, client]);
+  });
 
   const Connection = () => {
     const transport = createGrpcWebTransport({
-      baseUrl: url,
+      baseUrl: 'http://0.0.0.0:50051',
     });
     const newclient = createPromiseClient(Repo, transport);
     setClient(newclient);
