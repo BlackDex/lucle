@@ -1,34 +1,29 @@
-export const init = (client: any, path: string) =>
-  new Promise((resolve, reject) => {
-    client
-      .init({
-        path,
-      })
-      .then((status: any) => {
-        if (status.code === "OK") {
-          resolve(true);
-        }
-
-        resolve(false);
-      })
-      .catch((error: any) => reject(error.message));
-  });
+export const init = async (client: any, path: string) => {
+  const call = client
+    .init({
+      path,
+    })
+    .then((status: any) => {
+      if (status.code === "OK") {
+        return true;
+      }
+    })
+    .catch((error: any) => {
+      return error;
+    });
+};
 
 export const status = async (client: any, path: string) => {
-  console.log("status");
   const call = client.status({
     path,
   });
   for await (const response of call) {
-    console.log("allo : ", await response);
-    if (response.repoinit) {
-      return {
-        repoinit: true,
-        currentversion: response.currentVersion,
-        listVersion: response.version,
-        istPackages: response.packages,
-      };
-    }
+    return {
+      repoinit: response.repoinit,
+      currentversion: response.currentVersion,
+      listVersion: response.versions,
+      listPackages: response.packages,
+    };
   }
 };
 
@@ -48,7 +43,7 @@ export const registerVersion = async (
   path: string,
   version: string,
 ) => {
-  client.registerVersion({
+  client.register_version({
     path,
     version,
   });
@@ -59,7 +54,7 @@ export const unregisterVersion = async (
   path: string,
   version: string,
 ) => {
-  client.unregisterVersion({
+  client.unregister_version({
     path,
     version,
   });

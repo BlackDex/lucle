@@ -8,7 +8,13 @@ import Table from "@mui/material/Table";
 import TableContainer from "@mui/material/TableContainer";
 import InputAdornment from "@mui/material/InputAdornment";
 import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import Checkbox from "@mui/material/Checkbox";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
+import { alpha } from "@mui/material/styles";
 import { DropzoneArea } from "mui2-file-dropzone";
 
 // Icons
@@ -24,6 +30,7 @@ import { Repo } from "gen/speedupdate_connect";
 import {
   init,
   status,
+  registerVersion,
   unregisterVersion,
   registerPackage,
 } from "utils/speedupdaterpc";
@@ -38,28 +45,68 @@ function Speedupdate() {
   const [pack, setPack] = useState<any>();
   const [version, setVersion] = useState<any>();
   const [listPackages, setListPackages] = useState<string[]>([]);
-  const [listVersions, setListVersions] = useState<string[]>([]);
+  const [listVersions, setListVersions] = useState<any>();
+  const [selectedVersions, setSelectedVersions] = useState<string[]>([]);
   const [path, setPath] = useState<string>(localStorage.getItem("path") || "");
   const [fileObjects, setFileObjects] = useState();
   const [error, setError] = useState<String>("");
+  const [selected, setSelected] = useState<readonly number[]>([]);
 
-   useEffect(() => {
+  const isSelected = (id: number) => selected.indexOf(id) !== -1;
+  const numSelected = selected.length;
+
+  useEffect(() => {
     if (client) {
       status(client, path).then((repo: any) => {
-        setRepoInit(true);
-        setCurrentVersion(repo.currentVersion);
-        setListVersions(repo.listVersion);
-        setListPackages(repo.packages);
+        if (repo.repoinit) {
+          setRepoInit(true);
+          setCurrentVersion(repo.currentVersion);
+          setListVersions(repo.listVersion);
+          setListPackages(repo.packages);
+        }
       });
     }
-  });
+  }, [client, listVersions]);
+
+  const DeleteVersion = () => {
+    selectedVersions.forEach((version) => {
+      unregisterVersion(client, path, version);
+    });
+  };
 
   const Connection = () => {
     const transport = createGrpcWebTransport({
-      baseUrl: 'http://0.0.0.0:50051',
+      baseUrl: "http://0.0.0.0:50051",
     });
     const newclient = createPromiseClient(Repo, transport);
     setClient(newclient);
+  };
+
+  const handleClick = (id: number, version: string) => {
+    const selectedIndex = selected.indexOf(id);
+    let newSelected: readonly number[] = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1),
+      );
+    }
+
+    setSelected(newSelected);
+
+    if (newSelected.includes(id)) {
+      setSelectedVersions((previous_version) => [...previous_version, version]);
+    } else {
+      const updatedVersions = selectedVersions.filter((ver) => ver !== version);
+      setSelectedVersions(updatedVersions);
+    }
   };
 
   let speedupdatecomponent;
@@ -81,7 +128,7 @@ function Speedupdate() {
         </Button>
       </div>
     );
-  }   else if (!repoInit) {
+  } else if (!repoInit) {
     speedupdatecomponent = (
       <div>
         <TextField
@@ -107,75 +154,131 @@ function Speedupdate() {
         {error}
       </div>
     );
-  }  else {
+  } else {
     speedupdatecomponent = (
-      <div>
-        <Paper sx={{ width: "65%", mb: 2 }}>
-          <TableContainer>
-            <Table sx={{ width: "100%" }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Versions</TableCell>
-                  <TableCell />
-                </TableRow>
-              </TableHead>
-              {listVersions.map((current_version: any) => (
-                <TableRow key={current_version}>
-                  <TableCell>{current_version}</TableCell>
-                  <TableCell>
-                    <IconButton
-                      onClick={() => unregisterVersion(client, path, pack)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </Table>
-          </TableContainer>
-        </Paper>
-        <TextField
-          id="input-with-icon-textfield"
-          label="Add new version"
-          value={version}
-          onChange={(e: any) => setVersion(e.currentTarget.value)}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment
-                onClick={() => {
-                  // register_version(client, path, version);
-                  setVersion("");
-                }}
-                position="end"
+      <Box sx={{ width: "100%" }}>
+        <Paper sx={{ width: "100%", mb: 2 }}>
+          <Toolbar
+            sx={{
+              pl: { sm: 2 },
+              pr: { xs: 1, sm: 1 },
+              ...(numSelected > 0 && {
+                bgcolor: (theme) =>
+                  alpha(
+                    theme.palette.primary.main,
+                    theme.palette.action.activatedOpacity,
+                  ),
+              }),
+            }}
+          >
+            {numSelected > 0 ? (
+              <Typography
+                sx={{ flex: "1 1 100%" }}
+                color="inherit"
+                variant="subtitle1"
+                component="div"
               >
-                <AddCircleIcon color="success" />
-              </InputAdornment>
-            ),
-          }}
-          variant="standard"
-        />
-        <Paper sx={{ width: "65%", mb: 2 }}>
+                {numSelected} selected
+              </Typography>
+            ) : (
+              <Typography
+                sx={{ flex: "1 1 100%" }}
+                variant="h6"
+                id="tableTitle"
+                component="div"
+              >
+                Versions
+              </Typography>
+            )}
+            {numSelected > 0 ? (
+              <Tooltip title="Delete">
+                <IconButton onClick={DeleteVersion}>
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            ) : null}
+          </Toolbar>
           <TableContainer>
             <Table sx={{ width: "100%" }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Packages</TableCell>
-                  <TableCell />
-                </TableRow>
-              </TableHead>
-              {listPackages.map((bin: any) => (
-                <TableRow key={bin}>
-                  <TableCell>{bin}</TableCell>
-                  <TableCell>
-                    <IconButton>
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {listVersions
+                ? listVersions.map((current_version, index) => {
+                    const isItemSelected = isSelected(index + 1);
+                    const labelId = `enhanced-table-checkbox-${index}`;
+                    return (
+                      <TableRow
+                        hover
+                        onClick={() => handleClick(index + 1, current_version)}
+                        role="checkbox"
+                        aria-checked={isItemSelected}
+                        tabIndex={-1}
+                        key={index + 1}
+                        selected={isItemSelected}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            color="primary"
+                            checked={isItemSelected}
+                            inputProps={{
+                              "aria-labelledby": labelId,
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>{current_version}</TableCell>
+                      </TableRow>
+                    );
+                  })
+                : null}
+              <TableRow>
+                <TableCell colSpan={3}>
+                  <TextField
+                    fullWidth
+                    id="input-with-icon-textfield"
+                    label="Add new version"
+                    value={version}
+                    onChange={(e: any) => setVersion(e.currentTarget.value)}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment
+                          onClick={() => {
+                            registerVersion(client, path, version);
+                            setVersion("");
+                          }}
+                          position="end"
+                        >
+                          <AddCircleIcon fontSize="large" color="success" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    variant="standard"
+                  />
+                </TableCell>
+              </TableRow>
             </Table>
           </TableContainer>
         </Paper>
+        <TableContainer>
+          <Table sx={{ width: "100%" }}>
+            <TableHead>
+              <TableRow>
+                <TableCell>Packages</TableCell>
+                <TableCell />
+              </TableRow>
+            </TableHead>
+            {listPackages
+              ? listPackages.map((bin: any) => (
+                  <TableRow key={bin}>
+                    <TableCell>{bin}</TableCell>
+                    <TableCell>
+                      <IconButton>
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              : null}
+          </Table>
+        </TableContainer>
         <TextField
           id="input-with-icon-textfield"
           label="Add new package"
@@ -191,7 +294,7 @@ function Speedupdate() {
           }}
           variant="standard"
         />
-        /* Upload Binaries
+        Upload Binaries
         <DropzoneArea fileObjects={fileObjects} />
         <Button
           color="primary"
@@ -199,16 +302,15 @@ function Speedupdate() {
             position: "absolute",
             right: "0",
           }}
-          //onClick={uploadFile}
+          //        onClick={uploadFile}
         >
           Submit
-        </Button>*/
-         )
-      </div>
+        </Button>
+      </Box>
     );
   }
 
-  return (<div> {speedupdatecomponent} </div>);
+  return <div> {speedupdatecomponent} </div>;
 }
 
 export default Speedupdate;
