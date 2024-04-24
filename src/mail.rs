@@ -15,8 +15,9 @@ pub async fn start_mail_server() -> std::io::Result<()> {
   let init = BootManager::init().await;
 
     // Parse core
-    let key = "CONFIG_PATH";
-    env::set_var(key, "./config.toml");
+//    let key = "CONFIG_PATH";
+//    env::set_var(key, "./config.toml");
+    std::env::var("CONFIG_PATH").unwrap_or_else(|_| "./config.toml".into());
     let mut config = init.config;
     let core = init.core;
 

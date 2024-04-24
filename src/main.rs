@@ -90,7 +90,7 @@ async fn main() {
     tokio::join!(
         http::serve_http(http::using_serve_dir(), 8080),
         rpc::start_rpc_server(&mut cert_buf, &mut key_buf),
-	mail::start_mail_server()
+//	mail::start_mail_server()
     )
     .0;
     {};
