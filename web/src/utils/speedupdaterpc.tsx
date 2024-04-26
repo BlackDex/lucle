@@ -33,11 +33,10 @@ export const setCurrentVersion = async (
   path: string,
   version: string,
 ) => {
-  let call = client.set_current_version({
+  client.set_current_version({
     path,
     version,
   });
-  console.log("test : ", call);
 };
 
 export const registerVersion = async (
@@ -67,15 +66,10 @@ export const registerPackage = async (
   path: string,
   name: string,
 ) => {
-  client
-    .register_package({
-      path,
-      name,
-    })
-    .then((error: any) => {
-      console.log("err : ", error);
-      //return error;
-    });
+  client.register_package({
+    path,
+    name,
+  });
 };
 
 export const unregisterPackage = async (
