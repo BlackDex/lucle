@@ -20,6 +20,7 @@ import { DropzoneArea } from "mui2-file-dropzone";
 // Icons
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CheckIcon from "@mui/icons-material/Check";
 
 // RPC Connect
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
@@ -32,16 +33,33 @@ import {
   status,
   registerVersion,
   unregisterVersion,
+  setCurrentVersion,
   registerPackage,
 } from "utils/speedupdaterpc";
 
-//import { uploadFile } from "utils/minio";
+import { uploadFile } from "utils/minio";
+
+const DisplaySizeUnit = (TotalSize) => {
+  if (TotalSize < 1024) {
+    return "B";
+  }
+  if (TotalSize < 1024 * 1024) {
+    return "kB";
+  }
+  if (TotalSize < 1024 * 1024 * 1024) {
+    return "MB";
+  }
+  if (TotalSize < 1024 * 1024 * 1024 * 1024) {
+    return "GB";
+  }
+};
 
 function Speedupdate() {
   const [client, setClient] = useState<any>();
   const [repoInit, setRepoInit] = useState<boolean>(false);
   const [url, setUrl] = useState<string>(localStorage.getItem("url") || "");
-  const [currentVersion, setCurrentVersion] = useState<string>("");
+  const [currentVersion, getCurrentVersion] = useState<string>("");
+  const [size, setSize] = useState<number>();
   const [pack, setPack] = useState<any>();
   const [version, setVersion] = useState<any>();
   const [listPackages, setListPackages] = useState<string[]>([]);
@@ -60,13 +78,14 @@ function Speedupdate() {
       status(client, path).then((repo: any) => {
         if (repo.repoinit) {
           setRepoInit(true);
-          setCurrentVersion(repo.currentVersion);
+          setSize(repo.size);
+          getCurrentVersion(repo.currentVersion);
           setListVersions(repo.listVersion);
-          setListPackages(repo.packages);
+          setListPackages(repo.listPackages);
         }
       });
     }
-  }, [client, listVersions]);
+  }, [client, size, listVersions, listPackages, currentVersion]);
 
   const DeleteVersion = () => {
     selectedVersions.forEach((version) => {
@@ -158,6 +177,10 @@ function Speedupdate() {
     speedupdatecomponent = (
       <Box sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
+          <p>Current version: {currentVersion}</p>
+          Total packages size : {size} {DisplaySizeUnit(size)}
+        </Paper>
+        <Paper sx={{ width: "100%", mb: 2 }}>
           <Toolbar
             sx={{
               pl: { sm: 2 },
@@ -190,6 +213,17 @@ function Speedupdate() {
                 Versions
               </Typography>
             )}
+            {numSelected == 1 ? (
+              <Tooltip title="SetVersion">
+                <IconButton
+                  onClick={() =>
+                    setCurrentVersion(client, path, selectedVersions[0])
+                  }
+                >
+                  <CheckIcon />
+                </IconButton>
+              </Tooltip>
+            ) : null}
             {numSelected > 0 ? (
               <Tooltip title="Delete">
                 <IconButton onClick={DeleteVersion}>
@@ -257,43 +291,108 @@ function Speedupdate() {
             </Table>
           </TableContainer>
         </Paper>
-        <TableContainer>
-          <Table sx={{ width: "100%" }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>Packages</TableCell>
-                <TableCell />
-              </TableRow>
-            </TableHead>
-            {listPackages
-              ? listPackages.map((bin: any) => (
-                  <TableRow key={bin}>
-                    <TableCell>{bin}</TableCell>
-                    <TableCell>
-                      <IconButton>
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))
-              : null}
-          </Table>
-        </TableContainer>
-        <TextField
-          id="input-with-icon-textfield"
-          label="Add new package"
-          InputProps={{
-            endAdornment: (
-              <InputAdornment
-                onClick={() => registerPackage(client, path, pack)}
-                position="end"
-              >
-                <AddCircleIcon color="success" />
-              </InputAdornment>
-            ),
-          }}
-          variant="standard"
-        />
+        <Box sx={{ width: "100%" }}>
+          <Paper sx={{ width: "100%", mb: 2 }}>
+            <Toolbar
+              sx={{
+                pl: { sm: 2 },
+                pr: { xs: 1, sm: 1 },
+                ...(numSelected > 0 && {
+                  bgcolor: (theme) =>
+                    alpha(
+                      theme.palette.primary.main,
+                      theme.palette.action.activatedOpacity,
+                    ),
+                }),
+              }}
+            >
+              {numSelected > 0 ? (
+                <Typography
+                  sx={{ flex: "1 1 100%" }}
+                  color="inherit"
+                  variant="subtitle1"
+                  component="div"
+                >
+                  {numSelected} selected
+                </Typography>
+              ) : (
+                <Typography
+                  sx={{ flex: "1 1 100%" }}
+                  variant="h6"
+                  id="tableTitle"
+                  component="div"
+                >
+                  Packages
+                </Typography>
+              )}
+              {numSelected > 0 ? (
+                <Tooltip title="Delete">
+                  <IconButton onClick={() => {}}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              ) : null}
+            </Toolbar>
+            <TableContainer>
+              <Table sx={{ width: "100%" }}>
+                {listPackages
+                  ? listPackages.map((bin, index) => {
+                      const isItemSelected = isSelected(index + 1);
+                      const labelId = `enhanced-table-checkbox-${index}`;
+                      return (
+                        <TableRow
+                          hover
+                          //onClick={() => handleClick(index + 1, bin)}
+                          role="checkbox"
+                          aria-checked={isItemSelected}
+                          tabIndex={-1}
+                          key={index + 1}
+                          selected={isItemSelected}
+                          sx={{ cursor: "pointer" }}
+                        >
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              color="primary"
+                              checked={isItemSelected}
+                              inputProps={{
+                                "aria-labelledby": labelId,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>{bin}</TableCell>
+                        </TableRow>
+                      );
+                    })
+                  : null}
+                <TableRow>
+                  <TableCell colSpan={3}>
+                    <TextField
+                      fullWidth
+                      id="input-with-icon-textfield"
+                      label="Add new package"
+                      value={pack}
+                      onChange={(e: any) => setPack(e.currentTarget.value)}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment
+                            onClick={() => {
+                              registerPackage(client, path, pack);
+                              setPack("");
+                            }}
+                            position="end"
+                          >
+                            <AddCircleIcon fontSize="large" color="success" />
+                          </InputAdornment>
+                        ),
+                      }}
+                      variant="standard"
+                    />
+                  </TableCell>
+                </TableRow>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Box>
         Upload Binaries
         <DropzoneArea fileObjects={fileObjects} />
         <Button
@@ -302,7 +401,7 @@ function Speedupdate() {
             position: "absolute",
             right: "0",
           }}
-          //        onClick={uploadFile}
+          //                onClick={uploadFile}
         >
           Submit
         </Button>

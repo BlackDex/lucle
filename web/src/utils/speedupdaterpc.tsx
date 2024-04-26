@@ -19,8 +19,9 @@ export const status = async (client: any, path: string) => {
   });
   for await (const response of call) {
     return {
+      size: response.size,
       repoinit: response.repoinit,
-      currentversion: response.currentVersion,
+      currentVersion: response.currentVersion,
       listVersion: response.versions,
       listPackages: response.packages,
     };
@@ -32,10 +33,11 @@ export const setCurrentVersion = async (
   path: string,
   version: string,
 ) => {
-  client.setCurrentVersion({
+  let call = client.set_current_version({
     path,
     version,
   });
+  console.log("test : ", call);
 };
 
 export const registerVersion = async (
@@ -65,10 +67,15 @@ export const registerPackage = async (
   path: string,
   name: string,
 ) => {
-  client.registerPackage({
-    path,
-    name,
-  });
+  client
+    .register_package({
+      path,
+      name,
+    })
+    .then((error: any) => {
+      console.log("err : ", error);
+      //return error;
+    });
 };
 
 export const unregisterPackage = async (
@@ -76,7 +83,7 @@ export const unregisterPackage = async (
   path: string,
   name: string,
 ) => {
-  client.unregisterPackage({
+  client.unregister_package({
     path,
     name,
   });
