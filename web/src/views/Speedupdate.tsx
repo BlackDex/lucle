@@ -85,7 +85,7 @@ function Speedupdate() {
         }
       });
     }
-  }, [client, size, listVersions, listPackages, currentVersion]);
+  }, [client, repoInit, size, listVersions, listPackages, currentVersion]);
 
   const DeleteVersion = () => {
     selectedVersions.forEach((version) => {
@@ -162,10 +162,12 @@ function Speedupdate() {
         <Button
           variant="contained"
           onClick={() => {
-            init(client, path).catch((error: any) => {
-              setRepoInit(false);
-              setError(error);
-            });
+            init(client, path)
+              .then(() => setRepoInit(true))
+              .catch((error: any) => {
+                setRepoInit(false);
+                setError(error);
+              });
           }}
         >
           Initialize repository

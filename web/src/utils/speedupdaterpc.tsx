@@ -3,8 +3,8 @@ export const init = async (client: any, path: string) => {
     .init({
       path,
     })
-    .then((status: any) => {
-      if (status.code === "OK") {
+    .then((value: any) => {
+      if (value.length === 0) {
         return true;
       }
     })
