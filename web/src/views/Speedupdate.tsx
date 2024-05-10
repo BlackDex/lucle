@@ -5,6 +5,7 @@ import TableRow from "@mui/material/TableRow";
 import TableHead from "@mui/material/TableHead";
 import TableCell from "@mui/material/TableCell";
 import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
 import InputAdornment from "@mui/material/InputAdornment";
 import Paper from "@mui/material/Paper";
@@ -62,30 +63,58 @@ function Speedupdate() {
   const [size, setSize] = useState<number>();
   const [pack, setPack] = useState<any>();
   const [version, setVersion] = useState<any>();
-  const [listPackages, setListPackages] = useState<string[]>([]);
+  const [listPackages, setListPackages] = useState<String[]>([]);
+  const [listAvailablePackages, setListAvailablePackages] = useState<String[]>(
+    [],
+  );
   const [listVersions, setListVersions] = useState<any>();
   const [selectedVersions, setSelectedVersions] = useState<string[]>([]);
   const [path, setPath] = useState<string>(localStorage.getItem("path") || "");
   const [fileObjects, setFileObjects] = useState();
+  const [files, setFiles] = useState<any>();
   const [error, setError] = useState<String>("");
-  const [selected, setSelected] = useState<readonly number[]>([]);
+  const [versionsSelected, setVersionsSelected] = useState<readonly number[]>(
+    [],
+  );
+  const [packagesSelected, setPackagesSelected] = useState<readonly number[]>(
+    [],
+  );
 
-  const isSelected = (id: number) => selected.indexOf(id) !== -1;
-  const numSelected = selected.length;
+  const isVersionsSelected = (id: number) =>
+    versionsSelected.indexOf(id) !== -1;
+  const numVersionsSelected = versionsSelected.length;
+
+  const isPackagesSelected = (id: number) =>
+    packagesSelected.indexOf(id) !== -1;
+  const numPackagesSelected = packagesSelected.length;
 
   useEffect(() => {
     if (client) {
-      status(client, path).then((repo: any) => {
-        if (repo.repoinit) {
-          setRepoInit(true);
-          setSize(repo.size);
-          getCurrentVersion(repo.currentVersion);
-          setListVersions(repo.listVersion);
-          setListPackages(repo.listPackages);
-        }
-      });
+      status(client, path)
+        .then((repo: any) => {
+          if (repo.repoinit) {
+            setRepoInit(true);
+            setSize(repo.size);
+            getCurrentVersion(repo.currentVersion);
+            setListVersions(repo.listVersion);
+            setListPackages(repo.listPackages);
+            setListAvailablePackages(repo.availablePackages);
+          }
+        })
+        .catch((val) => console.log("error : ", val));
     }
   }, [client, repoInit, size, listVersions, listPackages, currentVersion]);
+
+  const uploadFile = () => {
+    let formData = new FormData();
+    formData.append("file", files[0]);
+    fetch("http://localhost:3000/file/" + files[0].name, {
+      method: "POST",
+      body: formData,
+    })
+      .then((val) => console.log("answer: ", val))
+      .catch((err) => console.log("error: ", err));
+  };
 
   const DeleteVersion = () => {
     selectedVersions.forEach((version) => {
@@ -95,30 +124,30 @@ function Speedupdate() {
 
   const Connection = () => {
     const transport = createGrpcWebTransport({
-      baseUrl: "http://0.0.0.0:50051",
+      baseUrl: url,
     });
-    const newclient = createPromiseClient(Repo, transport);
+    const newclient = createPromiseClient(Repo, transport); //.catch((val) => console.log(val));
     setClient(newclient);
   };
 
-  const handleClick = (id: number, version: string) => {
-    const selectedIndex = selected.indexOf(id);
+  const versionsSelection = (id: number, version: string) => {
+    const selectedIndex = versionsSelected.indexOf(id);
     let newSelected: readonly number[] = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
+      newSelected = newSelected.concat(versionsSelected, id);
     } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
+      newSelected = newSelected.concat(versionsSelected.slice(1));
+    } else if (selectedIndex === versionsSelected.length - 1) {
+      newSelected = newSelected.concat(versionsSelected.slice(0, -1));
     } else if (selectedIndex > 0) {
       newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
+        versionsSelected.slice(0, selectedIndex),
+        versionsSelected.slice(selectedIndex + 1),
       );
     }
 
-    setSelected(newSelected);
+    setVersionsSelected(newSelected);
 
     if (newSelected.includes(id)) {
       setSelectedVersions((previous_version) => [...previous_version, version]);
@@ -126,6 +155,26 @@ function Speedupdate() {
       const updatedVersions = selectedVersions.filter((ver) => ver !== version);
       setSelectedVersions(updatedVersions);
     }
+  };
+
+  const packagesSelection = (id: number, pack: string) => {
+    const selectedIndex = packagesSelected.indexOf(id);
+    let newSelected: readonly number[] = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(packagesSelected, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(packagesSelected.slice(1));
+    } else if (selectedIndex === packagesSelected.length - 1) {
+      newSelected = newSelected.concat(packagesSelected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        packagesSelected.slice(0, selectedIndex),
+        packagesSelected.slice(selectedIndex + 1),
+      );
+    }
+
+    setPackagesSelected(newSelected);
   };
 
   let speedupdatecomponent;
@@ -187,7 +236,7 @@ function Speedupdate() {
             sx={{
               pl: { sm: 2 },
               pr: { xs: 1, sm: 1 },
-              ...(numSelected > 0 && {
+              ...(numVersionsSelected > 0 && {
                 bgcolor: (theme) =>
                   alpha(
                     theme.palette.primary.main,
@@ -196,14 +245,14 @@ function Speedupdate() {
               }),
             }}
           >
-            {numSelected > 0 ? (
+            {numVersionsSelected > 0 ? (
               <Typography
                 sx={{ flex: "1 1 100%" }}
                 color="inherit"
                 variant="subtitle1"
                 component="div"
               >
-                {numSelected} selected
+                {numVersionsSelected} selected
               </Typography>
             ) : (
               <Typography
@@ -215,7 +264,7 @@ function Speedupdate() {
                 Versions
               </Typography>
             )}
-            {numSelected == 1 ? (
+            {numVersionsSelected == 1 ? (
               <Tooltip title="SetVersion">
                 <IconButton
                   onClick={() =>
@@ -226,7 +275,7 @@ function Speedupdate() {
                 </IconButton>
               </Tooltip>
             ) : null}
-            {numSelected > 0 ? (
+            {numVersionsSelected > 0 ? (
               <Tooltip title="Delete">
                 <IconButton onClick={DeleteVersion}>
                   <DeleteIcon />
@@ -238,12 +287,14 @@ function Speedupdate() {
             <Table sx={{ width: "100%" }}>
               {listVersions
                 ? listVersions.map((current_version, index) => {
-                    const isItemSelected = isSelected(index + 1);
+                    const isItemSelected = isVersionsSelected(index + 1);
                     const labelId = `enhanced-table-checkbox-${index}`;
                     return (
                       <TableRow
                         hover
-                        onClick={() => handleClick(index + 1, current_version)}
+                        onClick={() =>
+                          versionsSelection(index + 1, current_version)
+                        }
                         role="checkbox"
                         aria-checked={isItemSelected}
                         tabIndex={-1}
@@ -299,7 +350,7 @@ function Speedupdate() {
               sx={{
                 pl: { sm: 2 },
                 pr: { xs: 1, sm: 1 },
-                ...(numSelected > 0 && {
+                ...(numPackagesSelected > 0 && {
                   bgcolor: (theme) =>
                     alpha(
                       theme.palette.primary.main,
@@ -308,14 +359,14 @@ function Speedupdate() {
                 }),
               }}
             >
-              {numSelected > 0 ? (
+              {numPackagesSelected > 0 ? (
                 <Typography
                   sx={{ flex: "1 1 100%" }}
                   color="inherit"
                   variant="subtitle1"
                   component="div"
                 >
-                  {numSelected} selected
+                  {numPackagesSelected} selected
                 </Typography>
               ) : (
                 <Typography
@@ -327,7 +378,7 @@ function Speedupdate() {
                   Packages
                 </Typography>
               )}
-              {numSelected > 0 ? (
+              {numPackagesSelected > 0 ? (
                 <Tooltip title="Delete">
                   <IconButton onClick={() => {}}>
                     <DeleteIcon />
@@ -337,73 +388,95 @@ function Speedupdate() {
             </Toolbar>
             <TableContainer>
               <Table sx={{ width: "100%" }}>
-                {listPackages
-                  ? listPackages.map((bin, index) => {
-                      const isItemSelected = isSelected(index + 1);
-                      const labelId = `enhanced-table-checkbox-${index}`;
-                      return (
-                        <TableRow
-                          hover
-                          //onClick={() => handleClick(index + 1, bin)}
-                          role="checkbox"
-                          aria-checked={isItemSelected}
-                          tabIndex={-1}
-                          key={index + 1}
-                          selected={isItemSelected}
-                          sx={{ cursor: "pointer" }}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              color="primary"
-                              checked={isItemSelected}
-                              inputProps={{
-                                "aria-labelledby": labelId,
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell>{bin}</TableCell>
-                        </TableRow>
-                      );
-                    })
-                  : null}
-                <TableRow>
-                  <TableCell colSpan={3}>
-                    <TextField
-                      fullWidth
-                      id="input-with-icon-textfield"
-                      label="Add new package"
-                      value={pack}
-                      onChange={(e: any) => setPack(e.currentTarget.value)}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment
-                            onClick={() => {
-                              registerPackage(client, path, pack);
-                              setPack("");
-                            }}
-                            position="end"
+                <TableHead>
+                  <TableRow>
+                    <TableCell></TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Published</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {listPackages
+                    ? listPackages.map((bin, index) => {
+                        const isItemSelected = isPackagesSelected(index + 1);
+                        const labelId = `enhanced-table-checkbox-${index}`;
+                        return (
+                          <TableRow
+                            hover
+                            onClick={() => packagesSelection(index + 1, bin)}
+                            role="checkbox"
+                            aria-checked={isItemSelected}
+                            tabIndex={-1}
+                            key={index + 1}
+                            selected={isItemSelected}
+                            sx={{ cursor: "pointer" }}
                           >
-                            <AddCircleIcon fontSize="large" color="success" />
-                          </InputAdornment>
-                        ),
-                      }}
-                      variant="standard"
-                    />
-                  </TableCell>
-                </TableRow>
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                color="primary"
+                                checked={isItemSelected}
+                                inputProps={{
+                                  "aria-labelledby": labelId,
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>{bin}</TableCell>
+                            <TableCell>true</TableCell>
+                          </TableRow>
+                        );
+                      })
+                    : null}
+                  {listAvailablePackages
+                    ? listAvailablePackages.map((bin, index) => {
+                        const isItemSelected = isPackagesSelected(
+                          listPackages.length + 1,
+                        );
+                        const labelId = `enhanced-table-checkbox-${index}`;
+                        return (
+                          <TableRow
+                            hover
+                            onClick={() =>
+                              packagesSelection(listPackages.length + 1, bin)
+                            }
+                            role="checkbox"
+                            aria-checked={isItemSelected}
+                            tabIndex={listPackages.length}
+                            key={listPackages.length}
+                            selected={isItemSelected}
+                            sx={{ cursor: "pointer" }}
+                          >
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                color="primary"
+                                checked={isItemSelected}
+                                inputProps={{
+                                  "aria-labelledby": labelId,
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>{bin}</TableCell>
+                            <TableCell>false</TableCell>
+                          </TableRow>
+                        );
+                      })
+                    : null}
+                </TableBody>
               </Table>
             </TableContainer>
           </Paper>
         </Box>
         Upload Binaries
-        <DropzoneArea fileObjects={fileObjects} />
+        <DropzoneArea
+          fileObjects={fileObjects}
+          onChange={(files) => setFiles(files)}
+        />
         <Button
           color="primary"
           sx={{
             position: "absolute",
             right: "0",
           }}
-          //                onClick={uploadFile}
+          onClick={uploadFile}
         >
           Submit
         </Button>

@@ -24,6 +24,7 @@ export const status = async (client: any, path: string) => {
       currentVersion: response.currentVersion,
       listVersion: response.versions,
       listPackages: response.packages,
+      availablePackages: response.availablePackages,
     };
   }
 };

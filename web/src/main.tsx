@@ -20,6 +20,8 @@ import App from "App";
 // Material Dashboard 2 React Context Provider
 import { MaterialUIControllerProvider, LucleRPCProvider } from "context";
 
+import "regenerator-runtime";
+
 const container = document.getElementById("root");
 const root = createRoot(container);
 
