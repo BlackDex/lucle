@@ -96,6 +96,7 @@ function Speedupdate() {
             setRepoInit(true);
             setSize(repo.size);
             getCurrentVersion(repo.currentVersion);
+            console.log("stream : ", repo.currentVersion);
             setListVersions(repo.listVersion);
             setListPackages(repo.listPackages);
             setListAvailablePackages(repo.availablePackages);
