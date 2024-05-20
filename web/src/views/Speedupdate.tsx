@@ -38,10 +38,10 @@ import {
   registerPackage,
 } from "utils/speedupdaterpc";
 
-import { uploadFile } from "utils/minio";
+//import { uploadFile } from "utils/minio";
 
 const DisplaySizeUnit = (TotalSize) => {
-  if (TotalSize < 1024) {
+  if (TotalSize > 0 && TotalSize < 1024) {
     return "B";
   }
   if (TotalSize < 1024 * 1024) {
@@ -53,6 +53,7 @@ const DisplaySizeUnit = (TotalSize) => {
   if (TotalSize < 1024 * 1024 * 1024 * 1024) {
     return "GB";
   }
+  return "-";
 };
 
 function Speedupdate() {
@@ -67,6 +68,7 @@ function Speedupdate() {
   const [listAvailablePackages, setListAvailablePackages] = useState<String[]>(
     [],
   );
+  const [availableBinaries, setAvailableBinaries] = useState<String[]>([]);
   const [listVersions, setListVersions] = useState<any>();
   const [selectedVersions, setSelectedVersions] = useState<string[]>([]);
   const [path, setPath] = useState<string>(localStorage.getItem("path") || "");
@@ -79,6 +81,9 @@ function Speedupdate() {
   const [packagesSelected, setPackagesSelected] = useState<readonly number[]>(
     [],
   );
+  const [binariesSelected, setBinariesSelected] = useState<readonly number[]>(
+    [],
+  );
 
   const isVersionsSelected = (id: number) =>
     versionsSelected.indexOf(id) !== -1;
@@ -87,6 +92,10 @@ function Speedupdate() {
   const isPackagesSelected = (id: number) =>
     packagesSelected.indexOf(id) !== -1;
   const numPackagesSelected = packagesSelected.length;
+
+  const isBinariesSelected = (id: number) =>
+    binariesSelected.indexOf(id) !== -1;
+  const numBinariesSelected = binariesSelected.length;
 
   useEffect(() => {
     if (client) {
@@ -100,11 +109,21 @@ function Speedupdate() {
             setListVersions(repo.listVersion);
             setListPackages(repo.listPackages);
             setListAvailablePackages(repo.availablePackages);
+            setAvailableBinaries(repo.availableBinaries);
           }
         })
-        .catch((val) => console.log("error : ", val));
+        .catch((err) => console.log("err : ", err));
     }
-  }, [client, repoInit, size, listVersions, listPackages, currentVersion]);
+  }, [client]);
+
+  const Connection = () => {
+    const transport = createGrpcWebTransport({
+      baseUrl: url,
+    });
+
+    let newClient = createPromiseClient(Repo, transport);
+    setClient(newClient);
+  };
 
   const uploadFile = () => {
     let formData = new FormData();
@@ -121,14 +140,6 @@ function Speedupdate() {
     selectedVersions.forEach((version) => {
       unregisterVersion(client, path, version);
     });
-  };
-
-  const Connection = () => {
-    const transport = createGrpcWebTransport({
-      baseUrl: url,
-    });
-    const newclient = createPromiseClient(Repo, transport); //.catch((val) => console.log(val));
-    setClient(newclient);
   };
 
   const versionsSelection = (id: number, version: string) => {
@@ -195,6 +206,7 @@ function Speedupdate() {
         <Button variant="contained" onClick={Connection}>
           Connection
         </Button>
+        {error}
       </div>
     );
   } else if (!repoInit) {
@@ -230,7 +242,7 @@ function Speedupdate() {
       <Box sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
           <p>Current version: {currentVersion}</p>
-          Total packages size : {size} {DisplaySizeUnit(size)}
+          Total packages size : {size + DisplaySizeUnit(size)}
         </Paper>
         <Paper sx={{ width: "100%", mb: 2 }}>
           <Toolbar
@@ -268,9 +280,10 @@ function Speedupdate() {
             {numVersionsSelected == 1 ? (
               <Tooltip title="SetVersion">
                 <IconButton
-                  onClick={() =>
-                    setCurrentVersion(client, path, selectedVersions[0])
-                  }
+                  onClick={() => {
+                    setVersionsSelected([]);
+                    setCurrentVersion(client, path, selectedVersions[0]);
+                  }}
                 >
                   <CheckIcon />
                 </IconButton>
@@ -441,8 +454,8 @@ function Speedupdate() {
                             }
                             role="checkbox"
                             aria-checked={isItemSelected}
-                            tabIndex={listPackages.length}
-                            key={listPackages.length}
+                            tabIndex={-1}
+                            key={index + listPackages.length}
                             selected={isItemSelected}
                             sx={{ cursor: "pointer" }}
                           >
@@ -462,6 +475,85 @@ function Speedupdate() {
                       })
                     : null}
                 </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Box>
+        <Box>
+          <Paper sx={{ width: "100%", mb: 2 }}>
+            <Toolbar
+              sx={{
+                pl: { sm: 2 },
+                pr: { xs: 1, sm: 1 },
+                ...(numBinariesSelected > 0 && {
+                  bgcolor: (theme) =>
+                    alpha(
+                      theme.palette.primary.main,
+                      theme.palette.action.activatedOpacity,
+                    ),
+                }),
+              }}
+            >
+              {numBinariesSelected > 0 ? (
+                <Typography
+                  sx={{ flex: "1 1 100%" }}
+                  color="inherit"
+                  variant="subtitle1"
+                  component="div"
+                >
+                  {numBinariesSelected} selected
+                </Typography>
+              ) : (
+                <Typography
+                  sx={{ flex: "1 1 100%" }}
+                  variant="h6"
+                  id="tableTitle"
+                  component="div"
+                >
+                  Binaries
+                </Typography>
+              )}
+              {numBinariesSelected > 0 ? (
+                <Tooltip title="Delete">
+                  <IconButton>
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              ) : null}
+            </Toolbar>
+            <TableContainer>
+              <Table sx={{ width: "100%" }}>
+                {availableBinaries
+                  ? availableBinaries.map((binary, index) => {
+                      const isItemSelected = isBinariesSelected(index + 1);
+                      const labelId = `enhanced-table-checkbox-${index}`;
+                      return (
+                        <TableRow
+                          hover
+                          //onClick={() =>
+                          //  versionsSelection(index + 1, current_version)
+                          //}
+                          role="checkbox"
+                          aria-checked={isItemSelected}
+                          tabIndex={-1}
+                          key={index + 1}
+                          selected={isItemSelected}
+                          sx={{ cursor: "pointer" }}
+                        >
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              color="primary"
+                              checked={isItemSelected}
+                              inputProps={{
+                                "aria-labelledby": labelId,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>{binary}</TableCell>
+                        </TableRow>
+                      );
+                    })
+                  : null}
               </Table>
             </TableContainer>
           </Paper>

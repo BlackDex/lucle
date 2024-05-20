@@ -15,9 +15,10 @@ export const init = async (client: any, path: string) => {
 
 export const status = async (client: any, path: string) => {
   const call = client.status({
-    path,
+    path: path,
   });
   for await (const response of call) {
+    console.log("13 : ", response);
     return {
       size: response.size,
       repoinit: response.repoinit,
@@ -25,6 +26,7 @@ export const status = async (client: any, path: string) => {
       listVersion: response.versions,
       listPackages: response.packages,
       availablePackages: response.availablePackages,
+      availableBinaries: response.availableBinaries,
     };
   }
 };
