@@ -10,6 +10,7 @@ service Repo {
   rpc Unregister_version (Version) returns (ResponseResult);
   rpc Register_package (Package) returns (ResponseResult);
   rpc Unregister_package (Package) returns (ResponseResult);
+  rpc Available_packages (RepositoryPath) returns (ResponseResult);
 }
 
 message RepositoryPath {
@@ -25,7 +26,9 @@ message StatusResult {
   string current_version = 2;
   repeated string versions = 3;
   repeated string packages = 4;
-  int64 size = 5;
+  repeated string available_packages = 5;
+  repeated string available_binaries = 6;
+  uint64 size = 7;
 }
 
 message Version {
