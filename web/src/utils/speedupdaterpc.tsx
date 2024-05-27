@@ -85,3 +85,9 @@ export const unregisterPackage = async (
     name,
   });
 };
+
+export const fileToDelete = async (client: any, file: string) => {
+  client.delete_file({
+    file: file,
+  });
+};

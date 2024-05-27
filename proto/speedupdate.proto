@@ -4,12 +4,13 @@ package speedupdate;
 
 service Repo {
   rpc Init (RepositoryPath) returns (ResponseResult);
-  rpc Status (RepositoryPath) returns (stream StatusResult);
+  rpc Status (RepositoryPath) returns (stream RepoStatus);
   rpc Set_current_version (Version) returns (ResponseResult);
   rpc Register_version (Version) returns (ResponseResult);
   rpc Unregister_version (Version) returns (ResponseResult);
   rpc Register_package (Package) returns (ResponseResult);
   rpc Unregister_package (Package) returns (ResponseResult);
+  rpc Delete_file (FileToDelete) returns (ResponseResult);
   rpc Available_packages (RepositoryPath) returns (ResponseResult);
 }
 
@@ -17,18 +18,21 @@ message RepositoryPath {
   string path = 1;
 }
 
+message FileToDelete {
+  string file = 1;
+}
+
 message ResponseResult {
   string error = 1;
 }
 
-message StatusResult {
-  bool repoinit = 1;
-  string current_version = 2;
-  repeated string versions = 3;
-  repeated string packages = 4;
-  repeated string available_packages = 5;
-  repeated string available_binaries = 6;
-  uint64 size = 7;
+message RepoStatus {
+  string current_version = 1;
+  repeated string versions = 2;
+  repeated string packages = 3;
+  repeated string available_packages = 4;
+  repeated string available_binaries = 5;
+  uint64 size = 6;
 }
 
 message Version {

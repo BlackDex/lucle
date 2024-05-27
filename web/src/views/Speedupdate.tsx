@@ -6,6 +6,7 @@ import TableHead from "@mui/material/TableHead";
 import TableCell from "@mui/material/TableCell";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
+import TablePagination from "@mui/material/TablePagination";
 import TableContainer from "@mui/material/TableContainer";
 import InputAdornment from "@mui/material/InputAdornment";
 import Paper from "@mui/material/Paper";
@@ -22,6 +23,8 @@ import { DropzoneArea } from "mui2-file-dropzone";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckIcon from "@mui/icons-material/Check";
+import PublishIcon from "@mui/icons-material/Publish";
+import UnpublishedIcon from "@mui/icons-material/Unpublished";
 
 // RPC Connect
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
@@ -36,6 +39,8 @@ import {
   unregisterVersion,
   setCurrentVersion,
   registerPackage,
+  unregisterPackage,
+  fileToDelete,
 } from "utils/speedupdaterpc";
 
 //import { uploadFile } from "utils/minio";
@@ -58,61 +63,72 @@ const DisplaySizeUnit = (TotalSize) => {
 
 function Speedupdate() {
   const [client, setClient] = useState<any>();
-  const [repoInit, setRepoInit] = useState<boolean>(false);
   const [url, setUrl] = useState<string>(localStorage.getItem("url") || "");
   const [currentVersion, getCurrentVersion] = useState<string>("");
   const [size, setSize] = useState<number>();
   const [pack, setPack] = useState<any>();
   const [version, setVersion] = useState<any>();
+  const [canBePublished, setCanBePublished] = useState<boolean[]>([]);
   const [listPackages, setListPackages] = useState<String[]>([]);
-  const [listAvailablePackages, setListAvailablePackages] = useState<String[]>(
-    [],
-  );
   const [availableBinaries, setAvailableBinaries] = useState<String[]>([]);
   const [listVersions, setListVersions] = useState<any>();
-  const [selectedVersions, setSelectedVersions] = useState<string[]>([]);
+  const [selectedVersionsValues, setSelectedVersionsValues] = useState<
+    kstring[]
+  >([]);
+  const [packagesPage, setPackagesPage] = useState(0);
   const [path, setPath] = useState<string>(localStorage.getItem("path") || "");
   const [fileObjects, setFileObjects] = useState();
   const [files, setFiles] = useState<any>();
+  const [packagesPerPage, setPackagesPerPage] = useState(5);
   const [error, setError] = useState<String>("");
-  const [versionsSelected, setVersionsSelected] = useState<readonly number[]>(
+  const [selectedVersions, setSelectedVersions] = useState<readonly number[]>(
     [],
   );
-  const [packagesSelected, setPackagesSelected] = useState<readonly number[]>(
+  const [selectedPackages, setSelectedPackages] = useState<readonly number[]>(
     [],
   );
-  const [binariesSelected, setBinariesSelected] = useState<readonly number[]>(
+  const [selectedPackagesValues, setSelectedPackagesValues] = useState<
+    string[]
+  >([]);
+  const [selectedBinaries, setSelectedBinaries] = useState<readonly number[]>(
     [],
   );
 
   const isVersionsSelected = (id: number) =>
-    versionsSelected.indexOf(id) !== -1;
-  const numVersionsSelected = versionsSelected.length;
+    selectedVersions.indexOf(id) !== -1;
+  const numVersionsSelected = selectedVersions.length;
 
   const isPackagesSelected = (id: number) =>
-    packagesSelected.indexOf(id) !== -1;
-  const numPackagesSelected = packagesSelected.length;
+    selectedPackages.indexOf(id) !== -1;
+  const numPackagesSelected = selectedPackages.length;
 
   const isBinariesSelected = (id: number) =>
-    binariesSelected.indexOf(id) !== -1;
-  const numBinariesSelected = binariesSelected.length;
+    selectedBinaries.indexOf(id) !== -1;
+  const numBinariesSelected = selectedBinaries.length;
 
   useEffect(() => {
+    async function Status() {
+      const call = client.status({
+        path: path,
+      });
+      for await (const repo of call) {
+        console.log(repo);
+        setSize(repo.size);
+        getCurrentVersion(repo.currentVersion);
+        setListVersions(repo.versions);
+        let fullListPackages = [];
+        repo.packages.map((row) => {
+          fullListPackages.push({ name: row, published: true });
+        });
+        repo.availablePackages.map((row) => {
+          fullListPackages.push({ name: row, published: false });
+        });
+        setListPackages(fullListPackages);
+        setAvailableBinaries(repo.availableBinaries);
+      }
+    }
     if (client) {
-      status(client, path)
-        .then((repo: any) => {
-          if (repo.repoinit) {
-            setRepoInit(true);
-            setSize(repo.size);
-            getCurrentVersion(repo.currentVersion);
-            console.log("stream : ", repo.currentVersion);
-            setListVersions(repo.listVersion);
-            setListPackages(repo.listPackages);
-            setListAvailablePackages(repo.availablePackages);
-            setAvailableBinaries(repo.availableBinaries);
-          }
-        })
-        .catch((err) => console.log("err : ", err));
+      Status().catch((err) => setError(err));
     }
   }, [client]);
 
@@ -136,14 +152,42 @@ function Speedupdate() {
       .catch((err) => console.log("error: ", err));
   };
 
+  const RegisterPackages = () => {
+    selectedPackagesValues.forEach((pack) => {
+      registerPackage(client, path, pack);
+    });
+    setSelectedPackages([]);
+    setSelectedPackagesValues([]);
+    setCanBePublished([]);
+  };
+
+  const UnregisterPackages = () => {
+    selectedPackagesValues.forEach((pack) => {
+      unregisterPackage(client, path, pack);
+    });
+    setSelectedPackages([]);
+    setSelectedPackagesValues([]);
+    setCanBePublished([]);
+  };
+
   const DeleteVersion = () => {
     selectedVersions.forEach((version) => {
       unregisterVersion(client, path, version);
     });
   };
 
+  const DeletePackages = () => {
+    selectedPackages.forEach((row) => {
+      if (listPackages[row].published) {
+        unregisterPackage(client, path, listPackages[row].name);
+      }
+      fileToDelete(client, listPackages[row].name);
+      setSelectedPackages([]);
+    });
+  };
+
   const versionsSelection = (id: number, version: string) => {
-    const selectedIndex = versionsSelected.indexOf(id);
+    const selectedIndex = selectedVersions.indexOf(id);
     let newSelected: readonly number[] = [];
 
     if (selectedIndex === -1) {
@@ -159,39 +203,54 @@ function Speedupdate() {
       );
     }
 
-    setVersionsSelected(newSelected);
+    setSelectedVersions(newSelected);
 
     if (newSelected.includes(id)) {
-      setSelectedVersions((previous_version) => [...previous_version, version]);
+      setSelectedVersionsValues((previous_version) => [
+        ...previous_version,
+        version,
+      ]);
     } else {
       const updatedVersions = selectedVersions.filter((ver) => ver !== version);
-      setSelectedVersions(updatedVersions);
+      setSelectedVersionsValues(updatedVersions);
     }
   };
 
-  const packagesSelection = (id: number, pack: string) => {
-    const selectedIndex = packagesSelected.indexOf(id);
+  const packagesSelection = (id: number, pack: String, published: boolean) => {
+    const selectedIndex = selectedPackages.indexOf(id);
     let newSelected: readonly number[] = [];
+    let newPublished: readonly boolean[] = [];
+    let packagesValues: readonly String[] = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(packagesSelected, id);
+      newSelected = newSelected.concat(selectedPackages, id);
+      packagesValues = packagesValues.concat(selectedPackagesValues, pack);
+      newPublished = newPublished.concat(canBePublished, published);
     } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(packagesSelected.slice(1));
-    } else if (selectedIndex === packagesSelected.length - 1) {
-      newSelected = newSelected.concat(packagesSelected.slice(0, -1));
+      newSelected = newSelected.concat(selectedPackages.slice(1));
+      packagesValues = packagesValues.concat(selectedPackagesValues.slice(1));
+      newPublished = newPublished.concat(canBePublished.slice(1));
+    } else if (selectedIndex === selectedPackages.length - 1) {
+      newSelected = newSelected.concat(selectedPackages.slice(0, -1));
+      packagesValues = packagesValues.concat(
+        selectedPackagesValues.slice(0, -1),
+      );
+      newPublished = newPublished.concat(canBePublished.slice(0, -1));
     } else if (selectedIndex > 0) {
       newSelected = newSelected.concat(
-        packagesSelected.slice(0, selectedIndex),
-        packagesSelected.slice(selectedIndex + 1),
+        selectedPackages.slice(0, selectedIndex),
+        selectedPackages.slice(selectedIndex + 1),
       );
     }
 
-    setPackagesSelected(newSelected);
+    setSelectedPackages(newSelected);
+    setCanBePublished(newPublished);
+    setSelectedPackagesValues(packagesValues);
   };
 
   let speedupdatecomponent;
 
-  if (!client) {
+  if (!size || error.code == 2) {
     speedupdatecomponent = (
       <div>
         <TextField
@@ -206,10 +265,11 @@ function Speedupdate() {
         <Button variant="contained" onClick={Connection}>
           Connection
         </Button>
-        {error}
+        <p>{error.message}</p>
       </div>
     );
-  } else if (!repoInit) {
+  } else {
+    /*if (client && !path && !error.code == 2) {
     speedupdatecomponent = (
       <div>
         <TextField
@@ -234,10 +294,11 @@ function Speedupdate() {
         >
           Initialize repository
         </Button>
-        {error}
+        <p>{error.message}</p>
       </div>
     );
-  } else {
+  } else*/
+    //if (client && !error)  {
     speedupdatecomponent = (
       <Box sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
@@ -281,8 +342,8 @@ function Speedupdate() {
               <Tooltip title="SetVersion">
                 <IconButton
                   onClick={() => {
-                    setVersionsSelected([]);
                     setCurrentVersion(client, path, selectedVersions[0]);
+                    //setVersionsSelected([]);
                   }}
                 >
                   <CheckIcon />
@@ -392,9 +453,31 @@ function Speedupdate() {
                   Packages
                 </Typography>
               )}
+              {numPackagesSelected > 0 && !canBePublished.includes(false) ? (
+                <Tooltip title="Unpublish">
+                  <IconButton
+                    onClick={() =>
+                      UnregisterPackages(client, path, selectedPackages)
+                    }
+                  >
+                    <UnpublishedIcon />
+                  </IconButton>
+                </Tooltip>
+              ) : null}
+              {numPackagesSelected > 0 && !canBePublished.includes(true) ? (
+                <Tooltip title="Publish">
+                  <IconButton
+                    onClick={() =>
+                      RegisterPackages(client, path, selectedPackages)
+                    }
+                  >
+                    <PublishIcon />
+                  </IconButton>
+                </Tooltip>
+              ) : null}
               {numPackagesSelected > 0 ? (
                 <Tooltip title="Delete">
-                  <IconButton onClick={() => {}}>
+                  <IconButton onClick={DeletePackages}>
                     <DeleteIcon />
                   </IconButton>
                 </Tooltip>
@@ -411,51 +494,23 @@ function Speedupdate() {
                 </TableHead>
                 <TableBody>
                   {listPackages
-                    ? listPackages.map((bin, index) => {
-                        const isItemSelected = isPackagesSelected(index + 1);
-                        const labelId = `enhanced-table-checkbox-${index}`;
-                        return (
-                          <TableRow
-                            hover
-                            onClick={() => packagesSelection(index + 1, bin)}
-                            role="checkbox"
-                            aria-checked={isItemSelected}
-                            tabIndex={-1}
-                            key={index + 1}
-                            selected={isItemSelected}
-                            sx={{ cursor: "pointer" }}
-                          >
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                color="primary"
-                                checked={isItemSelected}
-                                inputProps={{
-                                  "aria-labelledby": labelId,
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>{bin}</TableCell>
-                            <TableCell>true</TableCell>
-                          </TableRow>
-                        );
-                      })
-                    : null}
-                  {listAvailablePackages
-                    ? listAvailablePackages.map((bin, index) => {
-                        const isItemSelected = isPackagesSelected(
-                          listPackages.length + 1,
-                        );
+                    ? listPackages.map((pack, index) => {
+                        const isItemSelected = isPackagesSelected(index);
                         const labelId = `enhanced-table-checkbox-${index}`;
                         return (
                           <TableRow
                             hover
                             onClick={() =>
-                              packagesSelection(listPackages.length + 1, bin)
+                              packagesSelection(
+                                index,
+                                pack.name,
+                                pack.published,
+                              )
                             }
                             role="checkbox"
                             aria-checked={isItemSelected}
                             tabIndex={-1}
-                            key={index + listPackages.length}
+                            key={index}
                             selected={isItemSelected}
                             sx={{ cursor: "pointer" }}
                           >
@@ -468,8 +523,8 @@ function Speedupdate() {
                                 }}
                               />
                             </TableCell>
-                            <TableCell>{bin}</TableCell>
-                            <TableCell>false</TableCell>
+                            <TableCell>{pack.name}</TableCell>
+                            <TableCell>{pack.published.toString()}</TableCell>
                           </TableRow>
                         );
                       })
@@ -477,6 +532,19 @@ function Speedupdate() {
                 </TableBody>
               </Table>
             </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={listPackages.length}
+              rowsPerPage={packagesPerPage}
+              page={packagesPage}
+              labelRowsPerPage="Packages per page"
+              onPageChange={(event, newPage) => setPage(newPage)}
+              onRowsPerPageChange={(event) => {
+                setPackagesPerPage(parseInt(event.target.value, 10));
+                setPackagesPage(0);
+              }}
+            />
           </Paper>
         </Box>
         <Box>
