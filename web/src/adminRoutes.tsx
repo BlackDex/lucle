@@ -8,7 +8,7 @@ const adminroutes = [
     name: "Home",
     key: "admin",
     icon: <Icon fontSize="small">dashboard</Icon>,
-    route: "/admin",
+    route: "/admin/*",
     //component: <Dashboard />,
   },
   {

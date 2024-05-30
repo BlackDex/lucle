@@ -13,12 +13,24 @@ export const init = async (client: any, path: string) => {
     });
 };
 
+export const isInit = async (client: any, path: string) => {
+  const call = client
+    .is_init({
+      path,
+    })
+    .then((value: any) => {
+      return true;
+    })
+    .catch((error: any) => {
+      return error;
+    });
+};
+
 export const status = async (client: any, path: string) => {
   const call = client.status({
     path: path,
   });
   for await (const response of call) {
-    console.log("13 : ", response);
     return {
       size: response.size,
       repoinit: response.repoinit,
