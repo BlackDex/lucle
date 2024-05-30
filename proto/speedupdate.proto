@@ -3,15 +3,15 @@ syntax = "proto3";
 package speedupdate;
 
 service Repo {
-  rpc Init (RepositoryPath) returns (ResponseResult);
+  rpc Init (RepositoryPath) returns (Empty);
+  rpc Is_init (RepositoryPath) returns (Empty);
   rpc Status (RepositoryPath) returns (stream RepoStatus);
-  rpc Set_current_version (Version) returns (ResponseResult);
-  rpc Register_version (Version) returns (ResponseResult);
-  rpc Unregister_version (Version) returns (ResponseResult);
-  rpc Register_package (Package) returns (ResponseResult);
-  rpc Unregister_package (Package) returns (ResponseResult);
-  rpc Delete_file (FileToDelete) returns (ResponseResult);
-  rpc Available_packages (RepositoryPath) returns (ResponseResult);
+  rpc Set_current_version (Version) returns (Empty);
+  rpc Register_version (Version) returns (Empty);
+  rpc Unregister_version (Version) returns (Empty);
+  rpc Register_package (Package) returns (Empty);
+  rpc Unregister_package (Package) returns (Empty);
+  rpc Delete_file (FileToDelete) returns (Empty);
 }
 
 message RepositoryPath {
@@ -22,9 +22,7 @@ message FileToDelete {
   string file = 1;
 }
 
-message ResponseResult {
-  string error = 1;
-}
+message Empty {}
 
 message RepoStatus {
   string current_version = 1;
