@@ -64,6 +64,5 @@
     "prettier": "^3.0.0",
     "typescript": "^5.3.3",
     "vite": "^5.0.11"
-  },
-  "packageManager": "yarn@4.1.1"
+  }
 }
