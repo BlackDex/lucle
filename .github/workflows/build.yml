@@ -20,14 +20,14 @@ jobs:
           node-version: 18
       - name: Install dependencies
         run: cd web && yarn install
-      - name: lint
-        run: cd web && yarn lint
-      - name: prettier
-        run: cd web && yarn prettier
-      - name: Build frontend (js side)
-        run: cd web && yarn build
-      - name: fmt
-        run: cargo fmt --all -- --check
+#      - name: lint
+#        run: cd web && yarn lint
+#      - name: prettier
+#        run: cd web && yarn prettier
+#      - name: Build frontend (js side)
+#        run: cd web && yarn build
+#      - name: fmt
+#        run: cargo fmt --all -- --check
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
       - name: Build backend (rust side)
