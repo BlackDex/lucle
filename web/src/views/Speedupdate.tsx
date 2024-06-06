@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useMemo, useEffect, useContext } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import TableRow from "@mui/material/TableRow";
@@ -84,11 +84,18 @@ function Speedupdate() {
   const [selectedVersionsValues, setSelectedVersionsValues] = useState<
     kstring[]
   >([]);
+  const [binariesPage, setBinariesPage] = useState(0);
   const [packagesPage, setPackagesPage] = useState(0);
+  const [versionsPage, setVersionsPage] = useState(0);
+  const [visibleVersions, setVisibleVersions] = useState<string[]>([]);
+  const [visiblePackages, setVisiblePackages] = useState<string[]>([]);
+  const [visibleBinaries, setVisibleBinaries] = useState<string[]>([]);
   const [path, setPath] = useState<string>(localStorage.getItem("path") || "");
   const [fileObjects, setFileObjects] = useState();
   const [files, setFiles] = useState<any>();
   const [packagesPerPage, setPackagesPerPage] = useState(5);
+  const [versionsPerPage, setVersionsPerPage] = useState(5);
+  const [binariesPerPage, setBinariesPerPage] = useState(5);
   const [repoState, setRepoState] = useState<RepoState>(RepoState.NotConnected);
   const [error, setError] = useState<String>("");
   const [selectedVersions, setSelectedVersions] = useState<readonly number[]>(
@@ -136,6 +143,34 @@ function Speedupdate() {
         setAvailableBinaries(repo.availableBinaries);
       }
     }
+
+    if (listVersions) {
+      setVisibleVersions(
+        listVersions.slice(
+          versionsPage * versionsPerPage,
+          versionsPage * versionsPerPage + versionsPerPage,
+        ),
+      );
+    }
+
+    if (listPackages) {
+      setVisiblePackages(
+        listPackages.slice(
+          packagesPage * packagesPerPage,
+          packagesPage * packagesPerPage + packagesPerPage,
+        ),
+      );
+    }
+
+    if (availableBinaries) {
+      setVisibleBinaries(
+        availableBinaries.slice(
+          binariesPage * binariesPerPage,
+          binariesPage * binariesPerPage + binariesPerPage,
+        ),
+      );
+    }
+
     if (repoState == RepoState.Initialized) {
       Status().catch((err) => {
         setError(err);
@@ -387,8 +422,8 @@ function Speedupdate() {
             </Toolbar>
             <TableContainer>
               <Table sx={{ width: "100%" }}>
-                {listVersions
-                  ? listVersions.map((current_version, index) => {
+                {visibleVersions
+                  ? visibleVersions.map((current_version, index) => {
                       const isItemSelected = isVersionsSelected(index + 1);
                       const labelId = `enhanced-table-checkbox-${index}`;
                       return (
@@ -445,6 +480,19 @@ function Speedupdate() {
                 </TableRow>
               </Table>
             </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={listVersions.length}
+              rowsPerPage={versionsPerPage}
+              page={versionsPage}
+              labelRowsPerPage="Versions per page"
+              onPageChange={(event, newPage) => setVersionsPage(newPage)}
+              onRowsPerPageChange={(event) => {
+                setVersionsPerPage(parseInt(event.target.value, 10));
+                setVersionsPage(0);
+              }}
+            />
           </Paper>
           <Box sx={{ width: "100%" }}>
             <Paper sx={{ width: "100%", mb: 2 }}>
@@ -520,8 +568,8 @@ function Speedupdate() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {listPackages
-                      ? listPackages.map((pack, index) => {
+                    {visiblePackages
+                      ? visiblePackages.map((pack, index) => {
                           const isItemSelected = isPackagesSelected(index);
                           const labelId = `enhanced-table-checkbox-${index}`;
                           return (
@@ -566,7 +614,7 @@ function Speedupdate() {
                 rowsPerPage={packagesPerPage}
                 page={packagesPage}
                 labelRowsPerPage="Packages per page"
-                onPageChange={(event, newPage) => setPage(newPage)}
+                onPageChange={(event, newPage) => setPackagesPage(newPage)}
                 onRowsPerPageChange={(event) => {
                   setPackagesPerPage(parseInt(event.target.value, 10));
                   setPackagesPage(0);
@@ -618,8 +666,8 @@ function Speedupdate() {
               </Toolbar>
               <TableContainer>
                 <Table sx={{ width: "100%" }}>
-                  {availableBinaries
-                    ? availableBinaries.map((binary, index) => {
+                  {visibleBinaries
+                    ? visibleBinaries.map((binary, index) => {
                         const isItemSelected = isBinariesSelected(index + 1);
                         const labelId = `enhanced-table-checkbox-${index}`;
                         return (
@@ -651,6 +699,18 @@ function Speedupdate() {
                     : null}
                 </Table>
               </TableContainer>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={availableBinaries.length}
+                rowsPerPage={binariesPerPage}
+                page={binariesPage}
+                onPageChange={(event, newPage) => setBinariesPage(newPage)}
+                onRowsPerPageChange={(event) => {
+                  setBinariesPerPage(parseInt(event.target.value, 10));
+                  setBinariesPage(0);
+                }}
+              />
             </Paper>
           </Box>
           Upload Binaries
