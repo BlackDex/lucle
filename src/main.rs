@@ -35,28 +35,28 @@ async fn main() {
         )
         .init();
 
-    let ca_cert;
-    let server_cert_key;
+//    let ca_cert;
+//    let server_cert_key;
 
-    if !Path::new(".tls/cert.pem").exists()
-        || !Path::new(".tls/server_cert.pem").exists()
-        || !Path::new(".tls/server_private_key.pem").exists()
-    {
-        ca_cert = utils::generate_ca_cert();
+  //  if !Path::new(".tls/cert.pem").exists()
+   //     || !Path::new(".tls/server_cert.pem").exists()
+    //    || !Path::new(".tls/server_private_key.pem").exists()
+  //  {
+//        ca_cert = utils::generate_ca_cert();
 
-        match std::fs::create_dir_all(".tls") {
-            Ok(_) => {}
-            Err(err) => tracing::error!("{}", err),
-        }
-        match write(
-            ".tls/ca_cert.pem",
-            ca_cert.serialize_pem().unwrap().as_bytes(),
-        ) {
-            Ok(_) => {}
-            Err(err) => tracing::error!("{}", err),
-        }
+//        match std::fs::create_dir_all(".tls") {
+    //        Ok(_) => {}
+     //       Err(err) => tracing::error!("{}", err),
+      //  }
+  //      match write(
+   //         ".tls/ca_cert.pem",
+   //         ca_cert.serialize_pem().unwrap().as_bytes(),
+   //     ) {
+    //        Ok(_) => {}
+     //       Err(err) => tracing::error!("{}", err),
+      //  }
 
-        server_cert_key = utils::generate_server_cert_key(ca_cert);
+        /*server_cert_key = utils::generate_server_cert_key(ca_cert);
         match write(".tls/server_cert.pem", server_cert_key.cert.as_bytes()) {
             Ok(_) => {}
             Err(err) => tracing::error!("{}", err),
@@ -68,7 +68,7 @@ async fn main() {
             Ok(_) => {}
             Err(err) => tracing::error!("{}", err),
         }
-    }
+    }*/
     let _cert_reader = BufReader::new(File::open(".tls/server_cert.pem").unwrap());
 
     let cert_file = File::open(".tls/server_cert.pem").unwrap();
@@ -95,3 +95,4 @@ async fn main() {
     .0;
     {};
 }
+

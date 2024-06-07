@@ -58,7 +58,7 @@ pub struct TlsServer {
     pub private_key: String,
 }
 
-pub fn generate_ca_cert() -> Certificate {
+/* pub fn generate_ca_cert() -> Certificate {
     let mut ca_params = rcgen::CertificateParams::new(Vec::new());
     let (yesterday, tomorrow) = validity_period();
     ca_params
@@ -76,9 +76,9 @@ pub fn generate_ca_cert() -> Certificate {
     ca_params.not_before = yesterday;
     ca_params.not_after = tomorrow;
     Certificate::from_params(ca_params).unwrap()
-}
+} */
 
-pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
+/* pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
     let mut server_ee_params = rcgen::CertificateParams::new(vec!["localhost".to_string()]);
     server_ee_params.is_ca = rcgen::IsCa::NoCa;
     let (yesterday, tomorrow) = validity_period();
@@ -99,7 +99,7 @@ pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
         private_key: server_key_string,
     }
 }
-
+*/ 
 fn validity_period() -> (OffsetDateTime, OffsetDateTime) {
     let day = Duration::new(86400, 0);
     let yesterday = OffsetDateTime::now_utc().checked_sub(day).unwrap();

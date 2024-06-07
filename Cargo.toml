@@ -9,8 +9,8 @@ axum = "0.6.20"
 axum-server = { version = "0.5", features = ["tls-rustls"] }
 chrono = { version = "0.4.24", default-features = false, features = ["clock", "std"] }
 ftp = "3.0.1"
-diesel = { version = "2.1.1", features = ["postgres", "mysql", "chrono", "sqlite", "returning_clauses_for_sqlite_3_35"] }
-diesel_migrations = "2.0.0"
+diesel = { version = "2.2", features = ["postgres", "mysql", "chrono", "sqlite", "returning_clauses_for_sqlite_3_35"] }
+diesel_migrations = "2.2"
 diffy = "0.3.0"
 prost = "0.12"
 tokio = { version = "1.27", features = ["full"] }
@@ -37,11 +37,9 @@ rcgen = "0.13.1"
 rustls-pemfile = "2.0.0"
 rustls-acme = { version = "0.10", features = ["axum"] }
 argon2 = "0.5.2"
-#rustls-acme = { version = "0.7.6", features = ["axum", "tokio"] }
 lettre = { version = "0.11.1", features = ["file-transport"] }
 jsonwebtoken = "9.1.0"
 email-address-parser = "2.0.0"
-diesel_logger = { git = "https://github.com/weiznich/diesel-logger/", branch = "multiconnection_compatibility" }
 dlopen2 = "0.7.0"
 minisign-verify = "0.2.1"
 tera = "1.19.1"
@@ -60,6 +58,7 @@ managesieve = { git = "https://github.com/stalwartlabs/mail-server" }
 utils = { git = "https://github.com/stalwartlabs/mail-server"}
 directory = { git = "https://github.com/stalwartlabs/mail-server"}
 jmap = { git = "https://github.com/stalwartlabs/mail-server"}
+pop3 = { git = "https://github.com/stalwartlabs/mail-server"}
 
 [build-dependencies]
 tonic-build = { version = "0.10.0", features = ["prost"] } 

@@ -1,5 +1,6 @@
 use common::{config::server::ServerProtocol, manager::boot::BootManager};
 use imap::core::{ImapSessionManager, IMAP};
+use pop3::Pop3SessionManager;
 use jmap::{api::JmapSessionManager, services::IPC_CHANNEL_BUFFER, JMAP};
 use managesieve::core::ManageSieveSessionManager;
 use smtp::core::{SmtpSessionManager, SMTP};
@@ -33,7 +34,7 @@ pub async fn start_mail_server() -> std::io::Result<()> {
     config.log_warnings(init.guards.is_none());
 
     // Spawn servers
-    let shutdown_tx = init.servers.spawn(|server, acceptor, shutdown_rx| {
+    let (shutdown_tx, shutdown_rx) = init.servers.spawn(|server, acceptor, shutdown_rx| {
         match &server.protocol {
             ServerProtocol::Smtp | ServerProtocol::Lmtp => server.spawn(
                 SmtpSessionManager::new(smtp.clone()),
@@ -49,6 +50,12 @@ pub async fn start_mail_server() -> std::io::Result<()> {
             ),
             ServerProtocol::Imap => server.spawn(
                 ImapSessionManager::new(imap.clone()),
+                core.clone(),
+                acceptor,
+                shutdown_rx,
+            ),
+	    ServerProtocol::Pop3 => server.spawn(
+                Pop3SessionManager::new(imap.clone()),
                 core.clone(),
                 acceptor,
                 shutdown_rx,

@@ -13,7 +13,6 @@ use diesel::SelectableHelper;
 use diesel::{
     select, Connection, MysqlConnection, PgConnection, QueryDsl, RunQueryDsl, SqliteConnection,
 };
-use diesel_logger::LoggingConnection;
 use std::path::Path;
 
 pub fn create_user(
@@ -135,8 +134,7 @@ pub fn login(database_url: &str, username: &str, password: &str) -> DatabaseResu
             }
         }
         Backend::Sqlite => {
-            let conn = SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
-            let mut conn = LoggingConnection::new(conn);
+            let mut conn = SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
             let user = users::table
                 .filter(users::dsl::username.eq(username))
                 .select(Users::as_select())
