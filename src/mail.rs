@@ -1,6 +1,10 @@
 use common::{config::server::ServerProtocol, manager::boot::BootManager};
 use imap::core::{ImapSessionManager, IMAP};
-use jmap::{api::JmapSessionManager, services::IPC_CHANNEL_BUFFER, JMAP};
+use jmap::{
+    api::JmapSessionManager,
+    services::{gossip::spawn::GossiperBuilder, IPC_CHANNEL_BUFFER},
+    JMAP,
+};
 use managesieve::core::ManageSieveSessionManager;
 use pop3::Pop3SessionManager;
 use smtp::core::{SmtpSessionManager, SMTP};
@@ -24,6 +28,7 @@ pub async fn start_mail_server() -> std::io::Result<()> {
     let smtp = SMTP::init(&mut config, core.clone(), delivery_tx).await;
     let jmap = JMAP::init(&mut config, delivery_rx, core.clone(), smtp.inner.clone()).await;
     let imap = IMAP::init(&mut config, jmap.clone()).await;
+    let gossiper = GossiperBuilder::try_parse(&mut config);
 
     tracing::info!("Starting mail server");
     // Log configuration errors
@@ -65,6 +70,10 @@ pub async fn start_mail_server() -> std::io::Result<()> {
             ),
         };
     });
+
+    if let Some(gossiper) = gossiper {
+        gossiper.spawn(jmap, shutdown_rx).await;
+    }
 
     // Wait for shutdown signal
     wait_for_shutdown(&format!(

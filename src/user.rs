@@ -98,7 +98,7 @@ fn insert_user(
     Ok(())
 }
 
-fn get_user(conn: LucleDBConnection, username: String, password: String) -> DatabaseResult<()> {
+fn get_user(mut conn: LucleDBConnection, username: String, password: String) -> DatabaseResult<()> {
     let user = users::table
         .filter(users::dsl::username.eq(username))
         .select(User::as_select())
@@ -128,7 +128,7 @@ fn table_size(mut conn: LucleDBConnection) -> bool {
     }
 }
 
-fn lost_password(conn: LucleDBConnection, email: String) -> DatabaseResult<()> {
+fn lost_password(mut conn: LucleDBConnection, email: String) -> DatabaseResult<()> {
     match users::table
         .filter(users::dsl::email.eq(email))
         .select(User::as_select())
@@ -140,7 +140,7 @@ fn lost_password(conn: LucleDBConnection, email: String) -> DatabaseResult<()> {
             if diesel::update(users::table.filter(users::dsl::email.eq(val.email.clone())))
                 .set(users::dsl::reset_token.eq(token))
                 .returning(User::as_returning())
-                .get_result(conn)
+                .get_result(&mut conn)
                 .is_ok()
             {
                 utils::send_mail(&email, &val.email, "test", "hi");

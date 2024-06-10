@@ -4,7 +4,7 @@ use diesel::prelude::*;
 
 #[derive(Debug, Queryable, Selectable)]
 #[diesel(table_name = users)]
-//#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+#[diesel(check_for_backend(crate::database::MultiBackend))]
 pub struct User {
     pub id: i32,
     pub username: String,
