@@ -8,15 +8,14 @@ const adminroutes = [
     name: "Home",
     key: "admin",
     icon: <Icon fontSize="small">dashboard</Icon>,
-    route: "/admin/*",
-    //component: <Dashboard />,
+    route: "/admin",
   },
   {
     type: "collapse",
     name: "Speedupdate",
     key: "speedupdate",
     icon: <Icon fontSize="small">dashboard</Icon>,
-    route: "/speedupdate",
+    route: "/admin/speedupdate",
     component: <Speedupdate />,
   },
 ];

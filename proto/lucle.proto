@@ -3,13 +3,13 @@ syntax = "proto3";
 package luclerpc;
 
 service Lucle {
-  rpc create_db (Database) returns (ResponseResult);
-  rpc delete_db (Database) returns (ResponseResult);
-  rpc login (User) returns (ResponseResult);
-  rpc create_user (User) returns (ResponseResult);
+  rpc create_db (Database) returns (Empty);
+  rpc delete_db (Database) returns (Empty);
+  rpc login (User) returns (Empty);
+  rpc create_user (User) returns (Empty);
   rpc is_created_user (Database) returns (ResponseResult);
   rpc create_table (Database) returns (Empty);
-  rpc forgot_password (ResetPassword) returns (ResponseResult);
+  rpc forgot_password (ResetPassword) returns (Empty);
   rpc ServerStreamingEcho (Empty) returns (stream Message);
 }
 

@@ -1,23 +1,20 @@
 use common::{config::server::ServerProtocol, manager::boot::BootManager};
 use imap::core::{ImapSessionManager, IMAP};
-use pop3::Pop3SessionManager;
 use jmap::{api::JmapSessionManager, services::IPC_CHANNEL_BUFFER, JMAP};
 use managesieve::core::ManageSieveSessionManager;
+use pop3::Pop3SessionManager;
 use smtp::core::{SmtpSessionManager, SMTP};
 use tokio::sync::mpsc;
 use utils::wait_for_shutdown;
 
-use std::{
-  time::Duration,
-  env,
-};
+use std::{env, time::Duration};
 
 pub async fn start_mail_server() -> std::io::Result<()> {
-  let init = BootManager::init().await;
+    let init = BootManager::init().await;
 
     // Parse core
-//    let key = "CONFIG_PATH";
-//    env::set_var(key, "./config.toml");
+    //    let key = "CONFIG_PATH";
+    //    env::set_var(key, "./config.toml");
     std::env::var("CONFIG_PATH").unwrap_or_else(|_| "./config.toml".into());
     let mut config = init.config;
     let core = init.core;
@@ -27,7 +24,7 @@ pub async fn start_mail_server() -> std::io::Result<()> {
     let smtp = SMTP::init(&mut config, core.clone(), delivery_tx).await;
     let jmap = JMAP::init(&mut config, delivery_rx, core.clone(), smtp.inner.clone()).await;
     let imap = IMAP::init(&mut config, jmap.clone()).await;
-   
+
     tracing::info!("Starting mail server");
     // Log configuration errors
     config.log_errors(init.guards.is_none());
@@ -54,7 +51,7 @@ pub async fn start_mail_server() -> std::io::Result<()> {
                 acceptor,
                 shutdown_rx,
             ),
-	    ServerProtocol::Pop3 => server.spawn(
+            ServerProtocol::Pop3 => server.spawn(
                 Pop3SessionManager::new(imap.clone()),
                 core.clone(),
                 acceptor,

@@ -1,4 +1,3 @@
-use jsonwebtoken::{encode, EncodingKey, Header};
 use lettre::{
     message::{header, MultiPart, SinglePart},
     FileTransport, Message, Transport,
@@ -8,12 +7,12 @@ use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
 use time::{Duration, OffsetDateTime};
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
-    aud: String,
-    sub: String,
-    company: String,
-    exp: usize,
+//use jwt_simple::prelude::*;
+
+#[derive(Serialize, Deserialize)]
+struct LucleClaim {
+    user: String,
+    game: String,
 }
 
 pub fn send_mail(from: &str, dest: &str, subject: &str, _body: &str) {
@@ -99,7 +98,7 @@ pub struct TlsServer {
         private_key: server_key_string,
     }
 }
-*/ 
+*/
 fn validity_period() -> (OffsetDateTime, OffsetDateTime) {
     let day = Duration::new(86400, 0);
     let yesterday = OffsetDateTime::now_utc().checked_sub(day).unwrap();
@@ -108,19 +107,10 @@ fn validity_period() -> (OffsetDateTime, OffsetDateTime) {
 }
 
 pub fn generate_jwt(username: String, email: String) -> String {
-    let key = b"secret";
-    let my_claims = Claims {
-        aud: username.to_owned(),
-        sub: email.to_owned(),
-        company: "lucle".to_owned(),
-        exp: 10000000000,
+    let lucleClaim = LucleClaim {
+        user: username,
+        game: "".to_string(),
     };
-    match encode(
-        &Header::default(),
-        &my_claims,
-        &EncodingKey::from_secret(key),
-    ) {
-        Ok(t) => t,
-        Err(_) => panic!(),
-    }
+    //let claims = Claims::with_custom_claims(lucleClaim, Duration::from_secs(30));
+    "".to_string()
 }

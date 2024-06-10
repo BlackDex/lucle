@@ -36,7 +36,7 @@ import {
 // Material Dashboard 2 React context
 import { useMaterialUIController } from "context";
 
-function SidenavCollapse({ icon, name, active }) {
+function SidenavCollapse({ icon, name, active = false }) {
   const [controller] = useMaterialUIController();
   const {
     miniSidenav,
@@ -91,11 +91,6 @@ function SidenavCollapse({ icon, name, active }) {
     </ListItem>
   );
 }
-
-// Setting default values for the props of SidenavCollapse
-SidenavCollapse.defaultProps = {
-  active: false,
-};
 
 // Typechecking props for the SidenavCollapse
 SidenavCollapse.propTypes = {

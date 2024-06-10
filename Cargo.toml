@@ -38,7 +38,6 @@ rustls-pemfile = "2.0.0"
 rustls-acme = { version = "0.10", features = ["axum"] }
 argon2 = "0.5.2"
 lettre = { version = "0.11.1", features = ["file-transport"] }
-jsonwebtoken = "9.1.0"
 email-address-parser = "2.0.0"
 dlopen2 = "0.7.0"
 minisign-verify = "0.2.1"
@@ -48,6 +47,7 @@ rustls-native-certs = "0.7.0"
 hyper-util = "0.1.1"
 tower-service = "0.3.2"
 time = "0.3.30"
+#jwt-simple = { version = "0.12.9", features = ["pure-rust"]}
 
 #smtp
 common = { git = "https://github.com/stalwartlabs/mail-server"}

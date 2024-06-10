@@ -41,7 +41,7 @@ const routes = (isInstalled: boolean, isLogged: boolean) => [
         element: <PrivateRoutes isLogged />,
         children: [
           {
-            path: "admin",
+            path: "admin/*",
             element: <Dashboard />,
             children: [
               { index: true, element: <AdminIndex /> },

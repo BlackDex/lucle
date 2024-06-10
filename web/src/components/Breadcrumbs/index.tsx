@@ -27,7 +27,7 @@ import Icon from "@mui/material/Icon";
 import Box from "components/Box";
 import Typography from "components/Typography";
 
-function Breadcrumbs({ icon, title, route, light }) {
+function Breadcrumbs({ icon, title, route, light = false }) {
   const routes = route.slice(0, -1);
 
   return (
@@ -88,11 +88,6 @@ function Breadcrumbs({ icon, title, route, light }) {
     </Box>
   );
 }
-
-// Setting default values for the props of Breadcrumbs
-Breadcrumbs.defaultProps = {
-  light: false,
-};
 
 // Typechecking props for the Breadcrumbs
 Breadcrumbs.propTypes = {

@@ -28,7 +28,7 @@ impl DefaultSchema for Pg {
     }
 }
 
-sql_function!(fn database() -> VarChar);
+define_sql_function!(fn database() -> VarChar);
 
 impl DefaultSchema for Mysql {
     fn default_schema<C>(conn: &mut C) -> QueryResult<String>

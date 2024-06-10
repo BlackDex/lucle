@@ -19,7 +19,7 @@ import { connection } from "utils/rpc";
 
 const theme = createTheme();
 
-function Login({ setIsLogged }: { setIsLogged: any }) {
+function Login({ onLogin }: { onLogin: void }) {
   const [login, setLogin] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<any>();
@@ -33,7 +33,7 @@ function Login({ setIsLogged }: { setIsLogged: any }) {
     }
     connection(client, login, password)
       .then(() => {
-        setIsLogged();
+        onLogin();
         localStorage.setItem("token", "test");
       })
       .catch((err) => setError(err));

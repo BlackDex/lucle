@@ -202,10 +202,7 @@ pub fn drop_database(database_url: &str) -> DatabaseResult<()> {
     Ok(())
 }
 
-fn pg_database_exists(
-    conn: &mut PgConnection,
-    database_name: &str,
-) -> QueryResult<bool> {
+fn pg_database_exists(conn: &mut PgConnection, database_name: &str) -> QueryResult<bool> {
     use self::pg_database::dsl::*;
 
     pg_database
@@ -217,10 +214,7 @@ fn pg_database_exists(
         .map(|x| x.is_some())
 }
 
-fn mysql_database_exists(
-    conn: &mut MysqlConnection,
-    database_name: &str,
-) -> QueryResult<bool> {
+fn mysql_database_exists(conn: &mut MysqlConnection, database_name: &str) -> QueryResult<bool> {
     use self::schemata::dsl::*;
 
     schemata

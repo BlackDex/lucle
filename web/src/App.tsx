@@ -45,13 +45,13 @@ export default function App() {
   const [controller, dispatch] = useMaterialUIController();
   const { darkMode } = controller;
 
-  useEffect(() => {
-    /* if (location.pathname === "/admin") {
+/*  useEffect(() => {
+    if (location.pathname === "/admin") {
       checkIfInstalled(client)
         .then(() => setIsInstalled(true))
         .catch(() => setIsInstalled(false));
-    } */
-  }, [pathname]);
+    } 
+  }, [pathname]); */
 
   return (
     <ThemeProvider theme={darkMode ? themeDark : theme}>

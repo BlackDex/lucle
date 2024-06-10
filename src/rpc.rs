@@ -1,20 +1,13 @@
 use super::database;
 use super::user;
-use crate::database::{handle_error, Backend};
 
-use crate::models::Users;
-use crate::schema::users;
-use crate::utils;
-use diesel::prelude::*;
 use email_address_parser::EmailAddress;
-
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
     Database, DatabaseType, Empty, Message, ResetPassword, ResponseResult, User,
 };
 use std::pin::Pin;
 use std::{fs::File, io::BufReader, net::SocketAddr};
-
 use tokio::sync::mpsc;
 use tokio_stream::{wrappers::ReceiverStream, Stream};
 use tonic::{
@@ -36,10 +29,7 @@ pub struct LucleApi {}
 
 #[tonic::async_trait]
 impl Lucle for LucleApi {
-    async fn create_db(
-        &self,
-        request: Request<Database>,
-    ) -> Result<Response<ResponseResult>, Status> {
+    async fn create_db(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
         let db_type = inner.db_type;
         let _db_name = inner.db_name;
@@ -48,8 +38,8 @@ impl Lucle for LucleApi {
         let _password = inner.password;
         let _hostname = inner.hostname;
         let _port = inner.port;
-        // let name;
-        let mut db_error: String = "".to_string();
+        // let name
+        let reply = Empty {};
         let migrations_dir =
             database::create_migrations_dir(migration_path).unwrap_or_else(database::handle_error);
         let mut database_url: &str = "";
@@ -60,11 +50,10 @@ impl Lucle for LucleApi {
             _ => {}
         }
 
-        database::setup_database(database_url, &migrations_dir).unwrap_or_else(|err| {
-            tracing::error!("test : {}", err);
-            db_error = err.to_string();
-        });
-        let reply = ResponseResult { error: db_error };
+        if let Err(err) = database::setup_database(database_url, &migrations_dir) {
+            tracing::error!("{}", err);
+            return Err(Status::internal(err.to_string()));
+        }
         Ok(Response::new(reply))
     }
 
@@ -73,52 +62,43 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
-    async fn delete_db(
-        &self,
-        request: Request<Database>,
-    ) -> Result<Response<ResponseResult>, Status> {
+    async fn delete_db(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
         let _inner = request.into_inner();
         let database_url = "lucle.db";
-        let mut db_error: String = "".to_string();
-        database::drop_database(database_url).unwrap_or_else(|err| {
+        let reply = Empty {};
+        if let Err(err) = database::drop_database(database_url) {
             tracing::error!("{}", err);
-            db_error = err.to_string();
-        });
-        let reply = ResponseResult { error: db_error };
+            return Err(Status::internal(err.to_string()));
+        }
         Ok(Response::new(reply))
     }
 
-    async fn create_user(
-        &self,
-        request: Request<User>,
-    ) -> Result<Response<ResponseResult>, Status> {
+    async fn create_user(&self, request: Request<User>) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
         let username = inner.username;
         let password = inner.password;
         let email = inner.email;
-        let mut db_error: String = "".to_string();
+        let reply = Empty {};
         if EmailAddress::is_valid(&email.clone(), None) {
-            user::create_user("lucle.db", username, password, email).unwrap_or_else(|err| {
+            if let Err(err) = user::create_user("lucle.db", username, password, email) {
                 tracing::error!("{}", err);
-                db_error = err.to_string();
-            });
+                return Err(Status::internal(err.to_string()));
+            }
         } else {
-            db_error = "email not valid".to_string();
+            return Err(Status::internal("Email not valid".to_string()));
         }
-        let reply = ResponseResult { error: db_error };
         Ok(Response::new(reply))
     }
 
-    async fn login(&self, request: Request<User>) -> Result<Response<ResponseResult>, Status> {
+    async fn login(&self, request: Request<User>) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
         let username = inner.username;
         let password = inner.password;
-        let mut error: String = "".to_string();
-        user::login("lucle.db", &username, &password).unwrap_or_else(|err| {
+        let reply = Empty {};
+        if let Err(err) = user::login("lucle.db", username, password) {
             tracing::error!("{}", err);
-            error = err.to_string();
-        });
-        let reply = ResponseResult { error };
+            return Err(Status::internal(err.to_string()));
+        };
         Ok(Response::new(reply))
     }
 
@@ -138,64 +118,17 @@ impl Lucle for LucleApi {
     async fn forgot_password(
         &self,
         request: Request<ResetPassword>,
-    ) -> Result<Response<ResponseResult>, Status> {
+    ) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
         let database_url = "lucle.db";
-        let email = inner.email.as_str();
-        let mut error: String = "".to_string();
-        let mail_exist;
-        if EmailAddress::is_valid(email, None) {
-            match Backend::for_url(database_url) {
-                Backend::Pg => {
-                    let conn =
-                        &mut PgConnection::establish(database_url).unwrap_or_else(handle_error);
-                    let _ = users::table
-                        .filter(users::dsl::email.eq(email))
-                        .select(Users::as_select())
-                        .first(conn)
-                        .optional();
-                }
-                Backend::Mysql => {
-                    let conn =
-                        &mut MysqlConnection::establish(database_url).unwrap_or_else(handle_error);
-                    let _ = users::table
-                        .filter(users::dsl::email.eq(email))
-                        .select(Users::as_select())
-                        .first(conn)
-                        .optional();
-                }
-                Backend::Sqlite => {
-                    let conn =
-                        &mut SqliteConnection::establish(database_url).unwrap_or_else(handle_error);
-                    mail_exist = users::table
-                        .filter(users::dsl::email.eq(email))
-                        .select(Users::as_select())
-                        .first(conn)
-                        .optional();
-
-                    match mail_exist {
-                        Ok(Some(val)) => {
-                            let token = utils::generate_jwt(val.username, val.email.clone());
-                            if diesel::update(
-                                users::table.filter(users::dsl::email.eq(val.email.clone())),
-                            )
-                            .set(users::dsl::reset_token.eq(token))
-                            .returning(Users::as_returning())
-                            .get_result(conn)
-                            .is_ok()
-                            {
-                                utils::send_mail("a@a.com", &val.email, "test", "hi");
-                            }
-                        }
-                        Ok(None) => error = "Unknow email".to_string(),
-                        Err(_err) => error = "Connection failed".to_string(),
-                    }
-                }
+        let email = inner.email;
+        let reply = Empty {};
+        if EmailAddress::is_valid(email.as_str(), None) {
+            if let Err(err) = user::reset_password(database_url, email) {
+                tracing::error!("{}", err);
+                return Err(Status::internal(err.to_string()));
             }
-        } else {
-            error = "Not a valid email".to_string();
         }
-        let reply = ResponseResult { error };
         Ok(Response::new(reply))
     }
 
