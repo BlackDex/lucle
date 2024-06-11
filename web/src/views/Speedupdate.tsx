@@ -36,7 +36,6 @@ import { Repo } from "gen/speedupdate_connect";
 import {
   init,
   isInit,
-  status,
   registerVersion,
   unregisterVersion,
   setCurrentVersion,
@@ -54,7 +53,7 @@ enum RepoState {
   Initialized,
 }
 
-const DisplaySizeUnit = (TotalSize) => {
+const DisplaySizeUnit = (TotalSize: number) => {
   if (TotalSize > 0 && TotalSize < 1024) {
     return "B";
   }
