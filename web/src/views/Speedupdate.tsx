@@ -184,7 +184,7 @@ function Speedupdate() {
     let newClient = createPromiseClient(Repo, transport);
     setClient(newClient);
     isInit(newClient, path)
-      .then(() =>  setRepoState(RepoState.Initialized))
+      .then(() => setRepoState(RepoState.Initialized))
       .catch((err) => {
         setError(err.message);
         if (err.code == 2) {

@@ -27,7 +27,7 @@ import Icon from "@mui/material/Icon";
 import Box from "components/Box";
 import Typography from "components/Typography";
 
-function Breadcrumbs({ icon, title, route, light = false}) {
+function Breadcrumbs({ icon, title, route, light = false }) {
   const routes = route.slice(0, -1);
 
   return (

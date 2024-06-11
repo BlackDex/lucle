@@ -15,16 +15,16 @@ export const init = async (client: any, path: string) => {
 
 export const isInit = async (client: any, path: string) => {
   return new Promise((resolve, reject) => {
-  client
-    .is_init({
-      path,
-    })
-    .then(() => {
-      resolve(true);
-    })
-    .catch((error: string) => {
-       reject(error);
-    });
+    client
+      .is_init({
+        path,
+      })
+      .then(() => {
+        resolve(true);
+      })
+      .catch((error: string) => {
+        reject(error);
+      });
   });
 };
 

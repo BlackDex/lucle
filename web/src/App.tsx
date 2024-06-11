@@ -45,7 +45,7 @@ export default function App() {
   const [controller, dispatch] = useMaterialUIController();
   const { darkMode } = controller;
 
-/*  useEffect(() => {
+  /*  useEffect(() => {
     if (location.pathname === "/admin") {
       checkIfInstalled(client)
         .then(() => setIsInstalled(true))
