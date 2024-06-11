@@ -75,14 +75,13 @@ function Speedupdate() {
   const [url, setUrl] = useState<string>(localStorage.getItem("url") || "");
   const [currentVersion, getCurrentVersion] = useState<string>("");
   const [size, setSize] = useState<number>();
-  const [pack, setPack] = useState<any>();
   const [version, setVersion] = useState<any>();
   const [canBePublished, setCanBePublished] = useState<boolean[]>([]);
   const [listPackages, setListPackages] = useState<String[]>([]);
   const [availableBinaries, setAvailableBinaries] = useState<String[]>([]);
   const [listVersions, setListVersions] = useState<any>();
   const [selectedVersionsValues, setSelectedVersionsValues] = useState<
-    kstring[]
+    string[]
   >([]);
   const [binariesPage, setBinariesPage] = useState(0);
   const [packagesPage, setPackagesPage] = useState(0);
@@ -186,10 +185,10 @@ function Speedupdate() {
     let newClient = createPromiseClient(Repo, transport);
     setClient(newClient);
     isInit(newClient, path)
-      .then(() => setRepoState(RepoState.Initialized))
+      .then(() =>  setRepoState(RepoState.Initialized))
       .catch((err) => {
+        setError(err.message);
         if (err.code == 2) {
-          setError(err.message);
           setRepoState(RepoState.NotConnected);
         }
         if (err.code == 13) {
@@ -345,7 +344,7 @@ function Speedupdate() {
             Initialize repo
           </Button>
         ) : null}
-        <p>{error.message}</p>
+        <p>{error}</p>
       </div>
     );
   } else {

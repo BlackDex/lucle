@@ -1,5 +1,5 @@
 export const init = async (client: any, path: string) => {
-  const call = client
+  client
     .init({
       path,
     })
@@ -14,33 +14,18 @@ export const init = async (client: any, path: string) => {
 };
 
 export const isInit = async (client: any, path: string) => {
-  const call = client
+  return new Promise((resolve, reject) => {
+  client
     .is_init({
       path,
     })
-    .then((value: any) => {
-      return true;
+    .then(() => {
+      resolve(true);
     })
-    .catch((error: any) => {
-      return error;
+    .catch((error: string) => {
+       reject(error);
     });
-};
-
-export const status = async (client: any, path: string) => {
-  const call = client.status({
-    path: path,
   });
-  for await (const response of call) {
-    return {
-      size: response.size,
-      repoinit: response.repoinit,
-      currentVersion: response.currentVersion,
-      listVersion: response.versions,
-      listPackages: response.packages,
-      availablePackages: response.availablePackages,
-      availableBinaries: response.availableBinaries,
-    };
-  }
 };
 
 export const setCurrentVersion = async (
