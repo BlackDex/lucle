@@ -50,17 +50,22 @@ pub fn create_user(
     Ok(())
 }
 
-pub fn login(database_url: &str, username: String, password: String) -> DatabaseResult<()> {
+pub fn login(database_url: &str, username: String, password: String) -> DatabaseResult<String> {
     match LucleDBConnection::establish(database_url).unwrap() {
-        LucleDBConnection::Pg(conn) => get_user(LucleDBConnection::Pg(conn), username, password)?,
-        LucleDBConnection::Sqlite(conn) => {
-            get_user(LucleDBConnection::Sqlite(conn), username, password)?
+        LucleDBConnection::Pg(conn) => {
+            Ok(login_user(LucleDBConnection::Pg(conn), username, password)?)
         }
-        LucleDBConnection::Mysql(conn) => {
-            get_user(LucleDBConnection::Mysql(conn), username, password)?
-        }
+        LucleDBConnection::Sqlite(conn) => Ok(login_user(
+            LucleDBConnection::Sqlite(conn),
+            username,
+            password,
+        )?),
+        LucleDBConnection::Mysql(conn) => Ok(login_user(
+            LucleDBConnection::Mysql(conn),
+            username,
+            password,
+        )?),
     }
-    Ok(())
 }
 
 pub fn is_default_user(database_url: &str) -> bool {
@@ -78,6 +83,7 @@ pub fn reset_password(database_url: &str, email: String) -> DatabaseResult<()> {
         LucleDBConnection::Mysql(conn) => lost_password(LucleDBConnection::Mysql(conn), email),
     }
 }
+
 fn insert_user(
     mut conn: LucleDBConnection,
     username: String,
@@ -86,10 +92,10 @@ fn insert_user(
     role: String,
 ) -> DatabaseResult<()> {
     let new_user = NewUser {
-        username: username,
+        username,
         password: password_hash,
-        email: email,
-        role: role,
+        email,
+        role,
     };
 
     diesel::insert_into(users::table)
@@ -98,9 +104,13 @@ fn insert_user(
     Ok(())
 }
 
-fn get_user(mut conn: LucleDBConnection, username: String, password: String) -> DatabaseResult<()> {
+fn login_user(
+    mut conn: LucleDBConnection,
+    username: String,
+    password: String,
+) -> DatabaseResult<String> {
     let user = users::table
-        .filter(users::dsl::username.eq(username))
+        .filter(users::dsl::username.eq(username.clone()))
         .select(User::as_select())
         .first(&mut conn)
         .optional();
@@ -109,7 +119,8 @@ fn get_user(mut conn: LucleDBConnection, username: String, password: String) -> 
             let parsed_hash = PasswordHash::new(&val.password).unwrap();
             Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
             if val.role == "admin" {
-                Ok(())
+                let token = utils::generate_jwt(username, val.email);
+                Ok(token)
             } else {
                 Err(DatabaseError::NotAuthorized)
             }
@@ -130,7 +141,7 @@ fn table_size(mut conn: LucleDBConnection) -> bool {
 
 fn lost_password(mut conn: LucleDBConnection, email: String) -> DatabaseResult<()> {
     match users::table
-        .filter(users::dsl::email.eq(email))
+        .filter(users::dsl::email.eq(email.clone()))
         .select(User::as_select())
         .first(&mut conn)
         .optional()
@@ -139,15 +150,15 @@ fn lost_password(mut conn: LucleDBConnection, email: String) -> DatabaseResult<(
             let token = utils::generate_jwt(val.username, val.email.clone());
             if diesel::update(users::table.filter(users::dsl::email.eq(val.email.clone())))
                 .set(users::dsl::reset_token.eq(token))
-                .returning(User::as_returning())
-                .get_result(&mut conn)
+                .execute(&mut conn)
                 .is_ok()
             {
                 utils::send_mail(&email, &val.email, "test", "hi");
+                return Ok(());
             }
         }
-        Ok(None) => Err("Unknow email".to_string()),
-        Err(err) => Err("Connection failed :".to_string() + &err.to_string()),
+        Ok(None) => return Err(DatabaseError::EmailNotFound),
+        Err(err) => return Err(DatabaseError::QueryError(err)),
     }
 
     Ok(())

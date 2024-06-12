@@ -1,6 +1,6 @@
 use rustls_pemfile::certs;
 use std::path::Path;
-use std::{fs::write, fs::File, io::BufReader};
+use std::{fs::File, io::BufReader, sync::Arc};
 use tokio_rustls::rustls::ServerConfig;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -35,41 +35,28 @@ async fn main() {
         )
         .init();
 
-    //    let ca_cert;
-    //    let server_cert_key;
+    if !Path::new(".tls/ca_cert.pem").exists()
+        || !Path::new(".tls/server_cert.pem").exists()
+        || !Path::new(".tls/server_private_key.pem").exists()
+    {
+        let pki = Arc::new(utils::Pki::new());
 
-    //  if !Path::new(".tls/cert.pem").exists()
-    //     || !Path::new(".tls/server_cert.pem").exists()
-    //    || !Path::new(".tls/server_private_key.pem").exists()
-    //  {
-    //        ca_cert = utils::generate_ca_cert();
-
-    //        match std::fs::create_dir_all(".tls") {
-    //        Ok(_) => {}
-    //       Err(err) => tracing::error!("{}", err),
-    //  }
-    //      match write(
-    //         ".tls/ca_cert.pem",
-    //         ca_cert.serialize_pem().unwrap().as_bytes(),
-    //     ) {
-    //        Ok(_) => {}
-    //       Err(err) => tracing::error!("{}", err),
-    //  }
-
-    /*server_cert_key = utils::generate_server_cert_key(ca_cert);
-        match write(".tls/server_cert.pem", server_cert_key.cert.as_bytes()) {
-            Ok(_) => {}
-            Err(err) => tracing::error!("{}", err),
+        if let Err(err) = std::fs::create_dir_all(".tls") {
+            tracing::error!("{}", err);
         }
-        match write(
+        if let Err(err) = utils::write_pem(".tls/ca_cert.pem", &pki.ca_cert.cert.pem()) {
+            tracing::error!("{}", err);
+        }
+        if let Err(err) = utils::write_pem(".tls/server_cert.pem", &pki.server_cert.cert.pem()) {
+            tracing::error!("{}", err);
+        }
+        if let Err(err) = utils::write_pem(
             ".tls/server_private_key.pem",
-            server_cert_key.private_key.as_bytes(),
+            &pki.server_cert.key_pair.serialize_pem(),
         ) {
-            Ok(_) => {}
-            Err(err) => tracing::error!("{}", err),
+            tracing::error!("{}", err);
         }
-    }*/
-    let _cert_reader = BufReader::new(File::open(".tls/server_cert.pem").unwrap());
+    }
 
     let cert_file = File::open(".tls/server_cert.pem").unwrap();
     let mut cert_buf = BufReader::new(cert_file);
@@ -79,13 +66,10 @@ async fn main() {
     let mut key_buf = BufReader::new(key_file);
     let private_key = rustls_pemfile::private_key(&mut key_buf).unwrap().unwrap();
 
-    //let config =
     ServerConfig::builder()
         .with_no_client_auth()
         .with_single_cert(certs, private_key)
         .unwrap();
-
-    //    utils::save_cert_to_system_store();
 
     tokio::join!(
         http::serve_http(http::using_serve_dir(), 8080),

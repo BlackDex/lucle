@@ -58,6 +58,8 @@ utils = { git = "https://github.com/stalwartlabs/mail-server"}
 directory = { git = "https://github.com/stalwartlabs/mail-server"}
 jmap = { git = "https://github.com/stalwartlabs/mail-server"}
 pop3 = { git = "https://github.com/stalwartlabs/mail-server"}
+jsonwebtoken = "9.3.0"
+ring = "0.17.8"
 
 [build-dependencies]
 tonic-build = { version = "0.10.0", features = ["prost"] } 

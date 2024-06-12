@@ -15,6 +15,7 @@ pub enum DatabaseError {
     ConnectionError(result::ConnectionError),
     MigrationError(Box<dyn Error + Send + Sync + 'static>),
     UserNotFound,
+    EmailNotFound,
     NotAuthorized,
     Argon2Error(argon2::password_hash::Error),
 }
@@ -83,6 +84,7 @@ impl fmt::Display for DatabaseError {
                 write!(f, "Failed to run migrations: {}", error)
             }
             UserNotFound => write!(f, "User not found"),
+            EmailNotFound => write!(f, "Email not found"),
             NotAuthorized => write!(f, "You haven't the right role to access here"),
             Argon2Error(ref error) => write!(f, "{}", error),
         }

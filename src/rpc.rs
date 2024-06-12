@@ -4,7 +4,7 @@ use super::user;
 use email_address_parser::EmailAddress;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Database, DatabaseType, Empty, Message, ResetPassword, ResponseResult, User,
+    Database, DatabaseType, Empty, Jwt, Message, ResetPassword, ResponseResult, User,
 };
 use std::pin::Pin;
 use std::{fs::File, io::BufReader, net::SocketAddr};
@@ -90,16 +90,17 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
-    async fn login(&self, request: Request<User>) -> Result<Response<Empty>, Status> {
+    async fn login(&self, request: Request<User>) -> Result<Response<Jwt>, Status> {
         let inner = request.into_inner();
         let username = inner.username;
         let password = inner.password;
-        let reply = Empty {};
-        if let Err(err) = user::login("lucle.db", username, password) {
-            tracing::error!("{}", err);
-            return Err(Status::internal(err.to_string()));
-        };
-        Ok(Response::new(reply))
+        match user::login("lucle.db", username, password) {
+            Ok(token) => Ok(Response::new(Jwt { token: token })),
+            Err(err) => {
+                tracing::error!("{}", err);
+                return Err(Status::internal(err.to_string()));
+            }
+        }
     }
 
     async fn is_created_user(

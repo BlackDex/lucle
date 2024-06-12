@@ -1,18 +1,24 @@
+use jsonwebtoken::{encode, get_current_timestamp, Algorithm, EncodingKey};
 use lettre::{
     message::{header, MultiPart, SinglePart},
     FileTransport, Message, Transport,
 };
-use rcgen::{Certificate, DnType, KeyUsagePurpose};
+use rcgen::{DnType, KeyPair, KeyUsagePurpose};
+use ring::signature::Ed25519KeyPair;
 use serde::{Deserialize, Serialize};
+use std::{
+    fs::File,
+    io::{Result, Write},
+};
 use tera::{Context, Tera};
 use time::{Duration, OffsetDateTime};
 
-//use jwt_simple::prelude::*;
-
-#[derive(Serialize, Deserialize)]
-struct LucleClaim {
-    user: String,
-    game: String,
+#[derive(Debug, Serialize, Deserialize)]
+struct Claims {
+    sub: String,
+    email: String,
+    exp: u64,
+    scope: String,
 }
 
 pub fn send_mail(from: &str, dest: &str, subject: &str, _body: &str) {
@@ -52,53 +58,63 @@ pub fn send_mail(from: &str, dest: &str, subject: &str, _body: &str) {
     mailer.send(&email).expect("failed to deliver message");
 }
 
-pub struct TlsServer {
-    pub cert: String,
-    pub private_key: String,
+pub struct Pki {
+    pub ca_cert: rcgen::CertifiedKey,
+    pub server_cert: rcgen::CertifiedKey,
 }
 
-/* pub fn generate_ca_cert() -> Certificate {
-    let mut ca_params = rcgen::CertificateParams::new(Vec::new());
-    let (yesterday, tomorrow) = validity_period();
-    ca_params
-        .distinguished_name
-        .push(DnType::OrganizationName, "Rustls Server Acceptor");
-    ca_params
-        .distinguished_name
-        .push(DnType::CommonName, "Example CA");
-    ca_params.is_ca = rcgen::IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
-    ca_params.key_usages = vec![
-        KeyUsagePurpose::KeyCertSign,
-        KeyUsagePurpose::DigitalSignature,
-        KeyUsagePurpose::CrlSign,
-    ];
-    ca_params.not_before = yesterday;
-    ca_params.not_after = tomorrow;
-    Certificate::from_params(ca_params).unwrap()
-} */
+impl Pki {
+    pub fn new() -> Self {
+        let alg = &rcgen::PKCS_ECDSA_P256_SHA256;
+        let mut ca_params = rcgen::CertificateParams::new(Vec::new()).unwrap();
+        let (yesterday, tomorrow) = validity_period();
+        ca_params
+            .distinguished_name
+            .push(DnType::OrganizationName, "Rustls Server Acceptor");
+        ca_params
+            .distinguished_name
+            .push(DnType::CommonName, "Example CA");
+        ca_params.is_ca = rcgen::IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
+        ca_params.key_usages = vec![
+            KeyUsagePurpose::KeyCertSign,
+            KeyUsagePurpose::DigitalSignature,
+            KeyUsagePurpose::CrlSign,
+        ];
+        ca_params.not_before = yesterday;
+        ca_params.not_after = tomorrow;
+        let ca_key = KeyPair::generate_for(alg).unwrap();
+        let ca_cert = ca_params.self_signed(&ca_key).unwrap();
 
-/* pub fn generate_server_cert_key(ca_cert: Certificate) -> TlsServer {
-    let mut server_ee_params = rcgen::CertificateParams::new(vec!["localhost".to_string()]);
-    server_ee_params.is_ca = rcgen::IsCa::NoCa;
-    let (yesterday, tomorrow) = validity_period();
-    server_ee_params
-        .distinguished_name
-        .push(DnType::CommonName, "localhost");
-    server_ee_params.use_authority_key_identifier_extension = true;
-    server_ee_params
-        .key_usages
-        .push(KeyUsagePurpose::DigitalSignature);
-    server_ee_params.not_before = yesterday;
-    server_ee_params.not_after = tomorrow;
-    let server_cert = Certificate::from_params(server_ee_params).unwrap();
-    let server_cert_string = server_cert.serialize_pem_with_signer(&ca_cert).unwrap();
-    let server_key_string = server_cert.serialize_private_key_pem();
-    TlsServer {
-        cert: server_cert_string,
-        private_key: server_key_string,
+        let mut server_ee_params =
+            rcgen::CertificateParams::new(vec!["localhost".to_string()]).unwrap();
+        server_ee_params.is_ca = rcgen::IsCa::NoCa;
+        let (yesterday, tomorrow) = validity_period();
+        server_ee_params
+            .distinguished_name
+            .push(DnType::CommonName, "localhost");
+        server_ee_params.use_authority_key_identifier_extension = true;
+        server_ee_params
+            .key_usages
+            .push(KeyUsagePurpose::DigitalSignature);
+        server_ee_params.not_before = yesterday;
+        server_ee_params.not_after = tomorrow;
+        let ee_key = KeyPair::generate_for(alg).unwrap();
+        let server_cert = server_ee_params
+            .signed_by(&ee_key, &ca_cert, &ca_key)
+            .unwrap();
+
+        Self {
+            ca_cert: rcgen::CertifiedKey {
+                cert: ca_cert,
+                key_pair: ca_key,
+            },
+            server_cert: rcgen::CertifiedKey {
+                cert: server_cert,
+                key_pair: ee_key,
+            },
+        }
     }
 }
-*/
 fn validity_period() -> (OffsetDateTime, OffsetDateTime) {
     let day = Duration::new(86400, 0);
     let yesterday = OffsetDateTime::now_utc().checked_sub(day).unwrap();
@@ -106,11 +122,27 @@ fn validity_period() -> (OffsetDateTime, OffsetDateTime) {
     (yesterday, tomorrow)
 }
 
+pub fn write_pem(path: &str, pem: &str) -> Result<()> {
+    let mut file = File::create(path)?;
+    file.write_all(pem.as_bytes())?;
+    Ok(())
+}
+
 pub fn generate_jwt(username: String, email: String) -> String {
-    let lucleClaim = LucleClaim {
-        user: username,
-        game: "".to_string(),
+    let doc = Ed25519KeyPair::generate_pkcs8(&ring::rand::SystemRandom::new()).unwrap();
+    let encoding_key = EncodingKey::from_ed_der(doc.as_ref());
+
+    let claims = Claims {
+        sub: username,
+        email: email,
+        exp: get_current_timestamp() + 100,
+        scope: "test".to_string(),
     };
-    //let claims = Claims::with_custom_claims(lucleClaim, Duration::from_secs(30));
-    "".to_string()
+
+    encode(
+        &jsonwebtoken::Header::new(Algorithm::EdDSA),
+        &claims,
+        &encoding_key,
+    )
+    .unwrap()
 }

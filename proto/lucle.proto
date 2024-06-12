@@ -5,7 +5,7 @@ package luclerpc;
 service Lucle {
   rpc create_db (Database) returns (Empty);
   rpc delete_db (Database) returns (Empty);
-  rpc login (User) returns (Empty);
+  rpc login (User) returns (Jwt);
   rpc create_user (User) returns (Empty);
   rpc is_created_user (Database) returns (ResponseResult);
   rpc create_table (Database) returns (Empty);
@@ -37,6 +37,10 @@ message User {
 
 message ResetPassword {
   string email = 1;
+}
+
+message Jwt {
+  string token = 1;
 }
 
 message ResponseResult {
