@@ -27,7 +27,7 @@ import Box from "components/Box";
 import Typography from "components/Typography";
 import Button from "components/Button";
 
-function RotatingCard({ color, image, title, description, action }) {
+function RotatingCard({ color = "info", image, title, description, action }) {
   return (
     <Box
       display="flex"
@@ -99,35 +99,5 @@ function RotatingCard({ color, image, title, description, action }) {
     </Box>
   );
 }
-
-// Setting default props for the RotatingCard
-RotatingCard.defaultProps = {
-  color: "info",
-};
-
-// Typechecking props for the RotatingCard
-RotatingCard.propTypes = {
-  color: PropTypes.oneOf([
-    "primary",
-    "secondary",
-    "info",
-    "success",
-    "warning",
-    "error",
-    "dark",
-    "light",
-  ]),
-  image: PropTypes.string.isRequired,
-  title: PropTypes.node.isRequired,
-  description: PropTypes.node.isRequired,
-  action: PropTypes.oneOfType([
-    PropTypes.bool,
-    PropTypes.shape({
-      type: PropTypes.oneOf(["external", "internal"]).isRequired,
-      route: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired,
-    }),
-  ]).isRequired,
-};
 
 export default RotatingCard;

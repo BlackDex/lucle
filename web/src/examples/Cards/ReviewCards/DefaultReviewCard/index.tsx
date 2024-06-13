@@ -24,7 +24,14 @@ import Box from "components/Box";
 import Avatar from "components/Avatar";
 import Typography from "components/Typography";
 
-function DefaultReviewCard({ color, image, name, date, review, rating }) {
+function DefaultReviewCard({
+  color = "transparent",
+  image = "",
+  name,
+  date,
+  review,
+  rating,
+}) {
   const ratings = {
     0.5: [
       <Icon key={1}>star_outline</Icon>,
@@ -166,31 +173,5 @@ function DefaultReviewCard({ color, image, name, date, review, rating }) {
     </Box>
   );
 }
-
-// Setting default values for the props of DefaultReviewCard
-DefaultReviewCard.defaultProps = {
-  color: "transparent",
-  image: "",
-};
-
-// Typechecking props for the DefaultReviewCard
-DefaultReviewCard.propTypes = {
-  color: PropTypes.oneOf([
-    "transparent",
-    "primary",
-    "secondary",
-    "info",
-    "success",
-    "warning",
-    "error",
-    "dark",
-    "light",
-  ]),
-  image: PropTypes.string,
-  name: PropTypes.string.isRequired,
-  date: PropTypes.string.isRequired,
-  review: PropTypes.string.isRequired,
-  rating: PropTypes.oneOf([1, 2, 3, 4, 5]).isRequired,
-};
 
 export default DefaultReviewCard;

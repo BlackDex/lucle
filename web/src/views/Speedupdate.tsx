@@ -334,10 +334,12 @@ function Speedupdate() {
         {repoState == RepoState.NotInitialized ? (
           <Button
             variant="contained"
-            onClick={() =>
-              init(client, path)
-                .then(() => setRepoState(RepoState.initialized))
-                .catch((err) => setError(error))
+            onClick={
+              () =>
+                init(client, path).then(() =>
+                  setRepoState(RepoState.Initialized),
+                )
+              // .catch((err) => setError(err))
             }
           >
             Initialize repo
@@ -347,7 +349,7 @@ function Speedupdate() {
       </div>
     );
   } else {
-    if (size && repoState == RepoState.Initialized) {
+    if (repoState == RepoState.Initialized) {
       speedupdatecomponent = (
         <Box sx={{ width: "100%" }}>
           <Paper sx={{ width: "100%", mb: 2 }}>
@@ -528,22 +530,14 @@ function Speedupdate() {
                 )}
                 {numPackagesSelected > 0 && !canBePublished.includes(false) ? (
                   <Tooltip title="Unpublish">
-                    <IconButton
-                      onClick={() =>
-                        UnregisterPackages(client, path, selectedPackages)
-                      }
-                    >
+                    <IconButton onClick={() => UnregisterPackages()}>
                       <UnpublishedIcon />
                     </IconButton>
                   </Tooltip>
                 ) : null}
                 {numPackagesSelected > 0 && !canBePublished.includes(true) ? (
                   <Tooltip title="Publish">
-                    <IconButton
-                      onClick={() =>
-                        RegisterPackages(client, path, selectedPackages)
-                      }
-                    >
+                    <IconButton onClick={() => RegisterPackages()}>
                       <PublishIcon />
                     </IconButton>
                   </Tooltip>

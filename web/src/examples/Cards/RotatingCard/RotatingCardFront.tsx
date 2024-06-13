@@ -23,7 +23,13 @@ import Icon from "@mui/material/Icon";
 import Box from "components/Box";
 import Typography from "components/Typography";
 
-function RotatingCardFront({ color, image, icon, title, description }) {
+function RotatingCardFront({
+  color = "info",
+  image,
+  icon = "",
+  title,
+  description,
+}) {
   return (
     <Box
       display="flex"
@@ -69,29 +75,5 @@ function RotatingCardFront({ color, image, icon, title, description }) {
     </Box>
   );
 }
-
-// Setting default props for the RotatingCardFront
-RotatingCardFront.defaultProps = {
-  color: "info",
-  icon: "",
-};
-
-// Typechecking props for the RotatingCardFront
-RotatingCardFront.propTypes = {
-  color: PropTypes.oneOf([
-    "primary",
-    "secondary",
-    "info",
-    "success",
-    "warning",
-    "error",
-    "dark",
-    "light",
-  ]),
-  image: PropTypes.string.isRequired,
-  icon: PropTypes.node,
-  title: PropTypes.node.isRequired,
-  description: PropTypes.node.isRequired,
-};
 
 export default RotatingCardFront;

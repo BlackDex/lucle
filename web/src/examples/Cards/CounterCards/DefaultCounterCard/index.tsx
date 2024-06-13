@@ -23,7 +23,12 @@ import CountUp from "react-countup";
 import Box from "components/Box";
 import Typography from "components/Typography";
 
-function DefaultCounterCard({ color, count, title, description }) {
+function DefaultCounterCard({
+  color = "info",
+  count,
+  title = "",
+  description = "",
+}) {
   return (
     <Box p={2} textAlign="center" lineHeight={1}>
       <Typography variant="h1" color={color} textGradient>
@@ -42,29 +47,5 @@ function DefaultCounterCard({ color, count, title, description }) {
     </Box>
   );
 }
-
-// Setting default props for the DefaultCounterCard
-DefaultCounterCard.defaultProps = {
-  color: "info",
-  description: "",
-  title: "",
-};
-
-// Typechecking props for the DefaultCounterCard
-DefaultCounterCard.propTypes = {
-  color: PropTypes.oneOf([
-    "primary",
-    "secondary",
-    "info",
-    "success",
-    "warning",
-    "error",
-    "light",
-    "dark",
-  ]),
-  count: PropTypes.number.isRequired,
-  title: PropTypes.string,
-  description: PropTypes.string,
-};
 
 export default DefaultCounterCard;

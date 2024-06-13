@@ -24,12 +24,12 @@ import Box from "components/Box";
 import Typography from "components/Typography";
 
 function DefaultInfoCard({
-  color,
+  color = "info",
   icon,
   title,
   description,
-  direction,
-  small,
+  direction = "left",
+  small = false,
 }) {
   return (
     <Box
@@ -71,31 +71,5 @@ function DefaultInfoCard({
     </Box>
   );
 }
-
-// Setting default props for the DefaultInfoCard
-DefaultInfoCard.defaultProps = {
-  color: "info",
-  direction: "left",
-  small: false,
-};
-
-// Typechecking props for the DefaultInfoCard
-DefaultInfoCard.propTypes = {
-  color: PropTypes.oneOf([
-    "primary",
-    "secondary",
-    "info",
-    "success",
-    "warning",
-    "error",
-    "light",
-    "dark",
-  ]),
-  icon: PropTypes.node.isRequired,
-  title: PropTypes.string.isRequired,
-  description: PropTypes.string.isRequired,
-  direction: PropTypes.oneOf(["left", "right", "center"]),
-  small: PropTypes.bool,
-};
 
 export default DefaultInfoCard;

@@ -27,7 +27,14 @@ import MuiLink from "@mui/material/Link";
 import Box from "components/Box";
 import Typography from "components/Typography";
 
-function FilledInfoCard({ variant, color, icon, title, description, action }) {
+function FilledInfoCard({
+  variant = "contained",
+  color = "info",
+  icon,
+  title,
+  description,
+  action = false,
+}) {
   const buttonStyles = {
     width: "max-content",
     display: "flex",
@@ -125,38 +132,5 @@ function FilledInfoCard({ variant, color, icon, title, description, action }) {
     </Box>
   );
 }
-
-// Setting default props for the FilledInfoCard
-FilledInfoCard.defaultProps = {
-  variant: "contained",
-  color: "info",
-  action: false,
-};
-
-// Typechecking props for the FilledInfoCard
-FilledInfoCard.propTypes = {
-  variant: PropTypes.oneOf(["contained", "gradient"]),
-  color: PropTypes.oneOf([
-    "primary",
-    "secondary",
-    "info",
-    "success",
-    "warning",
-    "error",
-    "light",
-    "dark",
-  ]),
-  icon: PropTypes.node.isRequired,
-  title: PropTypes.string.isRequired,
-  description: PropTypes.string.isRequired,
-  action: PropTypes.oneOfType([
-    PropTypes.bool,
-    PropTypes.shape({
-      type: PropTypes.oneOf(["external", "internal"]).isRequired,
-      route: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired,
-    }),
-  ]),
-};
 
 export default FilledInfoCard;
