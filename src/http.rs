@@ -10,7 +10,7 @@ pub fn serve_dir() -> Router {
     Router::new()
         .nest_service("/", serve_dir.clone())
         .fallback_service(serve_dir)
-	.layer(TraceLayer::new_for_http())
+        .layer(TraceLayer::new_for_http())
 }
 
 /* pub async fn serve_https(app: Router, rustls_config: ServerConfig) {

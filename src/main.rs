@@ -1,9 +1,10 @@
+use self::multiplex_service::MultiplexService;
+use hyper_util::rt::{TokioExecutor, TokioIo};
 use rustls_pemfile::certs;
 use std::path::Path;
 use std::{fs::File, io::BufReader, sync::Arc};
 use tokio_rustls::rustls::ServerConfig;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use self::multiplex_service::MultiplexService;
 
 mod config;
 mod database;
@@ -12,10 +13,10 @@ mod http;
 mod infer_schema_internals;
 mod mail;
 pub mod models;
+mod multiplex_service;
 mod print_schema;
 mod query_helper;
 mod rpc;
-mod multiplex_service;
 pub mod schema;
 mod user;
 mod utils;
@@ -79,8 +80,12 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     tracing::info!("gRPC and HTTP server listening on {}", addr);
 
+    let (stream, _) = listener.accept().await.unwrap();
+    let io = TokioIo::new(stream);
     let service = MultiplexService::new(http, grpc);
-    axum::serve(listener, tower::make::Shared::new(service));
-       // .await
-       // .unwrap();
+
+    hyper_util::server::conn::auto::Builder::new(TokioExecutor::new())
+        .serve_connection(io, tower::make::Shared::new(service));
+    // .await
+    // .unwrap();
 }

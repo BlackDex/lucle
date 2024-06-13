@@ -11,7 +11,10 @@ use std::{fs::File, io::BufReader};
 use tokio::sync::mpsc;
 use tokio_stream::{wrappers::ReceiverStream, Stream};
 use tonic::{
-    transport::{server::{RoutesBuilder, Router}, Server},
+    transport::{
+        server::{Router, RoutesBuilder},
+        Server,
+    },
     Request, Response, Status,
 };
 use tonic_web::GrpcWebLayer;
