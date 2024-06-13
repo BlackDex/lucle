@@ -32,11 +32,12 @@ function Login({ onLogin }: { onLogin: void }) {
       localStorage.setItem("password", password);
     }
     connection(client, login, password)
-      .then(() => {
+      .then((value) => {
+        console.log("12 : ", value);
         onLogin();
         localStorage.setItem("token", "test");
       })
-      .catch((err) => setError(err));
+      .catch((err) => setError(err.message));
   };
 
   return (

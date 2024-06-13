@@ -7,14 +7,15 @@ use luclerpc::{
     Database, DatabaseType, Empty, Jwt, Message, ResetPassword, ResponseResult, User,
 };
 use std::pin::Pin;
-use std::{fs::File, io::BufReader, net::SocketAddr};
+use std::{fs::File, io::BufReader};
 use tokio::sync::mpsc;
 use tokio_stream::{wrappers::ReceiverStream, Stream};
 use tonic::{
-    transport::{server::RoutesBuilder, Server},
+    transport::{server::{RoutesBuilder, Router}, Server},
     Request, Response, Status,
 };
 use tonic_web::GrpcWebLayer;
+use tower::layer::util::Stack;
 use tower_http::cors::{Any, CorsLayer};
 
 pub mod luclerpc {
@@ -161,16 +162,13 @@ impl Lucle for LucleApi {
     }
 }
 
-pub async fn start_rpc_server(
+pub fn rpc_api(
     _cert: &mut BufReader<File>,
     _key: &mut BufReader<File>,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let addr = SocketAddr::from(([0, 0, 0, 0], 50051));
-
+) -> Router<Stack<GrpcWebLayer, Stack<CorsLayer, tower::layer::util::Identity>>> {
     let api = LucleApi::default();
     let api = LucleServer::new(api);
 
-    tracing::info!("RPCServer listening on {}", addr);
     let cors_layer = CorsLayer::new().allow_origin(Any).allow_headers(Any);
 
     let mut routes_builder = RoutesBuilder::default();
@@ -181,8 +179,4 @@ pub async fn start_rpc_server(
         .layer(cors_layer)
         .layer(GrpcWebLayer::new())
         .add_routes(routes_builder.routes())
-        .serve(addr)
-        .await?;
-
-    Ok(())
 }

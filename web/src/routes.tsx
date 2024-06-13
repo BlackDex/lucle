@@ -16,27 +16,27 @@ function PrivateRoutes({ isLogged }: { isLogged: boolean }) {
   return isLogged ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
-function InstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
-  return isInstalled ? <Outlet /> : <Navigate to="/install" replace />;
+function InstalledRoutes({ isInstalled = false }: { isInstalled: boolean }) {
+  //console.log(isInstalled);
+  let isInstall = false;
+  return isInstall ? <Outlet /> : <Navigate to="/install" replace />;
 }
 
 function UninstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
-  return isInstalled ? <Navigate to="/" replace /> : <Outlet />;
+  let isInstall = false;
+  return isInstall ? <Navigate to="/" replace /> : <Outlet />;
 }
 
-const routes = (isInstalled: boolean, isLogged: boolean) => [
+const routes = (isInstalled: boolean, isLogged = false) => [
   {
     element: <AnonymousRoutes isLogged={isLogged} />,
-    children: [
-      { path: "/login", element: <Login /> },
-      { path: "/", element: <Landing /> },
-      { path: "/install", element: <Install /> },
-      { path: "/forgot", element: <ForgotPassword /> },
-    ],
+    children: [{ path: "/", element: <Landing /> }],
   },
   {
     element: <InstalledRoutes isInstalled />,
     children: [
+      { path: "/login", element: <Login /> },
+      { path: "/forgot", element: <ForgotPassword /> },
       {
         element: <PrivateRoutes isLogged />,
         children: [
@@ -46,16 +46,16 @@ const routes = (isInstalled: boolean, isLogged: boolean) => [
             children: [
               { index: true, element: <AdminIndex /> },
               { path: "speedupdate", element: <Speedupdate /> },
-              //              { path: "tables", element: <Tables /> },
+              //{ path: "tables", element: <Tables /> },
             ],
           },
         ],
       },
-      /* {
-        element: <UninstalledRoutes isInstalled={isInstalled} />,
-        children: [{ path: "/install", element: <Install /> }],
-      }, */
     ],
+  },
+  {
+    element: <UninstalledRoutes isInstalled={isInstalled} />,
+    children: [{ path: "/install", element: <Install /> }],
   },
 ];
 

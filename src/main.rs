@@ -3,6 +3,7 @@ use std::path::Path;
 use std::{fs::File, io::BufReader, sync::Arc};
 use tokio_rustls::rustls::ServerConfig;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use self::multiplex_service::MultiplexService;
 
 mod config;
 mod database;
@@ -14,6 +15,7 @@ pub mod models;
 mod print_schema;
 mod query_helper;
 mod rpc;
+mod multiplex_service;
 pub mod schema;
 mod user;
 mod utils;
@@ -71,11 +73,14 @@ async fn main() {
         .with_single_cert(certs, private_key)
         .unwrap();
 
-    tokio::join!(
-        http::serve_http(http::using_serve_dir(), 8080),
-        rpc::start_rpc_server(&mut cert_buf, &mut key_buf),
-        //	mail::start_mail_server()
-    )
-    .0;
-    {};
+    let http = http::serve_dir().into_service();
+    let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf).into_service();
+    let addr = "0.0.0.0:80800".parse().unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    tracing::info!("gRPC and HTTP server listening on {}", addr);
+
+    let service = MultiplexService::new(http, grpc);
+    axum::serve(listener, tower::make::Shared::new(service));
+       // .await
+       // .unwrap();
 }

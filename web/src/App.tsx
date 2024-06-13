@@ -13,10 +13,10 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 
 // react-router components
-import { useLocation, useRoutes } from "react-router-dom";
+import { useLocation, useMatch, useRoutes } from "react-router-dom";
 
 // RPC Components
 import { checkIfInstalled } from "utils/rpc";
@@ -37,21 +37,25 @@ import themeDark from "assets/theme-dark";
 // Material Dashboard 2 React contexts
 import { useMaterialUIController, CLientConnectBuf } from "context";
 
+// Context
+import { LucleRPC } from "context";
+
 export default function App() {
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
-  const content = useRoutes(routes(isInstalled));
+  const content = useRoutes(routes(false));
   const { pathname } = useLocation();
-
+  const client = useContext(LucleRPC);
   const [controller, dispatch] = useMaterialUIController();
   const { darkMode } = controller;
 
   /*  useEffect(() => {
     if (location.pathname === "/admin") {
+ // const match = useMatch("/admin/*");
       checkIfInstalled(client)
-        .then(() => setIsInstalled(true))
-        .catch(() => setIsInstalled(false));
-    } 
-  }, [pathname]); */
+        .then(() => console.log("11")) //setIsInstalled(true))
+        .catch(() => console.log("12")); //setIsInstalled(false));
+    }
+  }, [pathname]);
 
   return (
     <ThemeProvider theme={darkMode ? themeDark : theme}>
