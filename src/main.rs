@@ -1,5 +1,4 @@
 use self::multiplex_service::MultiplexService;
-use hyper_util::rt::{TokioExecutor, TokioIo};
 use rustls_pemfile::certs;
 use std::path::Path;
 use std::{fs::File, io::BufReader, sync::Arc};
@@ -80,12 +79,6 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     tracing::info!("gRPC and HTTP server listening on {}", addr);
 
-    let (stream, _) = listener.accept().await.unwrap();
-    let io = TokioIo::new(stream);
     let service = MultiplexService::new(http, grpc);
-
-    hyper_util::server::conn::auto::Builder::new(TokioExecutor::new())
-        .serve_connection(io, tower::make::Shared::new(service));
-    // .await
-    // .unwrap();
+    axum::serve(listener, tower::make::Shared::new(service));
 }
