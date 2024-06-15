@@ -16,29 +16,27 @@ function PrivateRoutes({ isLogged }: { isLogged: boolean }) {
   return isLogged ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
-function InstalledRoutes({ isInstalled = false }: { isInstalled: boolean }) {
-  //console.log(isInstalled);
-  let isInstall = false;
-  return isInstall ? <Outlet /> : <Navigate to="/install" replace />;
+function InstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
+  console.log(isInstalled);
+  return isInstalled ? <Outlet /> : <Navigate to="/install" replace />;
 }
 
 function UninstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
-  let isInstall = false;
-  return isInstall ? <Navigate to="/" replace /> : <Outlet />;
+  return isInstalled ? <Navigate to="/" replace /> : <Outlet />;
 }
 
-const routes = (isInstalled: boolean, isLogged = false) => [
+const routes = (isInstalled: boolean) => [
   {
-    element: <AnonymousRoutes isLogged={isLogged} />,
+    //element: <AnonymousRoutes isLogged={isLogged} />,
     children: [{ path: "/", element: <Landing /> }],
   },
   {
-    element: <InstalledRoutes isInstalled />,
+//    element: <InstalledRoutes isInstalled={isInstalled} />,
     children: [
       { path: "/login", element: <Login /> },
       { path: "/forgot", element: <ForgotPassword /> },
       {
-        element: <PrivateRoutes isLogged />,
+        //    element: <PrivateRoutes isLogged />,
         children: [
           {
             path: "admin/*",

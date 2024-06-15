@@ -39,28 +39,30 @@ import { useMaterialUIController, CLientConnectBuf } from "context";
 
 // Context
 import { LucleRPC } from "context";
+import AuthProvider from "context/Auth";
 
 export default function App() {
-  const [isInstalled, setIsInstalled] = useState<boolean>(false);
-  const content = useRoutes(routes(false));
-  const { pathname } = useLocation();
+  const [isInstalled, setIsInstalled] = useState<boolean>();
+  const content = useRoutes(routes(isInstalled));
+  const location = useLocation();
   const client = useContext(LucleRPC);
   const [controller, dispatch] = useMaterialUIController();
   const { darkMode } = controller;
 
-  /*  useEffect(() => {
-    if (location.pathname === "/admin") {
- // const match = useMatch("/admin/*");
+  useEffect(() => {
+    if (location.pathname.startsWith("/admin")) {
       checkIfInstalled(client)
-        .then(() => console.log("11")) //setIsInstalled(true))
-        .catch(() => console.log("12")); //setIsInstalled(false));
+        .then(() => setIsInstalled(true))
+        .catch(() => setIsInstalled(false));
     }
-  }, [pathname]);
+  }, [location]);
 
   return (
     <ThemeProvider theme={darkMode ? themeDark : theme}>
       <CssBaseline />
+	<AuthProvider>
       {content}
+	</AuthProvider>
     </ThemeProvider>
   );
 }

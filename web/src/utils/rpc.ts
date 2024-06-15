@@ -38,11 +38,14 @@ export const connection = async (
   login: string,
   user_password: string,
 ) => {
-  const { error } = await client.login({
+  return new Promise((resolve, reject) => {
+  client.login({
     username: login,
     password: user_password,
-  });
-  if (error) throw error;
+  })
+  .then((token) => resolve(token))
+  .catch((err) => reject(err));
+});
 };
 
 export const createUser = async (

@@ -361,7 +361,7 @@ fn create_table(migration_dir: PathBuf) {
         email TEXT NOT NULL,
         created_at TEXT NOT NULL,
         modified_at TEXT NOT NULL,
-        privilege TEXT NOT NULL,
+        role TEXT NOT NULL,
 	reset_token TEXT
       )",
     )

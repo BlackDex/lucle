@@ -99,7 +99,7 @@ function MaterialUIControllerProvider({ children }) {
 
 function LucleRPCProvider({ children }) {
   const transport = createGrpcWebTransport({
-    baseUrl: `http://127.0.0.1:50051`,
+    baseUrl: `http://0.0.0.0:8080`,
   });
   const client = createPromiseClient(Lucle, transport);
   return <LucleRPC.Provider value={client}>{children}</LucleRPC.Provider>;

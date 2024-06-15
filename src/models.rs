@@ -22,5 +22,7 @@ pub struct NewUser {
     pub username: String,
     pub password: String,
     pub email: String,
+    pub created_at: NaiveDateTime,
+    pub modified_at: NaiveDateTime,
     pub role: String,
 }

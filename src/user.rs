@@ -10,7 +10,8 @@ use argon2::{
 };
 use diesel::prelude::*;
 use diesel::SelectableHelper;
-use diesel::{Connection, QueryDsl, RunQueryDsl};
+use diesel::{select, Connection, QueryDsl, RunQueryDsl};
+use chrono::NaiveDateTime;
 
 pub fn create_user(
     database_url: &str,
@@ -91,10 +92,16 @@ fn insert_user(
     email: String,
     role: String,
 ) -> DatabaseResult<()> {
+    let now = select(diesel::dsl::now)
+	.get_result::<NaiveDateTime>(&mut conn)
+	.unwrap();
+
     let new_user = NewUser {
         username,
         password: password_hash,
         email,
+	created_at: now,
+	modified_at: now,
         role,
     };
 

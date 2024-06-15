@@ -9,8 +9,6 @@ axum = { version = "0.7.5", features = ["tokio", "http2"]}
 axum-server = { version = "0.6", features = ["tls-rustls"] }
 chrono = { version = "0.4.24", default-features = false, features = ["clock", "std"] }
 ftp = "3.0.1"
-diesel = { version = "2.2.0", features = ["postgres", "mysql", "chrono", "sqlite", "returning_clauses_for_sqlite_3_35"] }
-diesel_migrations = "2.2.0"
 diffy = "0.3.0"
 prost = "0.12"
 tokio = { version = "1.27", features = ["full"] }
@@ -31,7 +29,6 @@ serde = { version = "1.0.0", features = ["derive"] }
 serde_regex = "1.1"
 regex = "1.0.6"
 syn = { version = "2", features = ["visit"] }
-libsqlite3-sys = { version = "0.28.0", features = ["bundled"] } 
 pki-types = { package = "rustls-pki-types", version = "1" }
 rcgen = "0.13.1"
 rustls-pemfile = "2.0.0"
@@ -49,7 +46,14 @@ tower-service = "0.3.2"
 time = "0.3.30"
 futures = "0.3"
 
-#smtp
+# Database
+diesel = { version = "2.2.0", features = ["postgres", "mysql", "chrono", "sqlite", "returning_clauses_for_sqlite_3_35"] }
+diesel_migrations = "2.2.0"
+libsqlite3-sys = { version = "0.28.0", features = ["bundled"] } 
+#mysqlclient-sys = { version = "0.4", features = ["bundled"] }
+#pq-sys = { version = "0.6.1", features = ["bundled"] } 
+
+# smtp
 common = { git = "https://github.com/stalwartlabs/mail-server"}
 smtp = { git = "https://github.com/stalwartlabs/mail-server" , features = ["local_delivery"] }
 store = { git = "https://github.com/stalwartlabs/mail-server", features = ["sqlite", "mysql", "postgres"]}

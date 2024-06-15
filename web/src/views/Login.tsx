@@ -12,32 +12,27 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 // Context
-import { LucleRPC } from "context";
-
-// RPC
-import { connection } from "utils/rpc";
+import { useAuth } from "context/Auth";
 
 const theme = createTheme();
 
-function Login({ onLogin }: { onLogin: void }) {
+function Login() {
   const [login, setLogin] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<any>();
   const [error, setError] = useState<string>("");
-  const client = useContext(LucleRPC);
+  const auth = useAuth()
 
   const handleLogin = () => {
     if (remember) {
       localStorage.setItem("username", login);
       localStorage.setItem("password", password);
     }
-    connection(client, login, password)
-      .then((value) => {
-        console.log("12 : ", value);
-        onLogin();
-        localStorage.setItem("token", "test");
-      })
-      .catch((err) => setError(err.message));
+    let err = auth.Login({login, password})
+	if (err) {
+	console.log(err);
+	  SetError(error.message);
+	}
   };
 
   return (
