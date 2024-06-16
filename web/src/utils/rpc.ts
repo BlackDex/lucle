@@ -2,21 +2,15 @@ import { createPromiseClient } from "@connectrpc/connect";
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { Lucle } from "gen/lucle_connect";
 
-export const connect = (url: string, port: string) => {
-  const client = createPromiseClient(
-    Lucle,
-    createGrpcWebTransport({
-      baseUrl: `http://${url}:${port}`,
-    }),
-  );
-  return client;
-};
-
 export const checkIfInstalled = async (client: any) => {
-  const { error } = await client.is_created_user({
-    dbType: 2,
+  return new Promise((resolve, reject) => {
+    client
+      .is_created_user({
+        dbType: 2,
+      })
+      .then((install) => resolve(true))
+      .catch((err) => reject(err));
   });
-  if (error) throw error;
 };
 
 export const dbConnection = async (client: any, db: number) => {
@@ -39,13 +33,14 @@ export const connection = async (
   user_password: string,
 ) => {
   return new Promise((resolve, reject) => {
-  client.login({
-    username: login,
-    password: user_password,
-  })
-  .then((token) => resolve(token))
-  .catch((err) => reject(err));
-});
+    client
+      .login({
+        username: login,
+        password: user_password,
+      })
+      .then((token) => resolve(token))
+      .catch((err) => reject(err));
+  });
 };
 
 export const createUser = async (

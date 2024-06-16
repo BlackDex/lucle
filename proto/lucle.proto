@@ -7,7 +7,7 @@ service Lucle {
   rpc delete_db (Database) returns (Empty);
   rpc login (User) returns (Jwt);
   rpc create_user (User) returns (Empty);
-  rpc is_created_user (Database) returns (ResponseResult);
+  rpc is_created_user (Database) returns (Empty);
   rpc create_table (Database) returns (Empty);
   rpc forgot_password (ResetPassword) returns (Empty);
   rpc ServerStreamingEcho (Empty) returns (stream Message);
@@ -41,10 +41,6 @@ message ResetPassword {
 
 message Jwt {
   string token = 1;
-}
-
-message ResponseResult {
-  string error = 1;
 }
 
 message Message {

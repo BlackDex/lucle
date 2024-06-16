@@ -8,10 +8,10 @@ use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
 };
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::SelectableHelper;
 use diesel::{select, Connection, QueryDsl, RunQueryDsl};
-use chrono::NaiveDateTime;
 
 pub fn create_user(
     database_url: &str,
@@ -24,85 +24,18 @@ pub fn create_user(
     let password_hash = argon2
         .hash_password(password.as_bytes(), &salt)?
         .to_string();
-    match LucleDBConnection::establish(database_url).unwrap() {
-        LucleDBConnection::Pg(conn) => insert_user(
-            LucleDBConnection::Pg(conn),
-            username,
-            password_hash,
-            email,
-            "admin".to_string(),
-        )?,
-        LucleDBConnection::Sqlite(conn) => insert_user(
-            LucleDBConnection::Sqlite(conn),
-            username,
-            password_hash,
-            email,
-            "admin".to_string(),
-        )?,
-        LucleDBConnection::Mysql(conn) => insert_user(
-            LucleDBConnection::Mysql(conn),
-            username,
-            password_hash,
-            email,
-            "admin".to_string(),
-        )?,
-    }
-
-    Ok(())
-}
-
-pub fn login(database_url: &str, username: String, password: String) -> DatabaseResult<String> {
-    match LucleDBConnection::establish(database_url).unwrap() {
-        LucleDBConnection::Pg(conn) => {
-            Ok(login_user(LucleDBConnection::Pg(conn), username, password)?)
-        }
-        LucleDBConnection::Sqlite(conn) => Ok(login_user(
-            LucleDBConnection::Sqlite(conn),
-            username,
-            password,
-        )?),
-        LucleDBConnection::Mysql(conn) => Ok(login_user(
-            LucleDBConnection::Mysql(conn),
-            username,
-            password,
-        )?),
-    }
-}
-
-pub fn is_default_user(database_url: &str) -> bool {
-    match LucleDBConnection::establish(database_url).unwrap() {
-        LucleDBConnection::Pg(conn) => table_size(LucleDBConnection::Pg(conn)),
-        LucleDBConnection::Sqlite(conn) => table_size(LucleDBConnection::Sqlite(conn)),
-        LucleDBConnection::Mysql(conn) => table_size(LucleDBConnection::Mysql(conn)),
-    }
-}
-
-pub fn reset_password(database_url: &str, email: String) -> DatabaseResult<()> {
-    match LucleDBConnection::establish(database_url).unwrap() {
-        LucleDBConnection::Pg(conn) => lost_password(LucleDBConnection::Pg(conn), email),
-        LucleDBConnection::Sqlite(conn) => lost_password(LucleDBConnection::Sqlite(conn), email),
-        LucleDBConnection::Mysql(conn) => lost_password(LucleDBConnection::Mysql(conn), email),
-    }
-}
-
-fn insert_user(
-    mut conn: LucleDBConnection,
-    username: String,
-    password_hash: String,
-    email: String,
-    role: String,
-) -> DatabaseResult<()> {
+    let mut conn = LucleDBConnection::establish(database_url)?;
     let now = select(diesel::dsl::now)
-	.get_result::<NaiveDateTime>(&mut conn)
-	.unwrap();
+        .get_result::<NaiveDateTime>(&mut conn)
+        .unwrap();
 
     let new_user = NewUser {
         username,
         password: password_hash,
         email,
-	created_at: now,
-	modified_at: now,
-        role,
+        created_at: now,
+        modified_at: now,
+        role: "admin".to_string(),
     };
 
     diesel::insert_into(users::table)
@@ -111,11 +44,8 @@ fn insert_user(
     Ok(())
 }
 
-fn login_user(
-    mut conn: LucleDBConnection,
-    username: String,
-    password: String,
-) -> DatabaseResult<String> {
+pub fn login(database_url: &str, username: String, password: String) -> DatabaseResult<String> {
+    let mut conn = LucleDBConnection::establish(database_url)?;
     let user = users::table
         .filter(users::dsl::username.eq(username.clone()))
         .select(User::as_select())
@@ -137,16 +67,16 @@ fn login_user(
     }
 }
 
-fn table_size(mut conn: LucleDBConnection) -> bool {
-    let user = users::table.count().get_result::<i64>(&mut conn);
-    if let Ok(count) = user {
-        count > 0
-    } else {
-        false
+pub fn is_table_and_user_created(database_url: &str) -> DatabaseResult<()> {
+    let mut conn = LucleDBConnection::establish(database_url)?;
+    match users::table.count().get_result::<i64>(&mut conn) {
+        Ok(_) => Ok(()),
+        Err(err) => Err(DatabaseError::QueryError(err)),
     }
 }
 
-fn lost_password(mut conn: LucleDBConnection, email: String) -> DatabaseResult<()> {
+pub fn reset_password(database_url: &str, email: String) -> DatabaseResult<()> {
+    let mut conn = LucleDBConnection::establish(database_url)?;
     match users::table
         .filter(users::dsl::email.eq(email.clone()))
         .select(User::as_select())

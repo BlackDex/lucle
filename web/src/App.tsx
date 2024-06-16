@@ -16,7 +16,7 @@ Coded by www.creative-tim.com
 import { useState, useEffect, useContext } from "react";
 
 // react-router components
-import { useLocation, useMatch, useRoutes } from "react-router-dom";
+import { useRoutes } from "react-router-dom";
 
 // RPC Components
 import { checkIfInstalled } from "utils/rpc";
@@ -44,25 +44,20 @@ import AuthProvider from "context/Auth";
 export default function App() {
   const [isInstalled, setIsInstalled] = useState<boolean>();
   const content = useRoutes(routes(isInstalled));
-  const location = useLocation();
   const client = useContext(LucleRPC);
   const [controller, dispatch] = useMaterialUIController();
   const { darkMode } = controller;
 
   useEffect(() => {
-    if (location.pathname.startsWith("/admin")) {
-      checkIfInstalled(client)
-        .then(() => setIsInstalled(true))
-        .catch(() => setIsInstalled(false));
-    }
-  }, [location]);
+    checkIfInstalled(client)
+      .then(() => setIsInstalled(true))
+      .catch(() => setIsInstalled(false));
+  });
 
   return (
     <ThemeProvider theme={darkMode ? themeDark : theme}>
       <CssBaseline />
-	<AuthProvider>
-      {content}
-	</AuthProvider>
+      <AuthProvider>{content}</AuthProvider>
     </ThemeProvider>
   );
 }

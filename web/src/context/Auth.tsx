@@ -10,30 +10,33 @@ import { connection } from "utils/rpc";
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [token, setToken] = useState();
   const navigate = useNavigate();
   const client = useContext(LucleRPC);
- 
-  const Login = (credentials) => {
-    connection(client, credentials.login, credentials.password)
-      .then((jwt) => {
-        localStorage.setItem("token", jwt.token);
-	navigate("/admin");
-      })
-      .catch((err) => console.log(err));
+
+  const Login = async (credentials) => {
+    return new Promise((resolve, reject) => {
+      connection(client, credentials.login, credentials.password)
+        .then((jwt) => {
+          setToken(jwt.token);
+          localStorage.setItem("token", jwt.token);
+          navigate("/admin");
+        })
+        .catch((err) => reject(err));
+    });
   };
 
   const Logout = () => {
-    setUser(null);
+    setToken("");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
-return (
-    <AuthContext.Provider value={{ user, Login, Logout }}>
+  return (
+    <AuthContext.Provider value={{ token, Login, Logout }}>
       {children}
     </AuthContext.Provider>
   );
-
 };
 
 export default AuthProvider;

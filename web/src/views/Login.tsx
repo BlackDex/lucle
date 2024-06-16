@@ -21,18 +21,14 @@ function Login() {
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<any>();
   const [error, setError] = useState<string>("");
-  const auth = useAuth()
+  const auth = useAuth();
 
   const handleLogin = () => {
     if (remember) {
       localStorage.setItem("username", login);
       localStorage.setItem("password", password);
     }
-    let err = auth.Login({login, password})
-	if (err) {
-	console.log(err);
-	  SetError(error.message);
-	}
+    auth.Login({ login, password }).catch((err) => setError(err.rawMessage));
   };
 
   return (

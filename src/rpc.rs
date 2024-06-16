@@ -4,7 +4,7 @@ use super::user;
 use email_address_parser::EmailAddress;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Database, DatabaseType, Empty, Jwt, Message, ResetPassword, ResponseResult, User,
+    Database, DatabaseType, Empty, Jwt, Message, ResetPassword, User,
 };
 use std::pin::Pin;
 use std::{fs::File, io::BufReader};
@@ -110,14 +110,15 @@ impl Lucle for LucleApi {
     async fn is_created_user(
         &self,
         _request: Request<Database>,
-    ) -> Result<Response<ResponseResult>, Status> {
-        let mut db_error = "".to_string();
-        if !user::is_default_user("lucle.db") {
-            tracing::error!("No admin user");
-            db_error = "No admin user".to_string();
+    ) -> Result<Response<Empty>, Status> {
+        let reply = Empty {};
+        match user::is_table_and_user_created("lucle.db") {
+            Ok(()) => Ok(Response::new(reply)),
+            Err(err) => {
+                tracing::error!("{}", err);
+                Err(Status::internal(err.to_string()))
+            }
         }
-        let reply = ResponseResult { error: db_error };
-        Ok(Response::new(reply))
     }
 
     async fn forgot_password(
@@ -172,7 +173,10 @@ pub fn rpc_api(
     let api = LucleApi::default();
     let api = LucleServer::new(api);
 
-    let cors_layer = CorsLayer::new().allow_origin(Any).allow_headers(Any);
+    let cors_layer = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_headers(Any)
+        .expose_headers(Any);
 
     let mut routes_builder = RoutesBuilder::default();
     routes_builder.add_service(api);

@@ -74,13 +74,13 @@ async fn main() {
         .unwrap();
 
     //let http = http::serve_dir().into_service();
-    let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf);//.into_service();
+    let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf); //.into_service();
     let addr = "0.0.0.0:8080".parse().unwrap();
     //let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     tracing::info!("gRPC and HTTP server listening on {}", addr);
 
-//    let service = MultiplexService::new(grpc, http);
-	grpc.serve(addr).await.unwrap();
+    //    let service = MultiplexService::new(grpc, http);
+    grpc.serve(addr).await.unwrap();
 
-//    axum::serve(listener, tower::make::Shared::new(service));
+    //    axum::serve(listener, tower::make::Shared::new(service));
 }

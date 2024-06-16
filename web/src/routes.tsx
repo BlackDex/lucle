@@ -8,12 +8,11 @@ import Speedupdate from "views/Speedupdate";
 import Login from "views/Login";
 import Dashboard from "layouts/Dashboard";
 
-function AnonymousRoutes({ isLogged }: { isLogged: boolean }) {
-  return isLogged ? <Navigate to="/admin" replace /> : <Outlet />;
-}
+import { useAuth } from "context/Auth";
 
-function PrivateRoutes({ isLogged }: { isLogged: boolean }) {
-  return isLogged ? <Outlet /> : <Navigate to="/login" replace />;
+function PrivateRoutes() {
+  const user = useAuth();
+  return user.token ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
 function InstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
@@ -26,17 +25,14 @@ function UninstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
 }
 
 const routes = (isInstalled: boolean) => [
+  { path: "/", element: <Landing /> },
   {
-    //element: <AnonymousRoutes isLogged={isLogged} />,
-    children: [{ path: "/", element: <Landing /> }],
-  },
-  {
-//    element: <InstalledRoutes isInstalled={isInstalled} />,
+    //    element: <InstalledRoutes isInstalled={isInstalled} />,
     children: [
       { path: "/login", element: <Login /> },
       { path: "/forgot", element: <ForgotPassword /> },
       {
-        //    element: <PrivateRoutes isLogged />,
+        element: <PrivateRoutes />,
         children: [
           {
             path: "admin/*",
