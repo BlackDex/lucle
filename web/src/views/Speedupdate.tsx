@@ -122,10 +122,15 @@ function Speedupdate() {
   const numBinariesSelected = selectedBinaries.length;
 
   useEffect(() => {
+    const headers = new Headers();
+    headers.set("Authorization", "Bearer allo");
     async function Status() {
-      const call = client.status({
-        path: path,
-      });
+      const call = client.status(
+        {
+          path: path,
+        },
+        { headers: headers },
+      );
       for await (const repo of call) {
         setSize(repo.size);
         getCurrentVersion(repo.currentVersion);
@@ -183,10 +188,11 @@ function Speedupdate() {
 
     let newClient = createPromiseClient(Repo, transport);
     setClient(newClient);
+
     isInit(newClient, path)
       .then(() => setRepoState(RepoState.Initialized))
       .catch((err) => {
-        setError(err.message);
+        setError(err.rawMessage);
         if (err.code == 2) {
           setRepoState(RepoState.NotConnected);
         }
@@ -480,19 +486,21 @@ function Speedupdate() {
                 </TableRow>
               </Table>
             </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={listVersions.length}
-              rowsPerPage={versionsPerPage}
-              page={versionsPage}
-              labelRowsPerPage="Versions per page"
-              onPageChange={(event, newPage) => setVersionsPage(newPage)}
-              onRowsPerPageChange={(event) => {
-                setVersionsPerPage(parseInt(event.target.value, 10));
-                setVersionsPage(0);
-              }}
-            />
+            {listVersions ? (
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={listVersions.length}
+                rowsPerPage={versionsPerPage}
+                page={versionsPage}
+                labelRowsPerPage="Versions per page"
+                onPageChange={(event, newPage) => setVersionsPage(newPage)}
+                onRowsPerPageChange={(event) => {
+                  setVersionsPerPage(parseInt(event.target.value, 10));
+                  setVersionsPage(0);
+                }}
+              />
+            ) : null}
           </Paper>
           <Box sx={{ width: "100%" }}>
             <Paper sx={{ width: "100%", mb: 2 }}>

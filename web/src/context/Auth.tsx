@@ -1,4 +1,4 @@
-import { useContext, createContext, useState } from "react";
+import { useEffect, useContext, createContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Context
@@ -10,9 +10,13 @@ import { connection } from "utils/rpc";
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState();
+  const [token, setToken] = useState(localStorage.getItem("token"));
   const navigate = useNavigate();
   const client = useContext(LucleRPC);
+
+  //useEffect(() => {
+
+  //})
 
   const Login = async (credentials) => {
     return new Promise((resolve, reject) => {

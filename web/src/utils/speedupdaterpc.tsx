@@ -15,10 +15,15 @@ export const init = async (client: any, path: string) => {
 
 export const isInit = async (client: any, path: string) => {
   return new Promise((resolve, reject) => {
+    const headers = new Headers();
+    headers.set("Authorization", "Bearer allo");
     client
-      .is_init({
-        path,
-      })
+      .is_init(
+        {
+          path,
+        },
+        { headers: headers },
+      )
       .then(() => {
         resolve(true);
       })

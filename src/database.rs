@@ -355,12 +355,12 @@ fn create_table(migration_dir: PathBuf) {
     let mut up = fs::File::create(up_path).unwrap();
     up.write_all(
         b"CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INT PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL,
         password TEXT NOT NULL,
         email TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        modified_at TEXT NOT NULL,
+        created_at  TIMSTAMPNOT NULL,
+        modified_at TIMESTAMP NOT NULL,
         role TEXT NOT NULL,
 	reset_token TEXT
       )",
