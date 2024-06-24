@@ -4,7 +4,8 @@ use super::user;
 use email_address_parser::EmailAddress;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Database, DatabaseType, Empty, Jwt, Message, ResetPassword, User,
+    Credentials, Database, DatabaseType, Empty, Message, ResetPassword, UpdateServer, User,
+    UserCreation,
 };
 use std::pin::Pin;
 use std::{fs::File, io::BufReader};
@@ -36,13 +37,7 @@ impl Lucle for LucleApi {
     async fn create_db(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
         let db_type = inner.db_type;
-        let _db_name = inner.db_name;
         let migration_path = inner.migration_path;
-        let _username = inner.username;
-        let _password = inner.password;
-        let _hostname = inner.hostname;
-        let _port = inner.port;
-        // let name
         let reply = Empty {};
         let migrations_dir =
             database::create_migrations_dir(migration_path).unwrap_or_else(database::handle_error);
@@ -77,7 +72,7 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
-    async fn create_user(&self, request: Request<User>) -> Result<Response<Empty>, Status> {
+    async fn create_user(&self, request: Request<UserCreation>) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
         let username = inner.username;
         let password = inner.password;
@@ -94,12 +89,34 @@ impl Lucle for LucleApi {
         Ok(Response::new(reply))
     }
 
-    async fn login(&self, request: Request<User>) -> Result<Response<Jwt>, Status> {
+    async fn register_update_server(
+        &self,
+        request: Request<UpdateServer>,
+    ) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
         let username = inner.username;
+        let path = inner.path;
+        if let Err(err) = user::update_user("lucle.db", username, path) {
+            tracing::error!("{}", err);
+            return Err(Status::internal(err.to_string()));
+        }
+        let reply = Empty {};
+        Ok(Response::new(reply))
+    }
+
+    async fn login(&self, request: Request<Credentials>) -> Result<Response<User>, Status> {
+        let inner = request.into_inner();
+        let username_or_email = inner.username_or_email;
         let password = inner.password;
-        match user::login("lucle.db", username, password) {
-            Ok(token) => Ok(Response::new(Jwt { token: token })),
+        match user::login("lucle.db", username_or_email, password) {
+            Ok(user) => {
+                let user = User {
+                    username: user.username,
+                    token: user.token,
+                    repository: user.role,
+                };
+                Ok(Response::new(user))
+            }
             Err(err) => {
                 tracing::error!("{}", err);
                 return Err(Status::internal(err.to_string()));

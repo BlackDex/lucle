@@ -35,7 +35,7 @@ export const connection = async (
   return new Promise((resolve, reject) => {
     client
       .login({
-        username: login,
+        usernameOrEmail: login,
         password: user_password,
       })
       .then((token) => resolve(token))

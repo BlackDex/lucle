@@ -5,8 +5,9 @@ package luclerpc;
 service Lucle {
   rpc create_db (Database) returns (Empty);
   rpc delete_db (Database) returns (Empty);
-  rpc login (User) returns (Jwt);
-  rpc create_user (User) returns (Empty);
+  rpc login (Credentials) returns (User);
+  rpc create_user (UserCreation) returns (Empty);
+  rpc register_update_server (UpdateServer) returns (Empty); 
   rpc is_created_user (Database) returns (Empty);
   rpc create_table (Database) returns (Empty);
   rpc forgot_password (ResetPassword) returns (Empty);
@@ -21,26 +22,33 @@ enum DatabaseType {
 
 message Database {
   DatabaseType db_type = 1;
-  optional string db_name = 2;
   optional string migration_path = 3;
-  optional string username = 4;
-  optional string password = 5;
-  optional string hostname = 6;
-  optional string port = 7;
 }
 
-message User {
+message UpdateServer {
+  string path = 1;
+  string username = 2;
+}
+
+message Credentials {
+  string username_or_email = 1;
+  string password = 2;
+}
+
+message UserCreation {
   string username = 1;
   string password = 2;
   string email = 3;
 }
 
-message ResetPassword {
-  string email = 1;
+message User {
+  string username = 1;
+  string token = 2;
+  optional string repository = 3;
 }
 
-message Jwt {
-  string token = 1;
+message ResetPassword {
+  string email = 1;
 }
 
 message Message {

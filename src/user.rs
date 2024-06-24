@@ -13,6 +13,12 @@ use diesel::prelude::*;
 use diesel::SelectableHelper;
 use diesel::{select, Connection, QueryDsl, RunQueryDsl};
 
+pub struct LucleUser {
+    pub username: String,
+    pub token: String,
+    pub role: Option<String>,
+}
+
 pub fn create_user(
     database_url: &str,
     username: String,
@@ -35,7 +41,7 @@ pub fn create_user(
         email,
         created_at: now,
         modified_at: now,
-        role: "admin".to_string(),
+        role: None,
     };
 
     diesel::insert_into(users::table)
@@ -44,10 +50,23 @@ pub fn create_user(
     Ok(())
 }
 
-pub fn login(database_url: &str, username: String, password: String) -> DatabaseResult<String> {
+pub fn update_user(database_url: &str, user: String, path: String) -> DatabaseResult<()> {
+    let mut conn = LucleDBConnection::establish(database_url)?;
+    diesel::update(users::table.filter(users::dsl::username.eq(user)))
+        .set(users::dsl::role.eq(path))
+        .execute(&mut conn)?;
+    Ok(())
+}
+
+pub fn login(
+    database_url: &str,
+    username_or_email: String,
+    password: String,
+) -> DatabaseResult<LucleUser> {
     let mut conn = LucleDBConnection::establish(database_url)?;
     let user = users::table
-        .filter(users::dsl::username.eq(username.clone()))
+        .filter(users::dsl::username.eq(username_or_email.clone()))
+        //	.filter(users::dsl::email.eq(username_or_email.clone()))
         .select(User::as_select())
         .first(&mut conn)
         .optional();
@@ -55,12 +74,13 @@ pub fn login(database_url: &str, username: String, password: String) -> Database
         Ok(Some(val)) => {
             let parsed_hash = PasswordHash::new(&val.password).unwrap();
             Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
-            if val.role == "admin" {
-                let token = utils::generate_jwt(username, val.email);
-                Ok(token)
-            } else {
-                Err(DatabaseError::NotAuthorized)
-            }
+            let token = utils::generate_jwt(val.username.clone(), val.email);
+            let user = LucleUser {
+                username: val.username,
+                token: token,
+                role: val.role,
+            };
+            Ok(user)
         }
         Ok(None) => Err(DatabaseError::UserNotFound),
         Err(err) => Err(DatabaseError::QueryError(err)),

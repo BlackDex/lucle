@@ -11,19 +11,18 @@ const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [username, setUsername] = useState(localStorage.getItem("username"));
   const navigate = useNavigate();
   const client = useContext(LucleRPC);
-
-  //useEffect(() => {
-
-  //})
 
   const Login = async (credentials) => {
     return new Promise((resolve, reject) => {
       connection(client, credentials.login, credentials.password)
-        .then((jwt) => {
-          setToken(jwt.token);
-          localStorage.setItem("token", jwt.token);
+        .then((user) => {
+          setUsername(user.username);
+          setToken(user.token);
+          localStorage.setItem("token", user.token);
+          localStorage.setItem("username", user.username);
           navigate("/admin");
         })
         .catch((err) => reject(err));
@@ -32,12 +31,14 @@ const AuthProvider = ({ children }) => {
 
   const Logout = () => {
     setToken("");
+    setUsername("");
     localStorage.removeItem("token");
+    localStorage.removeItem("username");
     navigate("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ token, Login, Logout }}>
+    <AuthContext.Provider value={{ username, token, Login, Logout }}>
       {children}
     </AuthContext.Provider>
   );

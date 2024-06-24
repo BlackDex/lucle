@@ -13,7 +13,7 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // react-router-dom components
 import { useLocation, NavLink } from "react-router-dom";
@@ -26,11 +26,20 @@ import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
 import Link from "@mui/material/Link";
 import Icon from "@mui/material/Icon";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import LogoutIcon from "@mui/icons-material/Logout";
+
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Collapse from "@mui/material/Collapse";
 
 // Material Dashboard 2 React components
 import Box from "components/Box";
 import Typography from "components/Typography";
 import Button from "components/Button";
+import Avatar from "components/Avatar";
 
 // Material Dashboard 2 React example components
 import SidenavCollapse from "components/Sidenav/SidenavCollapse";
@@ -38,6 +47,8 @@ import SidenavCollapse from "components/Sidenav/SidenavCollapse";
 // Custom styles for the Sidenav
 import SidenavRoot from "components/Sidenav/SidenavRoot";
 import sidenavLogoLabel from "components/Sidenav/styles/sidenav";
+
+import burceMars from "assets/images/bruce-mars.jpg";
 
 // Material Dashboard 2 React context
 import {
@@ -47,7 +58,10 @@ import {
   setWhiteSidenav,
 } from "context";
 
+import { useAuth } from "context/Auth";
+
 function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
+  const [openLoginMenu, setOpenLoginMenu] = useState();
   const [controller, dispatch] = useMaterialUIController();
   const {
     miniSidenav,
@@ -56,6 +70,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
     darkMode,
     sidenavColor,
   } = controller;
+  const auth = useAuth();
   const location = useLocation();
   const collapseName = location.pathname.replace("/", "");
 
@@ -197,6 +212,29 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
           </Box>
         </Box>
       </Box>
+      <Divider
+        light={
+          (!darkMode && !whiteSidenav && !transparentSidenav) ||
+          (darkMode && !transparentSidenav && whiteSidenav)
+        }
+      />
+      <List>
+        <ListItemButton onClick={() => setOpenLoginMenu(!openLoginMenu)}>
+          <Avatar src={burceMars} alt="profile" size="md" shadow="md" />
+          <ListItemText sx={{ color: "#f0f2f5" }} primary={auth.username} />
+          {openLoginMenu ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={openLoginMenu} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            <ListItemButton onClick={() => auth.Logout()} sx={{ pl: 4 }}>
+              <ListItemIcon>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText sx={{ color: "#f0f2f5" }} primary="Logout" />
+            </ListItemButton>
+          </List>
+        </Collapse>
+      </List>
       <Divider
         light={
           (!darkMode && !whiteSidenav && !transparentSidenav) ||

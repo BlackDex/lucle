@@ -123,7 +123,8 @@ function Speedupdate() {
 
   useEffect(() => {
     const headers = new Headers();
-    headers.set("Authorization", "Bearer allo");
+    let token = localStorage.getItem("token");
+    headers.set("Authorization", "Bearer " + token);
     async function Status() {
       const call = client.status(
         {
@@ -188,7 +189,6 @@ function Speedupdate() {
 
     let newClient = createPromiseClient(Repo, transport);
     setClient(newClient);
-
     isInit(newClient, path)
       .then(() => setRepoState(RepoState.Initialized))
       .catch((err) => {

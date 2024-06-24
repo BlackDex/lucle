@@ -8,7 +8,7 @@ diesel::table! {
         email -> Text,
         created_at -> Timestamp,
         modified_at -> Timestamp,
-        role -> Text,
+        role -> Nullable<Text>,
         reset_token -> Nullable<Text>,
     }
 }

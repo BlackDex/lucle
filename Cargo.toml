@@ -55,7 +55,7 @@ libsqlite3-sys = { version = "0.28.0", features = ["bundled"] }
 
 # smtp
 common = { git = "https://github.com/stalwartlabs/mail-server"}
-smtp = { git = "https://github.com/stalwartlabs/mail-server" , features = ["local_delivery"] }
+smtp = { git = "https://github.com/stalwartlabs/mail-server" }
 store = { git = "https://github.com/stalwartlabs/mail-server", features = ["sqlite", "mysql", "postgres"]}
 imap = { git = "https://github.com/stalwartlabs/mail-server"}
 managesieve = { git = "https://github.com/stalwartlabs/mail-server" }
@@ -65,6 +65,7 @@ jmap = { git = "https://github.com/stalwartlabs/mail-server"}
 pop3 = { git = "https://github.com/stalwartlabs/mail-server"}
 jsonwebtoken = "9.3.0"
 ring = "0.17.8"
+base64 = "0.22.1"
 
 [build-dependencies]
 tonic-build = { version = "0.10.0", features = ["prost"] } 

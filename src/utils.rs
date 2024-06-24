@@ -1,13 +1,13 @@
+use base64::{engine::general_purpose, Engine as _};
 use jsonwebtoken::{encode, get_current_timestamp, Algorithm, EncodingKey};
 use lettre::{
     message::{header, MultiPart, SinglePart},
     FileTransport, Message, Transport,
 };
 use rcgen::{DnType, KeyPair, KeyUsagePurpose};
-use ring::signature::Ed25519KeyPair;
 use serde::{Deserialize, Serialize};
 use std::{
-    fs::File,
+    fs::{self, File},
     io::{Result, Write},
 };
 use tera::{Context, Tera};
@@ -129,18 +129,19 @@ pub fn write_pem(path: &str, pem: &str) -> Result<()> {
 }
 
 pub fn generate_jwt(username: String, email: String) -> String {
-    let doc = Ed25519KeyPair::generate_pkcs8(&ring::rand::SystemRandom::new()).unwrap();
-    let encoding_key = EncodingKey::from_ed_der(doc.as_ref());
+    let encoded_pkcs8 = fs::read_to_string("pkey").unwrap();
+    let decoded_pkcs8 = general_purpose::STANDARD.decode(encoded_pkcs8).unwrap();
+    let encoding_key = EncodingKey::from_ec_der(&decoded_pkcs8);
 
     let claims = Claims {
         sub: username,
         email: email,
-        exp: get_current_timestamp() + 100,
+        exp: get_current_timestamp(),
         scope: "test".to_string(),
     };
 
     encode(
-        &jsonwebtoken::Header::new(Algorithm::EdDSA),
+        &jsonwebtoken::Header::new(Algorithm::ES256),
         &claims,
         &encoding_key,
     )

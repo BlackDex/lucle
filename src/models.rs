@@ -12,7 +12,7 @@ pub struct User {
     pub email: String,
     pub created_at: NaiveDateTime,
     pub modified_at: NaiveDateTime,
-    pub role: String,
+    pub role: Option<String>,
     pub reset_token: Option<String>,
 }
 
@@ -24,5 +24,5 @@ pub struct NewUser {
     pub email: String,
     pub created_at: NaiveDateTime,
     pub modified_at: NaiveDateTime,
-    pub role: String,
+    pub role: Option<String>,
 }
