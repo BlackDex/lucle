@@ -17,10 +17,11 @@ const AuthProvider = ({ children }) => {
 
   const Login = async (credentials) => {
     return new Promise((resolve, reject) => {
-      connection(client, credentials.login, credentials.password)
+      connection(client, credentials.username, credentials.password)
         .then((user) => {
           setUsername(user.username);
           setToken(user.token);
+          localStorage.setItem("repository", user.repository);
           localStorage.setItem("token", user.token);
           localStorage.setItem("username", user.username);
           navigate("/admin");
@@ -33,6 +34,7 @@ const AuthProvider = ({ children }) => {
     setToken("");
     setUsername("");
     localStorage.removeItem("token");
+    localStorage.removeItem("repository");
     localStorage.removeItem("username");
     navigate("/login");
   };

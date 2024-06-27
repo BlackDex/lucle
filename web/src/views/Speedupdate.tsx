@@ -122,6 +122,10 @@ function Speedupdate() {
   const numBinariesSelected = selectedBinaries.length;
 
   useEffect(() => {
+    let repo = localStorage.getItem("repository");
+    if (repo) {
+      //   console.log("13 : ",repo);
+    }
     const headers = new Headers();
     let token = localStorage.getItem("token");
     headers.set("Authorization", "Bearer " + token);
@@ -334,18 +338,16 @@ function Speedupdate() {
         />
         {repoState == RepoState.NotConnected ? (
           <Button variant="contained" onClick={Connection}>
-            Connection
+            Create new repository
           </Button>
         ) : null}
         {repoState == RepoState.NotInitialized ? (
           <Button
             variant="contained"
-            onClick={
-              () =>
-                init(client, path).then(() =>
-                  setRepoState(RepoState.Initialized),
-                )
-              // .catch((err) => setError(err))
+            onClick={() =>
+              init(client, path)
+                .then(() => setRepoState(RepoState.Initialized))
+                .catch((err) => setError(err))
             }
           >
             Initialize repo

@@ -64,25 +64,27 @@ pub fn login(
     password: String,
 ) -> DatabaseResult<LucleUser> {
     let mut conn = LucleDBConnection::establish(database_url)?;
-    let user = users::table
+    match users::table
         .filter(users::dsl::username.eq(username_or_email.clone()))
-        //	.filter(users::dsl::email.eq(username_or_email.clone()))
         .select(User::as_select())
         .first(&mut conn)
-        .optional();
-    match user {
-        Ok(Some(val)) => {
-            let parsed_hash = PasswordHash::new(&val.password).unwrap();
-            Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
-            let token = utils::generate_jwt(val.username.clone(), val.email);
-            let user = LucleUser {
-                username: val.username,
-                token: token,
-                role: val.role,
-            };
-            Ok(user)
+        .optional()
+    {
+        Ok(Some(val)) => login_user(val.username, val.password, password, val.email, val.role),
+        Ok(None) => {
+            match users::table
+                .filter(users::dsl::email.eq(username_or_email.clone()))
+                .select(User::as_select())
+                .first(&mut conn)
+                .optional()
+            {
+                Ok(Some(val)) => {
+                    login_user(val.username, val.password, password, val.email, val.role)
+                }
+                Ok(None) => Err(DatabaseError::UserNotFound),
+                Err(err) => Err(DatabaseError::QueryError(err)),
+            }
         }
-        Ok(None) => Err(DatabaseError::UserNotFound),
         Err(err) => Err(DatabaseError::QueryError(err)),
     }
 }
@@ -119,4 +121,21 @@ pub fn reset_password(database_url: &str, email: String) -> DatabaseResult<()> {
     }
 
     Ok(())
+}
+
+fn login_user(
+    username: String,
+    stored_password: String,
+    password: String,
+    email: String,
+    role: Option<String>,
+) -> DatabaseResult<LucleUser> {
+    let parsed_hash = PasswordHash::new(&stored_password).unwrap();
+    Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
+    let token = utils::generate_jwt(username.clone(), email);
+    Ok(LucleUser {
+        username: username,
+        token: token,
+        role: role,
+    })
 }
