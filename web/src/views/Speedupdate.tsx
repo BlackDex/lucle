@@ -44,14 +44,20 @@ import {
   fileToDelete,
 } from "utils/speedupdaterpc";
 
+// Context
+import { useAuth } from "context/Auth";
+
 //import { uploadFile } from "utils/minio";
 
 enum RepoState {
-  NotConnected,
-  Connected,
   NotInitialized,
   Initialized,
 }
+
+const transport = createGrpcWebTransport({
+      baseUrl: 'http://0.0.0.0:3000',
+    });
+const client = createPromiseClient(Repo, transport)
 
 const DisplaySizeUnit = (TotalSize: number) => {
   if (TotalSize > 0 && TotalSize < 1024) {
@@ -70,8 +76,6 @@ const DisplaySizeUnit = (TotalSize: number) => {
 };
 
 function Speedupdate() {
-  const [client, setClient] = useState<any>();
-  const [url, setUrl] = useState<string>(localStorage.getItem("url") || "");
   const [currentVersion, getCurrentVersion] = useState<string>("");
   const [size, setSize] = useState<number>();
   const [version, setVersion] = useState<any>();
@@ -94,7 +98,7 @@ function Speedupdate() {
   const [packagesPerPage, setPackagesPerPage] = useState(5);
   const [versionsPerPage, setVersionsPerPage] = useState(5);
   const [binariesPerPage, setBinariesPerPage] = useState(5);
-  const [repoState, setRepoState] = useState<RepoState>(RepoState.NotConnected);
+  const [repoState, setRepoState] = useState<RepoState>(RepoState.NotInitialized);
   const [error, setError] = useState<String>("");
   const [selectedVersions, setSelectedVersions] = useState<readonly number[]>(
     [],
@@ -109,6 +113,8 @@ function Speedupdate() {
     [],
   );
 
+  const auth = useAuth();
+
   const isVersionsSelected = (id: number) =>
     selectedVersions.indexOf(id) !== -1;
   const numVersionsSelected = selectedVersions.length;
@@ -122,12 +128,20 @@ function Speedupdate() {
   const numBinariesSelected = selectedBinaries.length;
 
   useEffect(() => {
-    let repo = localStorage.getItem("repository");
-    if (repo) {
-      //   console.log("13 : ",repo);
-    }
+    if (auth.repository) {
+console.log("12 : ", auth.repository);
+	isInit(client, path)
+      .then(() => setRepoState(RepoState.Initialized))
+      .catch((err) => {
+console.log(err);
+        setError(err.rawMessage);
+        if (err.code == 13) {
+          setRepoState(RepoState.NotInitialized);
+        }
+      });
+	}
     const headers = new Headers();
-    let token = localStorage.getItem("token");
+    let token = auth.token;
     headers.set("Authorization", "Bearer " + token);
     async function Status() {
       const call = client.status(
@@ -184,27 +198,7 @@ function Speedupdate() {
         setError(err);
       });
     }
-  });
-
-  const Connection = () => {
-    const transport = createGrpcWebTransport({
-      baseUrl: url,
-    });
-
-    let newClient = createPromiseClient(Repo, transport);
-    setClient(newClient);
-    isInit(newClient, path)
-      .then(() => setRepoState(RepoState.Initialized))
-      .catch((err) => {
-        setError(err.rawMessage);
-        if (err.code == 2) {
-          setRepoState(RepoState.NotConnected);
-        }
-        if (err.code == 13) {
-          setRepoState(RepoState.NotInitialized);
-        }
-      });
-  };
+  }, [auth]);
 
   const uploadFile = () => {
     let formData = new FormData();
@@ -315,18 +309,9 @@ function Speedupdate() {
 
   let speedupdatecomponent;
 
-  if (repoState == RepoState.NotConnected) {
+  if (repoState == RepoState.NotInitialized) {
     speedupdatecomponent = (
       <div>
-        <TextField
-          id="outlined-required"
-          label="url"
-          value={url}
-          onChange={(e: any) => {
-            setUrl(e.currentTarget.value);
-            localStorage.setItem("url", e.currentTarget.value);
-          }}
-        />
         <TextField
           id="outlined-required"
           label="path"
@@ -336,12 +321,6 @@ function Speedupdate() {
             localStorage.setItem("path", e.currentTarget.value);
           }}
         />
-        {repoState == RepoState.NotConnected ? (
-          <Button variant="contained" onClick={Connection}>
-            Create new repository
-          </Button>
-        ) : null}
-        {repoState == RepoState.NotInitialized ? (
           <Button
             variant="contained"
             onClick={() =>
@@ -350,9 +329,8 @@ function Speedupdate() {
                 .catch((err) => setError(err))
             }
           >
-            Initialize repo
+            Create new repository
           </Button>
-        ) : null}
         <p>{error}</p>
       </div>
     );

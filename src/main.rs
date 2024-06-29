@@ -7,7 +7,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod config;
 mod database;
-mod database_errors;
+mod errors;
 mod http;
 mod infer_schema_internals;
 mod mail;

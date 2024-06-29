@@ -6,7 +6,7 @@ use super::data_structures::ColumnDefinition;
 use super::data_structures::*;
 use super::table_data::*;
 
-use crate::config::Filtering;
+use crate::config::{Filtering, PrintSchema};
 use crate::print_schema::{ColumnSorting, DocConfig};
 
 static RESERVED_NAMES: &[&str] = &[
@@ -118,8 +118,8 @@ pub fn filter_table_names(table_names: Vec<TableName>, table_filter: &Filtering)
 pub fn load_table_names(
     connection: &mut LucleDBConnection,
     schema_name: Option<&str>,
-) -> Result<Vec<TableName>, Box<dyn Error + Send + Sync + 'static>> {
-    match connection {
+) -> Result<Vec<TableName>, crate::errors::Error> {
+    let tables = match connection {
         LucleDBConnection::Sqlite(ref mut c) => super::sqlite::load_table_names(c, schema_name),
         LucleDBConnection::Pg(ref mut c) => {
             super::information_schema::load_table_names(c, schema_name)
@@ -127,13 +127,15 @@ pub fn load_table_names(
         LucleDBConnection::Mysql(ref mut c) => {
             super::information_schema::load_table_names(c, schema_name)
         }
-    }
+    }?;
+    tracing::info!(?tables, "Loaded tables");
+    Ok(tables)
 }
 
 pub(crate) fn get_primary_keys(
     conn: &mut LucleDBConnection,
     table: &TableName,
-) -> Result<Vec<String>, Box<dyn Error + Send + Sync + 'static>> {
+) -> Result<Vec<String>, crate::errors::Error> {
     let primary_keys: Vec<String> = match *conn {
         LucleDBConnection::Sqlite(ref mut c) => super::sqlite::get_primary_keys(c, table),
         LucleDBConnection::Pg(ref mut c) => super::information_schema::get_primary_keys(c, table),
@@ -142,12 +144,9 @@ pub(crate) fn get_primary_keys(
         }
     }?;
     if primary_keys.is_empty() {
-        Err(format!(
-            "Diesel only supports tables with primary keys. \
-             Table {table} has no primary key",
-        )
-        .into())
+        Err(crate::errors::Error::NoPrimaryKeyFound(table.clone()))
     } else {
+        tracing::info!(?primary_keys, "Load primary keys for table {table}");
         Ok(primary_keys)
     }
 }
@@ -155,16 +154,18 @@ pub(crate) fn get_primary_keys(
 fn get_table_comment(
     conn: &mut LucleDBConnection,
     table: &TableName,
-) -> Result<Option<String>, Box<dyn Error + Send + Sync + 'static>> {
+) -> Result<Option<String>, crate::errors::Error> {
     let table_comment = match *conn {
         LucleDBConnection::Sqlite(_) => Ok(None),
         LucleDBConnection::Pg(ref mut c) => super::pg::get_table_comment(c, table),
         LucleDBConnection::Mysql(ref mut c) => super::mysql::get_table_comment(c, table),
     };
     if let Err(NotFound) = table_comment {
-        Err(format!("no table exists named {table}").into())
+        Err(crate::errors::Error::NoTableFound(table.clone()))
     } else {
-        table_comment.map_err(Into::into)
+        let table_comment = table_comment?;
+        tracing::info!(?table_comment, "Load table comments for {table}");
+        Ok(table_comment)
     }
 }
 
@@ -172,7 +173,7 @@ fn get_column_information(
     conn: &mut LucleDBConnection,
     table: &TableName,
     column_sorting: &ColumnSorting,
-) -> Result<Vec<ColumnInformation>, Box<dyn Error + Send + Sync + 'static>> {
+) -> Result<Vec<ColumnInformation>, crate::errors::Error> {
     let column_info = match *conn {
         LucleDBConnection::Sqlite(ref mut c) => {
             super::sqlite::get_table_data(c, table, column_sorting)
@@ -183,9 +184,11 @@ fn get_column_information(
         }
     };
     if let Err(NotFound) = column_info {
-        Err(format!("no table exists named {table}").into())
+        Err(crate::errors::Error::NoTableFound(table.clone()))
     } else {
-        column_info.map_err(Into::into)
+        let column_info = column_info?;
+        tracing::info!(?column_info, "Load column information for table {table}");
+        Ok(column_info)
     }
 }
 
@@ -204,10 +207,11 @@ fn determine_column_type(
     }
 }
 
+#[tracing::instrument(skip(connection))]
 pub fn load_foreign_key_constraints(
     connection: &mut LucleDBConnection,
     schema_name: Option<&str>,
-) -> Result<Vec<ForeignKeyConstraint>, Box<dyn Error + Send + Sync + 'static>> {
+) -> Result<Vec<ForeignKeyConstraint>, crate::errors::Error> {
     let constraints = match connection {
         LucleDBConnection::Sqlite(ref mut c) => {
             super::sqlite::load_foreign_key_constraints(c, schema_name)
@@ -229,18 +233,19 @@ pub fn load_foreign_key_constraints(
                 }
             }
         });
+        tracing::info!(?ct, "Loaded foreign key constraints");
         ct
     })
 }
 
+#[tracing::instrument(skip(connection))]
 pub fn load_table_data(
     connection: &mut LucleDBConnection,
     name: TableName,
-    column_sorting: &ColumnSorting,
-    with_docs: DocConfig,
-) -> Result<TableData, Box<dyn Error + Send + Sync + 'static>> {
+    config: &PrintSchema,
+) -> Result<TableData, crate::errors::Error> {
     // No point in loading table comments if they are not going to be displayed
-    let table_comment = match with_docs {
+    let table_comment = match config.with_docs {
         DocConfig::NoDocComments => None,
         DocConfig::OnlyDatabaseComments
         | DocConfig::DatabaseCommentsFallbackToAutoGeneratedDocComment => {
@@ -249,15 +254,11 @@ pub fn load_table_data(
     };
 
     let primary_key = get_primary_keys(connection, &name)?;
-    let primary_key = primary_key
-        .iter()
-        .map(|k| rust_name_for_sql_name(k))
-        .collect();
 
-    let column_data = get_column_information(connection, &name, column_sorting)?
+    let column_data = get_column_information(connection, &name, &config.column_sorting)?
         .into_iter()
         .map(|c| {
-            let ty = determine_column_type(&c, connection)?;
+            let ty = determine_column_type(&c, connection, &name, &primary_key, config)?;
 
             let ColumnInformation {
                 column_name,
@@ -273,7 +274,12 @@ pub fn load_table_data(
                 comment,
             })
         })
-        .collect::<Result<_, Box<dyn Error + Send + Sync + 'static>>>()?;
+        .collect::<Result<_, crate::errors::Error>>()?;
+
+    let primary_key = primary_key
+        .iter()
+        .map(|k| rust_name_for_sql_name(k))
+        .collect::<Vec<_>>();
 
     Ok(TableData {
         name,

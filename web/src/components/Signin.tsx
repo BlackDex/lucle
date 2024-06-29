@@ -9,8 +9,12 @@ import Grid from "@mui/material/Grid";
 import { Link } from "react-router-dom";
 
 function Signin({ onSignin }: { onSignin: void }) {
-  const [username, setUsername] = useState<string>(localStorage.getItem("username"));
-  const [password, setPassword] = useState<string>(localStorage.getItem("password"));
+  const [username, setUsername] = useState<string>(
+    localStorage.getItem("username"),
+  );
+  const [password, setPassword] = useState<string>(
+    localStorage.getItem("password"),
+  );
   const [remember, setRemember] = useState<boolean>(false);
 
   return (
@@ -47,7 +51,7 @@ function Signin({ onSignin }: { onSignin: void }) {
         <FormControlLabel
           control={
             <Checkbox
-	      checked={remember}
+              checked={remember}
               value="remember"
               color="primary"
               onChange={() => setRemember(true)}

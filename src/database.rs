@@ -1,12 +1,11 @@
 use super::query_helper;
 use crate::config::Config;
-use crate::database_errors::{DatabaseError, DatabaseResult};
 use crate::print_schema;
 use chrono::Utc;
 use diesel::{
-    backend::Backend as DieselBackend, dsl::select, dsl::sql, result, sql_types::Bool,
-    sqlite::SqliteConnection, Connection, ExpressionMethods, MysqlConnection, OptionalExtension,
-    PgConnection, QueryDsl, QueryResult, RunQueryDsl,
+    backend::Backend as DieselBackend, connection::InstrumentationEvent, dsl::select, dsl::sql,
+    result, sql_types::Bool, sqlite::SqliteConnection, Connection, ExpressionMethods,
+    MysqlConnection, OptionalExtension, PgConnection, QueryDsl, QueryResult, RunQueryDsl,
 };
 use diesel_migrations::{FileBasedMigrations, MigrationError, MigrationHarness};
 use std::{
@@ -14,7 +13,7 @@ use std::{
     error::Error,
     fmt::Display,
     fs,
-    io::Write,
+    io::{Read, Write},
     path::{Path, PathBuf},
 };
 use url::Url;
@@ -61,13 +60,39 @@ pub enum LucleDBConnection {
 }
 
 impl LucleDBConnection {
-    pub fn from_matches(database_url: &str) -> Self {
-        Self::establish(database_url)
-            .unwrap_or_else(|err| handle_error_with_database_url(database_url, err))
+    pub fn from_matches(database_url: String) -> Result<Self, crate::errors::Error> {
+        Self::from_url(database_url)
+    }
+
+    pub fn from_url(database_url: String) -> Result<LucleDBConnection, crate::errors::Error> {
+        let result = match Backend::for_url(&database_url) {
+            Backend::Pg => PgConnection::establish(&database_url).map(Self::Pg),
+            Backend::Mysql => MysqlConnection::establish(&database_url).map(Self::Mysql),
+            Backend::Sqlite => SqliteConnection::establish(&database_url).map(Self::Sqlite),
+        };
+
+        let mut conn = result.map_err(|err| crate::errors::Error::ConnectionError {
+            error: err,
+            url: database_url,
+        })?;
+
+        conn.set_instrumentation(|event: InstrumentationEvent<'_>| {
+            if let InstrumentationEvent::FinishQuery { query, error, .. } = event {
+                if let Some(err) = error {
+                    tracing::error!(?query, ?err, "Failed to execute query");
+                } else {
+                    tracing::debug!(?query);
+                }
+            }
+        });
+        Ok(conn)
     }
 }
 
-pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResult<()> {
+pub fn setup_database(
+    database_url: &str,
+    migrations_dir: &Path,
+) -> Result<(), crate::errors::Error> {
     create_database(database_url)?;
     create_default_migration(database_url, migrations_dir)?;
     create_schema_table_and_run_migrations(database_url, migrations_dir)?;
@@ -78,30 +103,48 @@ pub fn setup_database(database_url: &str, migrations_dir: &Path) -> DatabaseResu
         Some("sql".to_string()),
         Some(true),
     )?;
-    do_migrations(database_url, Some(migrations_dir.display().to_string()))?;
+    do_migrations(
+        database_url.to_string(),
+        Some(migrations_dir.display().to_string()),
+    )?;
     Ok(())
 }
 
-fn create_database(database_url: &str) -> DatabaseResult<()> {
+fn create_database(database_url: &str) -> Result<(), crate::errors::Error> {
     match Backend::for_url(database_url) {
         Backend::Pg => {
             if PgConnection::establish(database_url).is_err() {
                 let (database, postgres_url) = change_database_of_url(database_url, "postgres");
-                let mut conn = PgConnection::establish(&postgres_url)?;
+                let mut conn = PgConnection::establish(&postgres_url).map_err(|e| {
+                    crate::errors::Error::ConnectionError {
+                        error: e,
+                        url: postgres_url,
+                    }
+                })?;
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
         }
         Backend::Sqlite => {
             let path = path_from_sqlite_url(database_url)?;
             if !path.exists() {
-                SqliteConnection::establish(database_url)?;
+                SqliteConnection::establish(database_url).map_err(|error| {
+                    crate::errors::Error::ConnectionError {
+                        error,
+                        url: database_url.to_owned(),
+                    }
+                })?;
             }
         }
         Backend::Mysql => {
             if MysqlConnection::establish(database_url).is_err() {
                 let (database, mysql_url) =
                     change_database_of_url(database_url, "information_schema");
-                let mut conn = MysqlConnection::establish(&mysql_url)?;
+                let mut conn = MysqlConnection::establish(&mysql_url).map_err(|e| {
+                    crate::errors::Error::ConnectionError {
+                        error: e,
+                        url: mysql_url,
+                    }
+                })?;
                 query_helper::create_database(&database).execute(&mut conn)?;
             }
         }
@@ -111,7 +154,7 @@ fn create_database(database_url: &str) -> DatabaseResult<()> {
     Ok(())
 }
 
-fn schema_table_exists(database_url: &str) -> DatabaseResult<bool> {
+fn schema_table_exists(database_url: &str) -> Result<bool, crate::errors::Error> {
     match LucleDBConnection::establish(database_url).unwrap() {
         LucleDBConnection::Pg(mut conn) => select(sql::<Bool>(
             "EXISTS \
@@ -140,18 +183,32 @@ fn schema_table_exists(database_url: &str) -> DatabaseResult<bool> {
     .map_err(Into::into)
 }
 
-fn create_default_migration(database_url: &str, migrations_dir: &Path) -> DatabaseResult<()> {
+fn create_default_migration(
+    database_url: &str,
+    migrations_dir: &Path,
+) -> Result<(), crate::errors::Error> {
     let initial_migration_path = migrations_dir.join("diesel_initial_setup");
     if initial_migration_path.exists() {
         return Ok(());
     }
 
     if let Backend::Pg = Backend::for_url(database_url) {
-        fs::create_dir_all(&initial_migration_path)?;
-        //          let mut up_sql = File::create(initial_migration_path.join("up.sql"))?;
-        //          up_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/up.sql"))?;
-        //          let mut down_sql = File::create(initial_migration_path.join("down.sql"))?;
-        //          down_sql.write_all(include_bytes!("setup_sql/postgres/initial_setup/down.sql"))?;
+        fs::create_dir_all(&initial_migration_path)
+            .map_err(|e| crate::errors::Error::IoError(e, Some(initial_migration_path.clone())))?;
+        fs::create_dir_all(&initial_migration_path)
+            .map_err(|e| crate::errors::Error::IoError(e, Some(initial_migration_path.clone())))?;
+        let up_sql_file = initial_migration_path.join("up.sql");
+        std::fs::write(
+            &up_sql_file,
+            include_bytes!("setup_sql/postgres/initial_setup/up.sql"),
+        )
+        .map_err(|e| crate::errors::Error::IoError(e, Some(up_sql_file.clone())))?;
+        let down_sql_file = initial_migration_path.join("down.sql");
+        std::fs::write(
+            &down_sql_file,
+            include_bytes!("setup_sql/postgres/initial_setup/down.sql"),
+        )
+        .map_err(|e| crate::errors::Error::IoError(e, Some(down_sql_file.clone())))?;
     }
     Ok(())
 }
@@ -170,11 +227,16 @@ diesel::table! {
     }
 }
 
-pub fn drop_database(database_url: &str) -> DatabaseResult<()> {
+pub fn drop_database(database_url: &str) -> Result<(), crate::errors::Error> {
     match Backend::for_url(database_url) {
         Backend::Pg => {
             let (database, postgres_url) = change_database_of_url(database_url, "postgres");
-            let mut conn = PgConnection::establish(&postgres_url)?;
+            let mut conn = PgConnection::establish(&postgres_url).map_err(|e| {
+                crate::errors::Error::ConnectionError {
+                    error: e,
+                    url: postgres_url,
+                }
+            })?;
             if pg_database_exists(&mut conn, &database)? {
                 println!("Dropping database: {database}");
                 query_helper::drop_database(&database)
@@ -185,12 +247,19 @@ pub fn drop_database(database_url: &str) -> DatabaseResult<()> {
         Backend::Sqlite => {
             if Path::new(database_url).exists() {
                 println!("Dropping database: {database_url}");
-                std::fs::remove_file(database_url)?;
+                std::fs::remove_file(database_url).map_err(|e| {
+                    crate::errors::Error::IoError(e, Some(std::path::PathBuf::from(database_url)))
+                })?;
             }
         }
         Backend::Mysql => {
             let (database, mysql_url) = change_database_of_url(database_url, "information_schema");
-            let mut conn = MysqlConnection::establish(&mysql_url)?;
+            let mut conn = MysqlConnection::establish(&mysql_url).map_err(|e| {
+                crate::errors::Error::ConnectionError {
+                    error: e,
+                    url: mysql_url,
+                }
+            })?;
             if mysql_database_exists(&mut conn, &database)? {
                 println!("Dropping database: {database}");
                 query_helper::drop_database(&database)
@@ -228,12 +297,12 @@ fn mysql_database_exists(conn: &mut MysqlConnection, database_name: &str) -> Que
 fn create_schema_table_and_run_migrations(
     database_url: &str,
     migrations_dir: &Path,
-) -> DatabaseResult<()> {
+) -> Result<(), crate::errors::Error> {
     if !schema_table_exists(database_url).unwrap_or_else(handle_error) {
         let migrations =
             FileBasedMigrations::from_path(migrations_dir).unwrap_or_else(handle_error);
-        let mut conn = LucleDBConnection::establish(database_url)?;
-        run_migrations(&mut conn, migrations)?;
+        let mut conn = LucleDBConnection::from_url(database_url.to_string())?;
+        run_migrations(&mut conn, migrations).map_err(crate::errors::Error::MigrationError)?;
     };
     Ok(())
 }
@@ -246,20 +315,23 @@ fn change_database_of_url(database_url: &str, default_database: &str) -> (String
     (database, new_url.into())
 }
 
-fn path_from_sqlite_url(database_url: &str) -> DatabaseResult<::std::path::PathBuf> {
+fn path_from_sqlite_url(database_url: &str) -> Result<std::path::PathBuf, crate::errors::Error> {
     if database_url.starts_with("file:/") {
-        // looks like a file URL
         match Url::parse(database_url) {
-            Ok(url) if url.scheme() == "file" => Ok(url.to_file_path().map_err(|_err| {
-                result::ConnectionError::InvalidConnectionUrl(String::from(database_url))
-            })?),
-            _ => {
-                // invalid URL or scheme
-                Err(
-                    result::ConnectionError::InvalidConnectionUrl(String::from(database_url))
-                        .into(),
-                )
+            Ok(url) if url.scheme() == "file" => {
+                Ok(url
+                    .to_file_path()
+                    .map_err(|_err| crate::errors::Error::ConnectionError {
+                        error: result::ConnectionError::InvalidConnectionUrl(String::from(
+                            database_url,
+                        )),
+                        url: database_url.into(),
+                    })?)
             }
+            _ => Err(crate::errors::Error::ConnectionError {
+                error: result::ConnectionError::InvalidConnectionUrl(String::from(database_url)),
+                url: database_url.into(),
+            }),
         }
     } else {
         // assume it's a bare path
@@ -267,7 +339,9 @@ fn path_from_sqlite_url(database_url: &str) -> DatabaseResult<::std::path::PathB
     }
 }
 
-pub fn create_migrations_dir(migration_path: Option<String>) -> DatabaseResult<PathBuf> {
+pub fn create_migrations_dir(
+    migration_path: Option<String>,
+) -> Result<PathBuf, crate::errors::Error> {
     let dir = match migrations_dir(migration_path) {
         Ok(dir) => dir,
         Err(_) => find_project_root()
@@ -303,40 +377,47 @@ pub fn create_migrations_dir(migration_path: Option<String>) -> DatabaseResult<P
     Ok(dir)
 }
 
-fn search_for_directory_containing_file(path: &Path, file: &str) -> DatabaseResult<PathBuf> {
+fn search_for_directory_containing_file(
+    path: &Path,
+    file: &str,
+) -> Result<PathBuf, crate::errors::Error> {
     let toml_path = path.join(file);
     if toml_path.is_file() {
         Ok(path.to_owned())
     } else {
         path.parent()
             .map(|p| search_for_directory_containing_file(p, file))
-            .unwrap_or_else(|| Err(DatabaseError::ProjectRootNotFound(path.into())))
-            .map_err(|_| DatabaseError::ProjectRootNotFound(path.into()))
+            .unwrap_or_else(|| Err(crate::errors::Error::ProjectRootNotFound(path.into())))
+            .map_err(|_| crate::errors::Error::ProjectRootNotFound(path.into()))
     }
 }
 
 fn run_migrations<Conn, DB>(
     conn: &mut Conn,
     migrations: FileBasedMigrations,
-) -> Result<(), Box<dyn Error + Send + Sync + 'static>>
+) -> Result<(), crate::errors::Error>
 where
     Conn: MigrationHarness<DB> + Connection<Backend = DB> + 'static,
     DB: DieselBackend,
 {
     tracing::info!("Running migration");
 
-    conn.run_pending_migrations(migrations).map(|_| ())
+    conn.run_pending_migrations(migrations)
+        .map(|_| ())
+        .map_err(crate::errors::Error::MigrationError)
 }
 
-fn create_migrations_directory(path: &Path) -> DatabaseResult<PathBuf> {
+fn create_migrations_directory(path: &Path) -> Result<PathBuf, crate::errors::Error> {
     tracing::info!("Creating migrations directory at: {}", path.display());
-    fs::create_dir(path)?;
-    fs::File::create(path.join(".keep"))?;
+    fs::create_dir_all(path)
+        .map_err(|e| crate::errors::Error::IoError(e, Some(path.to_owned())))?;
+    let keep_path = path.join("keep");
+    fs::File::create(&keep_path).map_err(|e| crate::errors::Error::IoError(e, Some(keep_path)))?;
     Ok(path.to_owned())
 }
 
-pub fn find_project_root() -> DatabaseResult<PathBuf> {
-    let current_dir = env::current_dir()?;
+pub fn find_project_root() -> Result<PathBuf, crate::errors::Error> {
+    let current_dir = env::current_dir().map_err(|e| crate::errors::Error::IoError(e, None))?;
     search_for_directory_containing_file(&current_dir, "diesel.toml")
         .or_else(|_| search_for_directory_containing_file(&current_dir, "Cargo.toml"))
 }
@@ -385,7 +466,7 @@ fn run_generate_migration_command(
     migration_ver: Option<String>,
     migration_format: Option<String>,
     with_down_file: Option<bool>,
-) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+) -> Result<(), crate::errors::Error> {
     let version = migration_version(migration_ver);
     let versioned_name = format!("{}_{}", version, migration_name);
     let migration_dir = migrations_dir(migration_folder)
@@ -409,10 +490,10 @@ fn run_generate_migration_command(
 }
 
 fn do_migrations(
-    database_url: &str,
+    database_url: String,
     migration_dir: Option<String>,
-) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-    let mut conn = LucleDBConnection::from_matches(database_url);
+) -> Result<(), crate::errors::Error> {
+    let mut conn = LucleDBConnection::from_matches(database_url.clone());
     let dir = migrations_dir(migration_dir).unwrap_or_else(handle_error);
     let dir = FileBasedMigrations::from_path(dir).unwrap_or_else(handle_error);
     run_migrations(&mut conn, dir)?;
@@ -461,41 +542,39 @@ fn migration_version<'a>(version: Option<String>) -> Box<dyn Display + 'a> {
 }
 
 fn regenerate_schema(
-    database_url: &str,
+    database_url: String,
     locked_schema: Option<bool>,
-) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-    use std::io::Read;
-
+) -> Result<(), crate::errors::Error> {
     let config = Config::read()?.print_schema;
-    if let Some(ref path) = config.file {
-        let mut connection = LucleDBConnection::from_matches(database_url);
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-
-        if let Some(locked_schema) = locked_schema {
-            if locked_schema {
-                let mut buf = Vec::new();
-                print_schema::run_print_schema(&mut connection, &config, &mut buf)?;
-
-                let mut old_buf = Vec::new();
-                let mut file = fs::File::open(path)?;
-                file.read_to_end(&mut old_buf)?;
-
-                if buf != old_buf {
-                    return Err(format!(
-                        "Command would result in changes to {}. \
-                     Rerun the command locally, and commit the changes.",
-                        path.display()
-                    )
-                    .into());
-                }
+    for config in config.all_configs.values() {
+        if let Some(ref path) = config.file {
+            let mut connection = LucleDBConnection::from_matches(database_url)?;
+            if let Some(parent) = path.parent() {
+                fs::create_dir_all(parent)
+                    .map_err(|e| crate::errors::Error::IoError(e, Some(parent.to_owned())))?;
             }
-        } else {
-            let mut file = fs::File::create(path)?;
-            let schema = print_schema::output_schema(&mut connection, &config)?;
-            file.write_all(schema.as_bytes())?;
+
+            if let Some(locked_schema) = locked_schema {
+                if locked_schema {
+                    let mut buf = Vec::new();
+                    print_schema::run_print_schema(&mut connection, config, &mut buf)?;
+
+                    let old_buf = std::fs::read(path)
+                        .map_err(|e| crate::errors::Error::IoError(e, Some(path.to_owned())))?;
+
+                    if buf != old_buf {
+                        return Err(crate::errors::Error::SchemaWouldChange(
+                            path.display().to_string(),
+                        ));
+                    }
+                }
+            } else {
+                let schema = print_schema::output_schema(&mut connection, &config)?;
+                std::fs::write(path, schema.as_bytes())
+                    .map_err(|e| crate::errors::Error::IoError(e, Some(path.to_owned())))?;
+            }
         }
     }
+
     Ok(())
 }

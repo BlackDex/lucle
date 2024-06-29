@@ -1,26 +1,53 @@
-use diesel::result;
-use std::error::Error;
 use std::path::PathBuf;
-use std::{fmt, io};
 
-use self::DatabaseError::*;
+use crate::infer_schema_internals::TableName;
 
-pub type DatabaseResult<T> = Result<T, DatabaseError>;
-
-#[derive(Debug)]
-pub enum DatabaseError {
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error("Unable to find diesel.toml or Cargo.toml in {0:?} or any parent directories.")]
     ProjectRootNotFound(PathBuf),
-    IoError(io::Error),
-    QueryError(result::Error),
-    ConnectionError(result::ConnectionError),
-    MigrationError(Box<dyn Error + Send + Sync + 'static>),
+    #[error("Encountered an IO error: {0} {}", print_optional_path(.1))]
+    IoError(#[source] std::io::Error, Option<PathBuf>),
+    #[error("Could not connect to database via `{url}`: {error}")]
+    ConnectionError {
+        error: diesel::ConnectionError,
+        url: String,
+    },
+    #[error("Invalid argument for table filtering regex: {0}")]
+    TableFilterRegexInvalid(#[from] regex::Error),
+    #[error(
+        "Command would result in changes to `{0}`. \
+         Rerun the command locally, and commit the changes."
+    )]
+    SchemaWouldChange(String),
+    #[error("Failed to execute a database query: {0}")]
+    QueryError(#[from] diesel::result::Error),
+    #[error("Failed to run migrations: {0}")]
+    MigrationError(Box<dyn std::error::Error + Send + Sync + 'static>),
+    #[error("Failed to parse patch file: {0}")]
+    DiffyParseError(#[from] diffy::ParsePatchError),
+    #[error("Failed to apply path: {0}")]
+    DiffyApplyError(#[from] diffy::ApplyError),
+    #[error(
+        "Diesel only supports tables with primary keys. \
+             Table `{0}` has no primary key"
+    )]
+    NoPrimaryKeyFound(TableName),
+    #[error("Failed to format a string: {0}")]
+    FmtError(#[from] std::fmt::Error),
+    #[error("No table with the name `{0}` exists")]
+    NoTableFound(TableName),
+    #[error("User not found")]
     UserNotFound,
+    #[error("Email not found")]
     EmailNotFound,
+    #[error("Not allowed")]
     NotAuthorized,
-    Argon2Error(argon2::password_hash::Error),
+    #[error("Failed to hash password: {0}")]
+    Argon2Error(#[from] argon2::password_hash::Error),
 }
 
-impl From<io::Error> for DatabaseError {
+/* impl From<io::Error> for DatabaseError {
     fn from(e: io::Error) -> Self {
         IoError(e)
     }
@@ -98,4 +125,11 @@ impl PartialEq for DatabaseError {
             (&ProjectRootNotFound(_), &ProjectRootNotFound(_))
         )
     }
+}
+*/
+
+fn print_optional_path(path: &Option<PathBuf>) -> String {
+    path.as_ref()
+        .map(|p| format!(" for `{}`", p.display()))
+        .unwrap_or_default()
 }

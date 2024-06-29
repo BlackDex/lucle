@@ -77,9 +77,10 @@ impl Lucle for LucleApi {
         let username = inner.username;
         let password = inner.password;
         let email = inner.email;
+        let database_url = "lucle.db".to_string();
         let reply = Empty {};
         if EmailAddress::is_valid(&email.clone(), None) {
-            if let Err(err) = user::create_user("lucle.db", username, password, email) {
+            if let Err(err) = user::create_user(database_url, username, password, email) {
                 tracing::error!("{}", err);
                 return Err(Status::internal(err.to_string()));
             }
@@ -96,7 +97,8 @@ impl Lucle for LucleApi {
         let inner = request.into_inner();
         let username = inner.username;
         let path = inner.path;
-        if let Err(err) = user::update_user("lucle.db", username, path) {
+        let database_url = "lucle.db".to_string();
+        if let Err(err) = user::update_user(database_url, username, path) {
             tracing::error!("{}", err);
             return Err(Status::internal(err.to_string()));
         }
@@ -108,7 +110,8 @@ impl Lucle for LucleApi {
         let inner = request.into_inner();
         let username_or_email = inner.username_or_email;
         let password = inner.password;
-        match user::login("lucle.db", username_or_email, password) {
+        let database_url = "lucle.db".to_string();
+        match user::login(database_url, username_or_email, password) {
             Ok(user) => {
                 let user = User {
                     username: user.username,
@@ -128,8 +131,9 @@ impl Lucle for LucleApi {
         &self,
         _request: Request<Database>,
     ) -> Result<Response<Empty>, Status> {
+        let database_url = "lucle.db".to_string();
         let reply = Empty {};
-        match user::is_table_and_user_created("lucle.db") {
+        match user::is_table_and_user_created(database_url) {
             Ok(()) => Ok(Response::new(reply)),
             Err(err) => {
                 tracing::error!("{}", err);
@@ -143,7 +147,7 @@ impl Lucle for LucleApi {
         request: Request<ResetPassword>,
     ) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
-        let database_url = "lucle.db";
+        let database_url = "lucle.db".to_string();
         let email = inner.email;
         let reply = Empty {};
         if EmailAddress::is_valid(email.as_str(), None) {

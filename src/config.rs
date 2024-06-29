@@ -2,6 +2,7 @@ use serde::de::{self, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer};
 use serde_regex::Serde as RegexWrapper;
 use std::{
+    collections::BTreeMap,
     error::Error,
     fmt, fs,
     path::{Path, PathBuf},
@@ -12,11 +13,13 @@ use crate::infer_schema_internals::TableName;
 use crate::print_schema;
 use crate::print_schema::ColumnSorting;
 
-#[derive(Deserialize, Default)]
+type Regex = RegexWrapper<::regex::Regex>;
+
+#[derive(Deserialize, Default, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
     #[serde(default)]
-    pub print_schema: PrintSchema,
+    pub print_schema: RootPrintSchema,
     #[serde(default)]
     pub migrations_directory: Option<MigrationsDirectory>,
 }
@@ -43,7 +46,55 @@ impl Config {
     }
 }
 
-#[derive(Default, Deserialize)]
+#[derive(Default, Clone, Debug)]
+pub struct RootPrintSchema {
+    has_multiple_schema: bool,
+    pub all_configs: BTreeMap<String, PrintSchema>,
+}
+
+impl<'de> Deserialize<'de> for RootPrintSchema {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct Inner {
+            #[serde(flatten)]
+            default_config: PrintSchema,
+            #[serde(flatten)]
+            other_configs: BTreeMap<String, PrintSchema>,
+        }
+        let Inner {
+            other_configs,
+            default_config,
+        } = Inner::deserialize(deserializer)?;
+        if other_configs.is_empty() {
+            Ok(RootPrintSchema {
+                has_multiple_schema: false,
+                all_configs: BTreeMap::from([("default".into(), default_config)]),
+            })
+        } else {
+            let mut other_configs = other_configs;
+            other_configs
+                .entry("default".to_string())
+                .or_insert(default_config);
+            Ok(RootPrintSchema {
+                all_configs: other_configs,
+                has_multiple_schema: true,
+            })
+        }
+    }
+}
+
+impl RootPrintSchema {
+    fn set_relative_path_base(&mut self, base: &Path) {
+        for config in self.all_configs.values_mut() {
+            config.set_relative_path_base(base);
+        }
+    }
+}
+
+#[derive(Default, Deserialize, Debug, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct PrintSchema {
     #[serde(default)]
@@ -64,6 +115,8 @@ pub struct PrintSchema {
     pub generate_missing_sql_type_definitions: Option<bool>,
     #[serde(default)]
     pub custom_type_derives: Option<Vec<String>>,
+    #[serde(default)]
+    pub except_custom_type_definitions: Vec<Regex>,
 }
 
 impl PrintSchema {
@@ -110,9 +163,7 @@ impl PrintSchema {
     }
 }
 
-type Regex = RegexWrapper<::regex::Regex>;
-
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Filtering {
     OnlyTables(Vec<Regex>),
     ExceptTables(Vec<Regex>),
@@ -193,7 +244,7 @@ impl<'de> Deserialize<'de> for Filtering {
     }
 }
 
-#[derive(Default, Deserialize)]
+#[derive(Default, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct MigrationsDirectory {
     pub dir: PathBuf,
