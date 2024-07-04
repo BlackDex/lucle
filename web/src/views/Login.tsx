@@ -33,14 +33,15 @@ function Login() {
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [successfullSignup, setSuccessfullSignup] = useState<boolean>(false);
   const auth = useAuth();
   const client = useContext(LucleRPC);
 
   const handleSignup = (username, password, email) => {
     setError("");
-    createUser(client, username, password, email).catch((err) =>
-      setError(err.rawMessage),
-    );
+    createUser(client, username, password, email)
+      .then(() => setSuccessfullSignup(true))
+      .catch((err) => setError(err.rawMessage));
   };
 
   const handleSignin = (username, password, remenber) => {
@@ -66,10 +67,14 @@ function Login() {
               <Tab label="Sign Up" value="2" />
             </TabList>
             <TabPanel value="1">
-              <Signin onSignin={handleSignin} />
+              <Signin onSignin={handleSignin} error={setError} />
             </TabPanel>
             <TabPanel value="2">
-              <Signup onSignup={handleSignup} error={setError} />
+              <Signup
+                successfullSignup={successfullSignup}
+                onSignup={handleSignup}
+                error={setError}
+              />
             </TabPanel>
           </TabContext>
           {error}

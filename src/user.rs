@@ -1,4 +1,4 @@
-use crate::database::LucleDBConnection;
+use crate::errors::Error;
 use crate::models::{NewUser, User};
 use crate::schema::users;
 use crate::utils;
@@ -9,8 +9,10 @@ use argon2::{
 };
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
-use diesel::SelectableHelper;
-use diesel::{select, Connection, QueryDsl, RunQueryDsl};
+use diesel::select;
+use diesel_async::pooled_connection::{deadpool::Pool, AsyncDieselConnectionManager};
+use diesel_async::{AsyncMysqlConnection, RunQueryDsl};
+use once_cell::sync::Lazy;
 
 pub struct LucleUser {
     pub username: String,
@@ -18,21 +20,29 @@ pub struct LucleUser {
     pub role: Option<String>,
 }
 
-pub fn create_user(
-    database_url: String,
+static POOL: Lazy<Pool<AsyncMysqlConnection>> = Lazy::new(|| {
+    let config = AsyncDieselConnectionManager::<diesel_async::AsyncMysqlConnection>::new(
+        "mysql://root:swp@localhost/lucle",
+    );
+    Pool::builder(config).build().unwrap()
+});
+
+pub async fn create_user(
+    database_url: &str,
     username: String,
     password: String,
     email: String,
-) -> Result<(), crate::errors::Error> {
+    role: Option<String>
+) -> Result<(), Error> {
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
     let password_hash = argon2
         .hash_password(password.as_bytes(), &salt)?
         .to_string();
-    let mut conn = LucleDBConnection::from_url(database_url)?;
+    let mut conn = POOL.get().await.unwrap();
     let now = select(diesel::dsl::now)
         .get_result::<NaiveDateTime>(&mut conn)
-        .unwrap();
+        .await?;
 
     let new_user = NewUser {
         username,
@@ -40,37 +50,36 @@ pub fn create_user(
         email,
         created_at: now,
         modified_at: now,
-        role: None,
+        role: role,
     };
 
     diesel::insert_into(users::table)
         .values(&new_user)
-        .execute(&mut conn)?;
+        .execute(&mut conn)
+        .await?;
     Ok(())
 }
 
-pub fn update_user(
-    database_url: String,
-    user: String,
-    path: String,
-) -> Result<(), crate::errors::Error> {
-    let mut conn = LucleDBConnection::from_url(database_url)?;
+pub async fn update_user(database_url: String, user: String, path: String) -> Result<(), Error> {
+    let mut conn = POOL.get().await.unwrap();
     diesel::update(users::table.filter(users::dsl::username.eq(user)))
         .set(users::dsl::role.eq(path))
-        .execute(&mut conn)?;
+        .execute(&mut conn)
+        .await?;
     Ok(())
 }
 
-pub fn login(
+pub async fn login(
     database_url: String,
     username_or_email: String,
     password: String,
-) -> Result<LucleUser, crate::errors::Error> {
-    let mut conn = LucleDBConnection::from_url(database_url)?;
+) -> Result<LucleUser, Error> {
+    let mut conn = POOL.get().await.unwrap();
     match users::table
         .filter(users::dsl::username.eq(username_or_email.clone()))
         .select(User::as_select())
         .first(&mut conn)
+        .await
         .optional()
     {
         Ok(Some(val)) => login_user(val.username, val.password, password, val.email, val.role),
@@ -79,6 +88,7 @@ pub fn login(
                 .filter(users::dsl::email.eq(username_or_email.clone()))
                 .select(User::as_select())
                 .first(&mut conn)
+                .await
                 .optional()
             {
                 Ok(Some(val)) => {
@@ -92,20 +102,21 @@ pub fn login(
     }
 }
 
-pub fn is_table_and_user_created(database_url: String) -> Result<(), crate::errors::Error> {
-    let mut conn = LucleDBConnection::from_url(database_url)?;
-    match users::table.count().get_result::<i64>(&mut conn) {
+pub async fn is_table_and_user_created(database_url: String) -> Result<(), Error> {
+    let mut conn = POOL.get().await.unwrap();
+    match users::table.count().get_result::<i64>(&mut conn).await {
         Ok(_) => Ok(()),
         Err(err) => Err(crate::errors::Error::QueryError(err)),
     }
 }
 
-pub fn reset_password(database_url: String, email: String) -> Result<(), crate::errors::Error> {
-    let mut conn = LucleDBConnection::from_url(database_url)?;
+pub async fn reset_password(database_url: String, email: String) -> Result<(), Error> {
+    let mut conn = POOL.get().await.unwrap();
     match users::table
         .filter(users::dsl::email.eq(email.clone()))
         .select(User::as_select())
         .first(&mut conn)
+        .await
         .optional()
     {
         Ok(Some(val)) => {
@@ -113,6 +124,7 @@ pub fn reset_password(database_url: String, email: String) -> Result<(), crate::
             if diesel::update(users::table.filter(users::dsl::email.eq(val.email.clone())))
                 .set(users::dsl::reset_token.eq(token))
                 .execute(&mut conn)
+                .await
                 .is_ok()
             {
                 utils::send_mail(&email, &val.email, "test", "hi");
@@ -132,7 +144,7 @@ fn login_user(
     password: String,
     email: String,
     role: Option<String>,
-) -> Result<LucleUser, crate::errors::Error> {
+) -> Result<LucleUser, Error> {
     let parsed_hash = PasswordHash::new(&stored_password).unwrap();
     Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
     let token = utils::generate_jwt(username.clone(), email);

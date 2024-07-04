@@ -5,16 +5,11 @@ use std::{fs::File, io::BufReader, sync::Arc};
 use tokio_rustls::rustls::ServerConfig;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod config;
-mod database;
 mod errors;
 mod http;
-mod infer_schema_internals;
 mod mail;
 pub mod models;
 mod multiplex_service;
-mod print_schema;
-mod query_helper;
 mod rpc;
 pub mod schema;
 mod user;

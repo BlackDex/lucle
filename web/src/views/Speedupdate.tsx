@@ -55,9 +55,9 @@ enum RepoState {
 }
 
 const transport = createGrpcWebTransport({
-      baseUrl: 'http://0.0.0.0:3000',
-    });
-const client = createPromiseClient(Repo, transport)
+  baseUrl: "http://0.0.0.0:3000",
+});
+const client = createPromiseClient(Repo, transport);
 
 const DisplaySizeUnit = (TotalSize: number) => {
   if (TotalSize > 0 && TotalSize < 1024) {
@@ -98,7 +98,9 @@ function Speedupdate() {
   const [packagesPerPage, setPackagesPerPage] = useState(5);
   const [versionsPerPage, setVersionsPerPage] = useState(5);
   const [binariesPerPage, setBinariesPerPage] = useState(5);
-  const [repoState, setRepoState] = useState<RepoState>(RepoState.NotInitialized);
+  const [repoState, setRepoState] = useState<RepoState>(
+    RepoState.NotInitialized,
+  );
   const [error, setError] = useState<String>("");
   const [selectedVersions, setSelectedVersions] = useState<readonly number[]>(
     [],
@@ -129,17 +131,17 @@ function Speedupdate() {
 
   useEffect(() => {
     if (auth.repository) {
-console.log("12 : ", auth.repository);
-	isInit(client, path)
-      .then(() => setRepoState(RepoState.Initialized))
-      .catch((err) => {
-console.log(err);
-        setError(err.rawMessage);
-        if (err.code == 13) {
-          setRepoState(RepoState.NotInitialized);
-        }
-      });
-	}
+      console.log("12 : ", auth.repository);
+      isInit(client, path)
+        .then(() => setRepoState(RepoState.Initialized))
+        .catch((err) => {
+          console.log(err);
+          setError(err.rawMessage);
+          if (err.code == 13) {
+            setRepoState(RepoState.NotInitialized);
+          }
+        });
+    }
     const headers = new Headers();
     let token = auth.token;
     headers.set("Authorization", "Bearer " + token);
@@ -321,16 +323,16 @@ console.log(err);
             localStorage.setItem("path", e.currentTarget.value);
           }}
         />
-          <Button
-            variant="contained"
-            onClick={() =>
-              init(client, path)
-                .then(() => setRepoState(RepoState.Initialized))
-                .catch((err) => setError(err))
-            }
-          >
-            Create new repository
-          </Button>
+        <Button
+          variant="contained"
+          onClick={() =>
+            init(client, path)
+              .then(() => setRepoState(RepoState.Initialized))
+              .catch((err) => setError(err))
+          }
+        >
+          Create new repository
+        </Button>
         <p>{error}</p>
       </div>
     );

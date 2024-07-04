@@ -8,14 +8,16 @@ import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import { Link } from "react-router-dom";
 
-function Signin({ onSignin }: { onSignin: void }) {
+function Signin({ onSignin, error }: { onSignin: void; error: string }) {
   const [username, setUsername] = useState<string>(
-    localStorage.getItem("username"),
+    localStorage.getItem("username") || "",
   );
   const [password, setPassword] = useState<string>(
-    localStorage.getItem("password"),
+    localStorage.getItem("password") || "",
   );
   const [remember, setRemember] = useState<boolean>(false);
+  const [emptyUsername, setEmptyUsername] = useState<boolean>(false);
+  const [emptyPassword, setEmptyPassword] = useState<boolean>(false);
 
   return (
     <Box
@@ -28,6 +30,8 @@ function Signin({ onSignin }: { onSignin: void }) {
     >
       <Box sx={{ mt: 1 }}>
         <TextField
+          error={emptyUsername}
+          autoFocus={emptyUsername}
           margin="normal"
           required
           fullWidth
@@ -38,6 +42,8 @@ function Signin({ onSignin }: { onSignin: void }) {
           onChange={(event) => setUsername(event.target.value)}
         />
         <TextField
+          error={emptyPassword}
+          autoFocus={emptyPassword}
           margin="normal"
           required
           fullWidth
@@ -64,7 +70,15 @@ function Signin({ onSignin }: { onSignin: void }) {
           fullWidth
           variant="contained"
           sx={{ mt: 3, mb: 2 }}
-          onClick={() => onSignin(username, password, remember)}
+          onClick={() => {
+            setEmptyUsername(username.length === 0);
+            setEmptyPassword(password.length === 0);
+            if (!username || !password) {
+              error("Please fill all inputs");
+            } else {
+              onSignin(username, password, remember);
+            }
+          }}
         >
           Sign In
         </Button>

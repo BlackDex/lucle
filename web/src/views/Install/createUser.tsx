@@ -6,17 +6,19 @@ import PasswordStrengthBar from "react-password-strength-bar";
 
 export default function CreateDefaultUser({
   user,
-  passwd,
+  password,
+  confirmPassword,
   email,
+  passwordStrengh,
 }: {
   user: any;
-  passwd: any;
+  password: any;
+  confirmPassword: any;
   email: any;
+  passwordStrengh;
+  onCreatingUser;
 }) {
-  const [password, setPassword] = useState<string>();
-  const [confirmpassword, setConfirmPassword] = useState<string>();
-  const [matchpassword, setMatchPassword] = useState<boolean>(false);
-
+  const [passwd, setPasswd] = useState();
   return (
     <Box
       component="form"
@@ -27,6 +29,7 @@ export default function CreateDefaultUser({
       autoComplete="off"
     >
       <TextField
+        //error={onCreatingUser.username_empty}
         id="login"
         label="Username"
         variant="standard"
@@ -39,10 +42,9 @@ export default function CreateDefaultUser({
         label="Password"
         variant="standard"
         type="password"
-        value={password}
         onChange={(event) => {
-          passwd(event.target.value);
-          setPassword(event.target.value);
+          setPasswd(event.target.value);
+          password(event.target.value);
         }}
       />
       <TextField
@@ -50,14 +52,16 @@ export default function CreateDefaultUser({
         label="Confirm password"
         variant="standard"
         type="password"
-        value={confirmpassword}
         onChange={(event) => {
-          setConfirmPassword(event.target.value);
-          setMatchPassword(password === event.target.value);
+          confirmPassword(event.target.value);
         }}
       />
-      {matchpassword ? "Password doesn't match !" : null}
-      <PasswordStrengthBar password={password} />
+      <PasswordStrengthBar
+        password={passwd}
+        onChangeScore={(score) => {
+          passwordStrengh(score);
+        }}
+      />
       <TextField
         id="email"
         label="email"

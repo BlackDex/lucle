@@ -25,6 +25,8 @@ function InstallStep(
   selectedDB: number,
   setUsername: (user: string) => void,
   setPassword: (pass: string) => void,
+  setConfirmPassword: (confirmPass: string) => void,
+  setPasswordStrengh: (strengh: number) => void,
   setEmail: (email: string) => void,
 ) {
   switch (step) {
@@ -34,7 +36,9 @@ function InstallStep(
       return (
         <CreateDefaultUser
           user={setUsername}
-          passwd={setPassword}
+          password={setPassword}
+          confirmPassword={setConfirmPassword}
+          passwordStrengh={setPasswordStrengh}
           email={setEmail}
         />
       );
@@ -46,8 +50,10 @@ function InstallStep(
 export default function Install() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [passwordStrengh, setPasswordStrengh] = useState(0);
   const [email, setEmail] = useState<string>("");
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
   const [activeStep, setActiveStep] = useState<number>(0);
   const [selectedDB, setSelectedDB] = useState<number>(2);
   const navigate = useNavigate();
@@ -100,6 +106,8 @@ export default function Install() {
             selectedDB,
             setUsername,
             setPassword,
+            setConfirmPassword,
+            setPasswordStrengh,
             setEmail,
           )}
           <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
@@ -115,19 +123,26 @@ export default function Install() {
             </Button>
             <Box sx={{ flex: "1 1 auto" }} />
             <Button
-              disabled={error}
+              disabled={activeStep == 1 && passwordStrengh < 3}
               onClick={() => {
-                setActiveStep((prevActiveStep) => prevActiveStep + 1);
                 switch (activeStep) {
                   case 0:
-                    dbConnection(client, selectedDB).catch((err) => {
-                      setError(true);
-                      console.log(`12 : ${err}`);
-                    });
+                    setActiveStep((prevActiveStep) => prevActiveStep + 1);
                     break;
                   case steps.length - 1:
-                    createUser(client, username, password, email);
-                    setTimeout(() => navigate("/"), 10000);
+                    if (password == confirmPassword && password) {
+                      createUser(
+                        client,
+                        username,
+                        password,
+                        email,
+                        "admin",
+                      ).catch((err) => setError(err.rawMessage));
+                      setTimeout(() => navigate("/"), 10000);
+                      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                    } else {
+                      setError("Password doesn't match");
+                    }
                     break;
                   default:
                     break;
@@ -136,8 +151,8 @@ export default function Install() {
             >
               {activeStep === steps.length - 1 ? "Finish" : "Next"}
             </Button>
-            {error}
           </Box>
+          {error}
         </>
       )}
     </Box>

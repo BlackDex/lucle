@@ -48,6 +48,7 @@ export const createUser = async (
   login: string,
   user_password: string,
   user_mail: string,
+  role: string,
 ) => {
   const { error } = await client.create_user({
     // TODO: delete this var
@@ -55,6 +56,7 @@ export const createUser = async (
     username: login,
     password: user_password,
     email: user_mail,
+    role: role,
   });
   if (error) throw error;
 };
