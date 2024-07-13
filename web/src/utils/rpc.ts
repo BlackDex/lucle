@@ -13,11 +13,15 @@ export const checkIfInstalled = async (client: any) => {
   });
 };
 
-export const dbConnection = async (client: any, db: number) => {
-  const { error } = await client.create_db({
-    dbType: db,
+export const createDB = async (client: any, db: number) => {
+  return new Promise((resolve, reject) => {
+    client
+      .create_db({
+        dbType: db,
+      })
+      .then(() => resolve())
+      .catch((err) => reject(err));
   });
-  if (error) throw error;
 };
 
 export const forgotPassword = async (client: any, user_mail: string) => {
@@ -59,4 +63,20 @@ export const createUser = async (
     role: role,
   });
   if (error) throw error;
+};
+
+export const registerUpdateServer = async (
+  client: any,
+  username: string,
+  repo: string,
+) => {
+  return new Promise((resolve, reject) => {
+    client
+      .register_update_server({
+        path: repo,
+        username: username,
+      })
+      .then(() => resolve())
+      .catch((err) => reject(err));
+  });
 };

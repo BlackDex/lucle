@@ -1,9 +1,9 @@
 use base64::{engine::general_purpose, Engine as _};
 use jsonwebtoken::{encode, get_current_timestamp, Algorithm, EncodingKey};
-use lettre::{
+/* use lettre::{
     message::{header, MultiPart, SinglePart},
     FileTransport, Message, Transport,
-};
+}; */
 use rcgen::{DnType, KeyPair, KeyUsagePurpose};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -21,9 +21,9 @@ struct Claims {
     scope: String,
 }
 
-pub fn send_mail(from: &str, dest: &str, subject: &str, _body: &str) {
+/* pub fn send_mail(from: &str, dest: &str, subject: &str, _body: &str) {
     let context = Context::new();
-    let tera = match Tera::new("templates/*.html") {
+    let tera = match Tera::new("templates") {
         Ok(t) => t,
         Err(e) => {
             println!("Parsing error(s): {}", e);
@@ -56,7 +56,7 @@ pub fn send_mail(from: &str, dest: &str, subject: &str, _body: &str) {
 
     // Store the message when you're ready.
     mailer.send(&email).expect("failed to deliver message");
-}
+} */
 
 pub struct Pki {
     pub ca_cert: rcgen::CertifiedKey,

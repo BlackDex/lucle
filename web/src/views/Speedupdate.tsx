@@ -8,11 +8,13 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TablePagination from "@mui/material/TablePagination";
 import TableContainer from "@mui/material/TableContainer";
+import { green } from "@mui/material/colors";
 import InputAdornment from "@mui/material/InputAdornment";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Checkbox from "@mui/material/Checkbox";
 import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
 import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
@@ -43,9 +45,11 @@ import {
   unregisterPackage,
   fileToDelete,
 } from "utils/speedupdaterpc";
+import { registerUpdateServer } from "utils/rpc";
 
 // Context
 import { useAuth } from "context/Auth";
+import { LucleRPC } from "context";
 
 //import { uploadFile } from "utils/minio";
 
@@ -116,6 +120,7 @@ function Speedupdate() {
   );
 
   const auth = useAuth();
+  const lucleClient = useContext(LucleRPC);
 
   const isVersionsSelected = (id: number) =>
     selectedVersions.indexOf(id) !== -1;
@@ -130,25 +135,13 @@ function Speedupdate() {
   const numBinariesSelected = selectedBinaries.length;
 
   useEffect(() => {
-    if (auth.repository) {
-      console.log("12 : ", auth.repository);
-      isInit(client, path)
-        .then(() => setRepoState(RepoState.Initialized))
-        .catch((err) => {
-          console.log(err);
-          setError(err.rawMessage);
-          if (err.code == 13) {
-            setRepoState(RepoState.NotInitialized);
-          }
-        });
-    }
     const headers = new Headers();
     let token = auth.token;
     headers.set("Authorization", "Bearer " + token);
     async function Status() {
       const call = client.status(
         {
-          path: path,
+          path: auth.repository,
         },
         { headers: headers },
       );
@@ -195,12 +188,13 @@ function Speedupdate() {
       );
     }
 
-    if (repoState == RepoState.Initialized) {
+    if (repoState === RepoState.Initialized) {
       Status().catch((err) => {
-        setError(err);
+        console.log("121 : ", err);
+        setError(err.rawMessage);
       });
     }
-  }, [auth]);
+  }, [auth, repoState]);
 
   const uploadFile = () => {
     let formData = new FormData();
@@ -311,28 +305,58 @@ function Speedupdate() {
 
   let speedupdatecomponent;
 
-  if (repoState == RepoState.NotInitialized) {
+  if (repoState === RepoState.NotInitialized) {
     speedupdatecomponent = (
       <div>
-        <TextField
-          id="outlined-required"
-          label="path"
-          value={path}
-          onChange={(e: any) => {
-            setPath(e.currentTarget.value);
-            localStorage.setItem("path", e.currentTarget.value);
-          }}
-        />
-        <Button
-          variant="contained"
-          onClick={() =>
-            init(client, path)
-              .then(() => setRepoState(RepoState.Initialized))
-              .catch((err) => setError(err))
-          }
-        >
-          Create new repository
-        </Button>
+        {auth.repository ? (
+          <Button
+            variant="contained"
+            onClick={() => {
+              isInit(client, auth.repository)
+                .then(() => setRepoState(RepoState.Initialized))
+                .catch((err) => setError(err.rawMessage));
+            }}
+          >
+            {auth.repository}
+          </Button>
+        ) : null}
+        <Grid item xs={1}>
+          <TextField
+            id="join-update-server"
+            label="path"
+            //value={}
+            onChange={(e: any) => setPath(e.currentTarget.value)}
+          />
+          <Button
+            variant="contained"
+            //onClick={() => ()}
+          >
+            Join repository
+          </Button>
+          <TextField
+            id="outlined-required"
+            label="path"
+            value={path}
+            onChange={(e: any) => {
+              setPath(e.currentTarget.value);
+              localStorage.setItem("path", e.currentTarget.value);
+            }}
+          />
+          <Button
+            variant="contained"
+            onClick={() =>
+              init(client, path)
+                .then(() => {
+                  registerUpdateServer(lucleClient, auth.username, path)
+                    .then(() => setRepoState(RepoState.Initialized))
+                    .catch((err) => setError(err.rawMessage));
+                })
+                .catch((err) => setError(err.rawMessage))
+            }
+          >
+            Create new repository
+          </Button>
+        </Grid>
         <p>{error}</p>
       </div>
     );
@@ -346,10 +370,7 @@ function Speedupdate() {
             <p>
               <IconButton
                 size="large"
-                onClick={() => {
-                  setClient(null);
-                  setRepoState(RepoState.NotConnected);
-                }}
+                onClick={() => setRepoState(RepoState.NotInitialized)}
               >
                 <ExitToAppIcon />
               </IconButton>
@@ -392,7 +413,11 @@ function Speedupdate() {
                 <Tooltip title="SetVersion">
                   <IconButton
                     onClick={() => {
-                      setCurrentVersion(client, path, selectedVersions[0]);
+                      setCurrentVersion(
+                        client,
+                        auth.repository,
+                        selectedVersions[0],
+                      );
                       //setVersionsSelected([]);
                     }}
                   >
@@ -453,7 +478,7 @@ function Speedupdate() {
                         endAdornment: (
                           <InputAdornment
                             onClick={() => {
-                              registerVersion(client, path, version);
+                              registerVersion(client, auth.repository, version);
                               setVersion("");
                             }}
                             position="end"

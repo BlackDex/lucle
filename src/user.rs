@@ -1,6 +1,6 @@
 use crate::errors::Error;
-use crate::models::{NewUser, User};
-use crate::schema::users;
+use crate::models::{NewUser, Permission, Repository, User, UsersRepositories};
+use crate::schema::{repositories, users, users_repositories};
 use crate::utils;
 use argon2::{
     self,
@@ -17,7 +17,6 @@ use once_cell::sync::Lazy;
 pub struct LucleUser {
     pub username: String,
     pub token: String,
-    pub role: Option<String>,
 }
 
 static POOL: Lazy<Pool<AsyncMysqlConnection>> = Lazy::new(|| {
@@ -27,19 +26,13 @@ static POOL: Lazy<Pool<AsyncMysqlConnection>> = Lazy::new(|| {
     Pool::builder(config).build().unwrap()
 });
 
-pub async fn create_user(
-    database_url: &str,
-    username: String,
-    password: String,
-    email: String,
-    role: Option<String>
-) -> Result<(), Error> {
+pub async fn create_user(username: String, password: String, email: String) -> Result<(), Error> {
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
     let password_hash = argon2
         .hash_password(password.as_bytes(), &salt)?
         .to_string();
-    let mut conn = POOL.get().await.unwrap();
+    let mut conn = POOL.get().await?;
     let now = select(diesel::dsl::now)
         .get_result::<NaiveDateTime>(&mut conn)
         .await?;
@@ -50,7 +43,6 @@ pub async fn create_user(
         email,
         created_at: now,
         modified_at: now,
-        role: role,
     };
 
     diesel::insert_into(users::table)
@@ -60,21 +52,47 @@ pub async fn create_user(
     Ok(())
 }
 
-pub async fn update_user(database_url: String, user: String, path: String) -> Result<(), Error> {
-    let mut conn = POOL.get().await.unwrap();
-    diesel::update(users::table.filter(users::dsl::username.eq(user)))
-        .set(users::dsl::role.eq(path))
+pub async fn register_update_server(username: String, repository: String) -> Result<(), Error> {
+    let mut conn = POOL.get().await?;
+    let now = select(diesel::dsl::now)
+        .get_result::<NaiveDateTime>(&mut conn)
+        .await?;
+
+    let repo = Repository {
+        name: repository,
+        created_at: now,
+    };
+
+    diesel::insert_into(repositories::table)
+        .values(&repo)
         .execute(&mut conn)
         .await?;
+
+    match users::table
+        .filter(users::dsl::username.eq(username))
+        .select(User::as_select())
+        .first(&mut conn)
+        .await
+    {
+        Ok(val) => {
+            let users_repos = UsersRepositories {
+                user_id: val.id,
+                repository_name: repository,
+                permission: Permission::Write,
+            };
+            diesel::insert_into(users_repositories::table)
+                .values(&users_repos)
+                .execute(&mut conn)
+                .await?;
+            return Ok(());
+        }
+        Err(err) => Err(crate::errors::Error::QueryError(err)),
+    };
     Ok(())
 }
 
-pub async fn login(
-    database_url: String,
-    username_or_email: String,
-    password: String,
-) -> Result<LucleUser, Error> {
-    let mut conn = POOL.get().await.unwrap();
+pub async fn login(username_or_email: String, password: String) -> Result<LucleUser, Error> {
+    let mut conn = POOL.get().await?;
     match users::table
         .filter(users::dsl::username.eq(username_or_email.clone()))
         .select(User::as_select())
@@ -82,7 +100,7 @@ pub async fn login(
         .await
         .optional()
     {
-        Ok(Some(val)) => login_user(val.username, val.password, password, val.email, val.role),
+        Ok(Some(val)) => login_user(val.username, val.password, password, val.email),
         Ok(None) => {
             match users::table
                 .filter(users::dsl::email.eq(username_or_email.clone()))
@@ -91,9 +109,7 @@ pub async fn login(
                 .await
                 .optional()
             {
-                Ok(Some(val)) => {
-                    login_user(val.username, val.password, password, val.email, val.role)
-                }
+                Ok(Some(val)) => login_user(val.username, val.password, password, val.email),
                 Ok(None) => Err(crate::errors::Error::UserNotFound),
                 Err(err) => Err(crate::errors::Error::QueryError(err)),
             }
@@ -102,16 +118,16 @@ pub async fn login(
     }
 }
 
-pub async fn is_table_and_user_created(database_url: String) -> Result<(), Error> {
-    let mut conn = POOL.get().await.unwrap();
+pub async fn is_table_and_user_created() -> Result<(), Error> {
+    let mut conn = POOL.get().await?;
     match users::table.count().get_result::<i64>(&mut conn).await {
         Ok(_) => Ok(()),
         Err(err) => Err(crate::errors::Error::QueryError(err)),
     }
 }
 
-pub async fn reset_password(database_url: String, email: String) -> Result<(), Error> {
-    let mut conn = POOL.get().await.unwrap();
+pub async fn reset_password(email: String) -> Result<(), Error> {
+    let mut conn = POOL.get().await?;
     match users::table
         .filter(users::dsl::email.eq(email.clone()))
         .select(User::as_select())
@@ -127,7 +143,7 @@ pub async fn reset_password(database_url: String, email: String) -> Result<(), E
                 .await
                 .is_ok()
             {
-                utils::send_mail(&email, &val.email, "test", "hi");
+                //                utils::send_mail(&email, &val.email, "test", "hi");
                 return Ok(());
             }
         }
@@ -143,7 +159,6 @@ fn login_user(
     stored_password: String,
     password: String,
     email: String,
-    role: Option<String>,
 ) -> Result<LucleUser, Error> {
     let parsed_hash = PasswordHash::new(&stored_password).unwrap();
     Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
@@ -151,6 +166,5 @@ fn login_user(
     Ok(LucleUser {
         username: username,
         token: token,
-        role: role,
     })
 }

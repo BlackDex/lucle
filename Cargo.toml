@@ -6,22 +6,20 @@ license = "Apache-2.0"
 
 [dependencies]
 axum = { version = "0.7.5", features = ["tokio", "http2"]}  
-axum-server = { version = "0.6", features = ["tls-rustls"] }
-chrono = { version = "0.4.24", default-features = false, features = ["clock", "std"] }
 ftp = "3.0.1"
+chrono = { version = "0.4.24", default-features = false, features = ["clock", "std"] }
 diffy = "0.3.0"
-prost = "0.12"
+prost = "0.13"
 tokio = { version = "1.27", features = ["full"] }
-tokio-rustls = "0.25.0"
-tonic = { git = "https://github.com/hyperium/tonic", features = ["transport", "tls"] }
-tonic-web = { git =  "https://github.com/hyperium/tonic"}
+tokio-rustls = { version = "0.25.0", default-features = false, features = ["logging", "tls12", "ring"] }
+tonic = { version = "0.12", features = ["transport"] }
+tonic-web = "0.12"
 tokio-stream = "0.1"
 heck = "0.4.0"
 hyper = "1.3"
-hyper-rustls = { version = "0.27.0", features = ["http2"]}
 tracing-subscriber = { version = "0.3", features = ["env-filter", "time"] }
 tower = "0.4"
-tower-http = { version = "0.5.0", features = ["fs", "trace", "cors", "add-extension", "util"] }
+tower-http = { version = "0.5", features = ["fs", "trace", "cors", "add-extension", "util"] }
 tracing = "0.1"
 url = "2.2.2"
 toml = "0.8.2"
@@ -32,9 +30,9 @@ syn = { version = "2", features = ["visit"] }
 pki-types = { package = "rustls-pki-types", version = "1" }
 rcgen = "0.13.1"
 rustls-pemfile = "2.0.0"
-rustls-acme = { version = "0.10", features = ["axum"] }
+#rustls-acme = { version = "0.10", features = ["axum"] }
 argon2 = "0.5.2"
-lettre = { version = "0.11.1", features = ["file-transport"] }
+lettre = { version = "0.11.1", default-features = false, features = ["smtp-transport", "pool", "hostname", "builder", "rustls-tls", "file-transport"] }
 email-address-parser = "2.0.0"
 dlopen2 = "0.7.0"
 minisign-verify = "0.2.1"
@@ -45,16 +43,24 @@ hyper-util = "0.1.1"
 tower-service = "0.3.2"
 time = "0.3.30"
 futures = "0.3"
+jsonwebtoken = "9.3.0"
+ring = "0.17.8"
+base64 = "0.22.1"
+thiserror = "1.0.61"
+once_cell = "1.19.0"
+surrealdb-alpha = { version = "2.0.4", features = ["kv-surrealkv"] }
 
 # Database
 diesel = { version = "2.2.0", features = ["chrono"] }
 diesel_migrations = "2.2.0"
-diesel-async = { git = "https://github.com/weiznich/diesel_async", features = ["mysql", "deadpool"]}
+diesel-async = { git = "https://github.com/weiznich/diesel_async", features = ["mysql", "postgres", "sqlite", "deadpool"]}
+mysql_async = { version = "0.34", default-features = false, features = ["default-rustls"]}
 libsqlite3-sys = { version = "0.28.0", features = ["bundled"] } 
 #mysqlclient-sys = { version = "0.4", features = ["bundled"] }
 #pq-sys = { version = "0.6.1", features = ["bundled"] } 
 
 # smtp
+[target.'cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))'.dependencies]
 common = { git = "https://github.com/stalwartlabs/mail-server"}
 smtp = { git = "https://github.com/stalwartlabs/mail-server" }
 store = { git = "https://github.com/stalwartlabs/mail-server", features = ["sqlite", "mysql", "postgres"]}
@@ -64,13 +70,8 @@ utils = { git = "https://github.com/stalwartlabs/mail-server"}
 directory = { git = "https://github.com/stalwartlabs/mail-server"}
 jmap = { git = "https://github.com/stalwartlabs/mail-server"}
 pop3 = { git = "https://github.com/stalwartlabs/mail-server"}
-jsonwebtoken = "9.3.0"
-ring = "0.17.8"
-base64 = "0.22.1"
-thiserror = "1.0.61"
-once_cell = "1.19.0"
 
 [build-dependencies]
-tonic-build = { version = "0.10.0", features = ["prost"] } 
-prost-build = "0.12"
+tonic-build = { version = "0.12.0", features = ["prost"] } 
+prost-build = "0.13"
 protox = "0.5.1"

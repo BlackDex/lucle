@@ -13,12 +13,12 @@ use utils::wait_for_shutdown;
 use std::{env, time::Duration};
 
 pub async fn start_mail_server() -> std::io::Result<()> {
+    // Load config and apply macros
+    let key = "CONFIG_PATH";
+    env::set_var(key, "./config.toml");
     let init = BootManager::init().await;
 
     // Parse core
-    //    let key = "CONFIG_PATH";
-    //    env::set_var(key, "./config.toml");
-    std::env::var("CONFIG_PATH").unwrap_or_else(|_| "./config.toml".into());
     let mut config = init.config;
     let core = init.core;
 
@@ -37,7 +37,6 @@ pub async fn start_mail_server() -> std::io::Result<()> {
     let imap = IMAP::init(&mut config, jmap.clone()).await;
     let gossiper = GossiperBuilder::try_parse(&mut config);
 
-    tracing::info!("Starting mail server");
     // Log configuration errors
     config.log_errors(init.guards.is_none());
     config.log_warnings(init.guards.is_none());

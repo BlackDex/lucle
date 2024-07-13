@@ -3,12 +3,25 @@ syntax = "proto3";
 package luclerpc;
 
 service Lucle {
+  rpc create_db (Database) returns (Empty);
   rpc login (Credentials) returns (User);
   rpc create_user (UserCreation) returns (Empty);
   rpc register_update_server (UpdateServer) returns (Empty); 
   rpc is_database_created (Empty) returns (Empty);
   rpc forgot_password (ResetPassword) returns (Empty);
   rpc ServerStreamingEcho (Empty) returns (stream Message);
+}
+
+enum DatabaseType {
+  MYSQL = 0;
+  POSTGRESQL = 1;
+  SQLITE = 2;
+  SURREALDB = 3;
+}
+
+message Database {
+  DatabaseType db_type = 1;
+  optional string db_name = 2;
 }
 
 message UpdateServer {
@@ -31,7 +44,6 @@ message UserCreation {
 message User {
   string username = 1;
   string token = 2;
-  optional string repository = 3;
 }
 
 message ResetPassword {

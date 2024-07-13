@@ -27,6 +27,7 @@ function CreateDB({
           <MenuItem value={0}>Mysql</MenuItem>
           <MenuItem value={1}>PostgreSQL</MenuItem>
           <MenuItem value={2}>Sqlite</MenuItem>
+          <MenuItem value={3}>SurrealDB</MenuItem>
         </Select>
       </FormControl>
       {selectedDB === 2 ? (

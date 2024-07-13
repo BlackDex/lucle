@@ -3,6 +3,7 @@ use axum::{
     http::header::CONTENT_TYPE,
     response::{IntoResponse, Response},
 };
+use tonic::body::BoxBody;
 use futures::{future::BoxFuture, ready};
 use std::{
     convert::Infallible,
@@ -37,7 +38,6 @@ where
         Self {
             rest: self.rest.clone(),
             grpc: self.grpc.clone(),
-            // the cloned services probably wont be ready
             rest_ready: false,
             grpc_ready: false,
         }
@@ -53,7 +53,7 @@ where
     B::Response: IntoResponse,
     B::Future: Send + 'static,
 {
-    type Response = Response;
+    type Response = Response<BoxBody>;
     type Error = B::Error;
     type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
 
@@ -77,8 +77,6 @@ where
     }
 
     fn call(&mut self, req: Request<hyper::body::Incoming>) -> Self::Future {
-        // require users to call `poll_ready` first, if they don't we're allowed to panic
-        // as per the `tower::Service` contract
         assert!(
             self.grpc_ready,
             "grpc service not ready. Did you forget to call `poll_ready`?"
@@ -88,8 +86,6 @@ where
             "rest service not ready. Did you forget to call `poll_ready`?"
         );
 
-        // if we get a grpc request call the grpc service, otherwise call the rest service
-        // when calling a service it becomes not-ready so we have drive readiness again
         if is_grpc_request(&req) {
             self.grpc_ready = false;
             let future = self.grpc.call(req);

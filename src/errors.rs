@@ -15,6 +15,8 @@ pub enum Error {
     NotAuthorized,
     #[error("Failed to hash password: {0}")]
     Argon2Error(#[from] argon2::password_hash::Error),
-    #[error("Failed to create pooled connection: {0}")]
-    DeadpoolError(#[from] diesel_async::pooled_connection::PoolError),
+    #[error("Failed to create database connection")]
+    DeadpoolError(#[from] diesel_async::pooled_connection::deadpool::PoolError),
+    #[error("Failed to parse database url: {0}")]
+    UrlParsingError(#[from] url::ParseError),
 }

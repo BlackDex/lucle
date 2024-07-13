@@ -24,10 +24,12 @@ const AuthProvider = ({ children }) => {
         .then((user) => {
           setUsername(user.username);
           setToken(user.token);
-          setRepository(user.repository);
-          localStorage.setItem("repository", user.repository);
           localStorage.setItem("token", user.token);
           localStorage.setItem("username", user.username);
+          if (user.repository) {
+            setRepository(user.repository);
+            localStorage.setItem("repository", user.repository);
+          }
           navigate("/admin");
         })
         .catch((err) => reject(err));

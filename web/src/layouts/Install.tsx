@@ -12,7 +12,7 @@ import Button from "@mui/material/Button";
 // Components
 import CreateDB from "views/Install/createDB";
 import CreateDefaultUser from "views/Install/createUser";
-import { createUser, dbConnection } from "utils/rpc";
+import { createUser, createDB } from "utils/rpc";
 
 // Context
 import { LucleRPC } from "context";
@@ -94,7 +94,7 @@ export default function Install() {
             <p>All steps completed - you&apos;re finished</p>
             <p>You will be redirect to home page into 10 secondes</p>
           </Typography>
-          <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
+          <Box sx={{ display: "flex", flexDirection: "roqw", pt: 2 }}>
             <Box sx={{ flex: "1 1 auto" }} />
           </Box>
         </>
@@ -127,7 +127,11 @@ export default function Install() {
               onClick={() => {
                 switch (activeStep) {
                   case 0:
-                    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                    createDB(client, selectedDB)
+                      .then(() =>
+                        setActiveStep((prevActiveStep) => prevActiveStep + 1),
+                      )
+                      .catch((err) => console.log(err)); //setError(err.rawMessage));
                     break;
                   case steps.length - 1:
                     if (password == confirmPassword && password) {

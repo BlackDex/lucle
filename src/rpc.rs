@@ -1,19 +1,19 @@
+use super::diesel;
+use super::surrealdb;
 use super::user;
-
 use email_address_parser::EmailAddress;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Credentials, Empty, Message, ResetPassword, UpdateServer, User, UserCreation,
+    Credentials, Database, DatabaseType, Empty, Message, ResetPassword, UpdateServer, User,
+    UserCreation,
 };
 use std::pin::Pin;
 use std::{fs::File, io::BufReader};
 use tokio::sync::mpsc;
 use tokio_stream::{wrappers::ReceiverStream, Stream};
 use tonic::{
-    transport::{
-        server::{Router, RoutesBuilder},
-        Server,
-    },
+    service::RoutesBuilder,
+    transport::{server::Router, Server},
     Request, Response, Status,
 };
 use tonic_web::GrpcWebLayer;
@@ -32,16 +32,49 @@ pub struct LucleApi {}
 
 #[tonic::async_trait]
 impl Lucle for LucleApi {
+    async fn create_db(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
+        let inner = request.into_inner();
+        let db_type = inner.db_type;
+        match DatabaseType::try_from(db_type) {
+            Ok(DatabaseType::Sqlite) => {
+                if let Err(err) = diesel::create_database("lucle.db").await {
+                    tracing::error!("Unable to create database : {}", err);
+                    return Err(Status::internal(err.to_string()));
+                }
+            }
+            Ok(DatabaseType::Mysql) => {
+                if let Err(err) = diesel::create_database("mysql://").await {
+                    tracing::error!("Unable to create database : {}", err);
+                    return Err(Status::internal(err.to_string()));
+                }
+            }
+            Ok(DatabaseType::Postgresql) => {
+                if let Err(err) = diesel::create_database("postgres://").await {
+                    tracing::error!("Unable to create database : {}", err);
+                    return Err(Status::internal(err.to_string()));
+                }
+            }
+            Ok(DatabaseType::Surrealdb) => {
+                if let Err(err) = surrealdb::create_database().await {
+                    tracing::error!("Unable to create database : {}", err);
+                    return Err(Status::internal(err.to_string()));
+                }
+            }
+            _ => {}
+        }
+
+        let reply = Empty {};
+        Ok(Response::new(reply))
+    }
+
     async fn create_user(&self, request: Request<UserCreation>) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
         let username = inner.username;
         let password = inner.password;
         let email = inner.email;
-	let role = inner.role;
-        let database_url = "lucle.db".to_string();
         let reply = Empty {};
         if EmailAddress::is_valid(&email.clone(), None) {
-            match user::create_user(&database_url, username.clone(), password, email, role).await {
+            match user::create_user(username.clone(), password, email).await {
                 Ok(()) => {
                     tracing::info!("user {} created", username);
                     return Ok(Response::new(reply));
@@ -63,26 +96,28 @@ impl Lucle for LucleApi {
         let inner = request.into_inner();
         let username = inner.username;
         let path = inner.path;
-        let database_url = "lucle.db".to_string();
-        if let Err(err) = user::update_user(database_url, username, path).await {
-            tracing::error!("{}", err);
-            return Err(Status::internal(err.to_string()));
-        }
         let reply = Empty {};
-        Ok(Response::new(reply))
+        match user::register_update_server(username.clone(), path.clone()).await {
+            Ok(()) => {
+                tracing::info!("User {} created {} repository", username, path);
+                return Ok(Response::new(reply));
+            }
+            Err(err) => {
+                tracing::error!("{}", err);
+                return Err(Status::internal(err.to_string()));
+            }
+        };
     }
 
     async fn login(&self, request: Request<Credentials>) -> Result<Response<User>, Status> {
         let inner = request.into_inner();
         let username_or_email = inner.username_or_email;
         let password = inner.password;
-        let database_url = "lucle.db".to_string();
-        match user::login(database_url, username_or_email, password).await {
+        match user::login(username_or_email, password).await {
             Ok(user) => {
                 let user = User {
                     username: user.username,
                     token: user.token,
-                    repository: user.role,
                 };
                 Ok(Response::new(user))
             }
@@ -97,9 +132,8 @@ impl Lucle for LucleApi {
         &self,
         _request: Request<Empty>,
     ) -> Result<Response<Empty>, Status> {
-        let database_url = "lucle.db".to_string();
         let reply = Empty {};
-        match user::is_table_and_user_created(database_url).await {
+        match user::is_table_and_user_created().await {
             Ok(()) => Ok(Response::new(reply)),
             Err(err) => {
                 tracing::error!("{}", err);
@@ -113,11 +147,10 @@ impl Lucle for LucleApi {
         request: Request<ResetPassword>,
     ) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
-        let database_url = "lucle.db".to_string();
         let email = inner.email;
         let reply = Empty {};
         if EmailAddress::is_valid(email.as_str(), None) {
-            if let Err(err) = user::reset_password(database_url, email).await {
+            if let Err(err) = user::reset_password(email).await {
                 tracing::error!("{}", err);
                 return Err(Status::internal(err.to_string()));
             }

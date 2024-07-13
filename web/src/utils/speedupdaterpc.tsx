@@ -1,23 +1,25 @@
+const token = localStorage.getItem("token");
+const headers = new Headers();
+headers.set("Authorization", "Bearer " + token);
+
 export const init = async (client: any, path: string) => {
-  client
-    .init({
-      path,
-    })
-    .then((value: any) => {
-      if (value.length === 0) {
-        return true;
-      }
-    })
-    .catch((error: any) => {
-      return error;
-    });
+  return new Promise((resolve, reject) => {
+    client
+      .init(
+        {
+          path,
+        },
+        { headers: headers },
+      )
+      .then(() => resolve())
+      .catch((error: any) => {
+        reject(error);
+      });
+  });
 };
 
 export const isInit = async (client: any, path: string) => {
   return new Promise((resolve, reject) => {
-    const token = localStorage.getItem("token");
-    const headers = new Headers();
-    headers.set("Authorization", "Bearer " + token);
     client
       .is_init(
         {
@@ -39,10 +41,13 @@ export const setCurrentVersion = async (
   path: string,
   version: string,
 ) => {
-  client.set_current_version({
-    path,
-    version,
-  });
+  client.set_current_version(
+    {
+      path,
+      version,
+    },
+    { headers: headers },
+  );
 };
 
 export const registerVersion = async (
@@ -50,10 +55,13 @@ export const registerVersion = async (
   path: string,
   version: string,
 ) => {
-  client.register_version({
-    path,
-    version,
-  });
+  client.register_version(
+    {
+      path,
+      version,
+    },
+    { headers: headers },
+  );
 };
 
 export const unregisterVersion = async (
@@ -61,10 +69,13 @@ export const unregisterVersion = async (
   path: string,
   version: string,
 ) => {
-  client.unregister_version({
-    path,
-    version,
-  });
+  client.unregister_version(
+    {
+      path,
+      version,
+    },
+    { headers: headers },
+  );
 };
 
 export const registerPackage = async (
@@ -72,10 +83,13 @@ export const registerPackage = async (
   path: string,
   name: string,
 ) => {
-  client.register_package({
-    path,
-    name,
-  });
+  client.register_package(
+    {
+      path,
+      name,
+    },
+    { headers: headers },
+  );
 };
 
 export const unregisterPackage = async (
@@ -83,10 +97,13 @@ export const unregisterPackage = async (
   path: string,
   name: string,
 ) => {
-  client.unregister_package({
-    path,
-    name,
-  });
+  client.unregister_package(
+    {
+      path,
+      name,
+    },
+    { headers: headers },
+  );
 };
 
 export const fileToDelete = async (client: any, file: string) => {
