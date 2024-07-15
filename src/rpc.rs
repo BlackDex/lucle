@@ -1,6 +1,7 @@
 use super::diesel;
 use super::surrealdb;
 use super::user;
+use crate::errors::Error;
 use email_address_parser::EmailAddress;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
@@ -118,6 +119,7 @@ impl Lucle for LucleApi {
                 let user = User {
                     username: user.username,
                     token: user.token,
+                    repositories: user.repositories,
                 };
                 Ok(Response::new(user))
             }

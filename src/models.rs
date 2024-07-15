@@ -8,9 +8,10 @@ use diesel::sql_types::Text;
 use diesel::FromSqlRow;
 use diesel::{
     deserialize::{self, FromSql},
-    serialize::{self, Output, ToSql},
+    serialize::{self, IsNull, Output, ToSql},
     AsExpression,
 };
+use std::io::Write;
 
 #[derive(Debug, Queryable, Selectable)]
 #[diesel(table_name = users)]
@@ -37,49 +38,44 @@ pub struct NewUser {
 
 #[derive(Insertable)]
 #[diesel(table_name = repositories)]
+#[diesel(check_for_backend(diesel::mysql::Mysql))]
 pub struct Repository {
     pub name: String,
     pub created_at: NaiveDateTime,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Selectable, Queryable, Debug, PartialEq)]
 #[diesel(table_name = users_repositories)]
+#[diesel(check_for_backend(diesel::mysql::Mysql))]
 pub struct UsersRepositories {
     pub user_id: i32,
     pub repository_name: String,
     pub permission: Permission,
 }
 
-#[derive(Debug, Clone, Copy, AsExpression, FromSqlRow)]
+#[derive(Debug, FromSqlRow, AsExpression, PartialEq, Clone)]
 #[diesel(sql_type = UsersRepositoriesPermissionEnum)]
 pub enum Permission {
-    Write = 1,
-    Read = 2,
+    Write,
+    Read,
 }
 
-impl<DB> ToSql<UsersRepositoriesPermissionEnum, DB> for Permission
-where
-    DB: Backend,
-    i32: ToSql<UsersRepositoriesPermissionEnum, DB>,
-{
-    fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, DB>) -> serialize::Result {
-        match self {
-            Permission::Write => 1.to_sql(out),
-            Permission::Read => 2.to_sql(out),
+impl ToSql<UsersRepositoriesPermissionEnum, diesel::mysql::Mysql> for Permission {
+    fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, diesel::mysql::Mysql>) -> serialize::Result {
+        match *self {
+            Permission::Read => out.write_all(b"read")?,
+            Permission::Write => out.write_all(b"write")?,
         }
+        Ok(IsNull::No)
     }
 }
 
-impl<DB> FromSql<Text, DB> for Permission
-where
-    DB: Backend,
-    i32: FromSql<Text, DB>,
-{
-    fn from_sql(bytes: DB::RawValue<'_>) -> deserialize::Result<Self> {
-        match i32::from_sql(bytes)? {
-            1 => Ok(Permission::Write),
-            2 => Ok(Permission::Read),
-            x => Err(format!("Unrecognized variant {}", x).into()),
+impl FromSql<UsersRepositoriesPermissionEnum, diesel::mysql::Mysql> for Permission {
+    fn from_sql(bytes: diesel::mysql::MysqlValue) -> deserialize::Result<Self> {
+        match bytes.as_bytes() {
+            b"read" => Ok(Permission::Read),
+            b"write" => Ok(Permission::Write),
+            _ => Err("Unrecognized enum variant".into()),
         }
     }
 }

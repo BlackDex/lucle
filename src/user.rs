@@ -17,6 +17,7 @@ use once_cell::sync::Lazy;
 pub struct LucleUser {
     pub username: String,
     pub token: String,
+    pub repositories: Vec<String>,
 }
 
 static POOL: Lazy<Pool<AsyncMysqlConnection>> = Lazy::new(|| {
@@ -59,7 +60,7 @@ pub async fn register_update_server(username: String, repository: String) -> Res
         .await?;
 
     let repo = Repository {
-        name: repository,
+        name: repository.clone(),
         created_at: now,
     };
 
@@ -86,9 +87,8 @@ pub async fn register_update_server(username: String, repository: String) -> Res
                 .await?;
             return Ok(());
         }
-        Err(err) => Err(crate::errors::Error::QueryError(err)),
+        Err(err) => return Err(crate::errors::Error::QueryError(err)),
     };
-    Ok(())
 }
 
 pub async fn login(username_or_email: String, password: String) -> Result<LucleUser, Error> {
@@ -100,7 +100,26 @@ pub async fn login(username_or_email: String, password: String) -> Result<LucleU
         .await
         .optional()
     {
-        Ok(Some(val)) => login_user(val.username, val.password, password, val.email),
+        Ok(Some(val)) => {
+            match users_repositories::table
+                .filter(users_repositories::dsl::user_id.eq(val.id))
+                .select(UsersRepositories::as_select())
+                .load(&mut conn)
+                .await
+                .optional()
+            {
+                Ok(Some(repo_value)) => {
+                    println!("12 : {:?}", repo_value);
+                    login_user(val.username, val.password, password, val.email, Vec::new())
+                }
+                Ok(None) => {
+                    //		println!("13 : {:?}", repo_value);
+
+                    login_user(val.username, val.password, password, val.email, Vec::new())
+                }
+                Err(err) => Err(crate::errors::Error::QueryError(err)),
+            }
+        }
         Ok(None) => {
             match users::table
                 .filter(users::dsl::email.eq(username_or_email.clone()))
@@ -109,7 +128,23 @@ pub async fn login(username_or_email: String, password: String) -> Result<LucleU
                 .await
                 .optional()
             {
-                Ok(Some(val)) => login_user(val.username, val.password, password, val.email),
+                Ok(Some(val)) => {
+                    match users_repositories::table
+                        .filter(users_repositories::dsl::user_id.eq(val.id))
+                        .select(UsersRepositories::as_select())
+                        .load(&mut conn)
+                        .await
+                        .optional()
+                    {
+                        Ok(Some(repo_value)) => {
+                            login_user(val.username, val.password, password, val.email, Vec::new())
+                        }
+                        Ok(None) => {
+                            login_user(val.username, val.password, password, val.email, Vec::new())
+                        }
+                        Err(err) => Err(crate::errors::Error::QueryError(err)),
+                    }
+                }
                 Ok(None) => Err(crate::errors::Error::UserNotFound),
                 Err(err) => Err(crate::errors::Error::QueryError(err)),
             }
@@ -159,6 +194,7 @@ fn login_user(
     stored_password: String,
     password: String,
     email: String,
+    repositories: Vec<String>,
 ) -> Result<LucleUser, Error> {
     let parsed_hash = PasswordHash::new(&stored_password).unwrap();
     Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
@@ -166,5 +202,6 @@ fn login_user(
     Ok(LucleUser {
         username: username,
         token: token,
+        repositories: repositories,
     })
 }

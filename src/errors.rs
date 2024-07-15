@@ -11,6 +11,8 @@ pub enum Error {
     UserNotFound,
     #[error("Email not found")]
     EmailNotFound,
+    #[error("Email not valid")]
+    EmailNotValid,
     #[error("Not allowed")]
     NotAuthorized,
     #[error("Failed to hash password: {0}")]
