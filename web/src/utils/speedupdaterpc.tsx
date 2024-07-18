@@ -28,7 +28,7 @@ export const isInit = async (client: any, path: string) => {
         { headers: headers },
       )
       .then(() => {
-        resolve(true);
+        resolve();
       })
       .catch((error: string) => {
         reject(error);
@@ -55,13 +55,15 @@ export const registerVersion = async (
   path: string,
   version: string,
 ) => {
-  client.register_version(
-    {
-      path,
-      version,
-    },
-    { headers: headers },
-  );
+  return new Promise((resolve, reject) => {
+    client
+      .register_version({
+        path,
+        version,
+      })
+      .then(() => resolve())
+      .catch((error: string) => reject(error));
+  });
 };
 
 export const unregisterVersion = async (

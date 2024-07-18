@@ -58,6 +58,7 @@ pub struct UsersRepositories {
 pub enum Permission {
     Write,
     Read,
+    Pending,
 }
 
 impl ToSql<UsersRepositoriesPermissionEnum, diesel::mysql::Mysql> for Permission {
@@ -65,6 +66,7 @@ impl ToSql<UsersRepositoriesPermissionEnum, diesel::mysql::Mysql> for Permission
         match *self {
             Permission::Read => out.write_all(b"read")?,
             Permission::Write => out.write_all(b"write")?,
+            Permission::Pending => out.write_all(b"pending")?,
         }
         Ok(IsNull::No)
     }
@@ -75,6 +77,7 @@ impl FromSql<UsersRepositoriesPermissionEnum, diesel::mysql::Mysql> for Permissi
         match bytes.as_bytes() {
             b"read" => Ok(Permission::Read),
             b"write" => Ok(Permission::Write),
+            b"pending" => Ok(Permission::Pending),
             _ => Err("Unrecognized enum variant".into()),
         }
     }

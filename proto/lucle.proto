@@ -7,9 +7,10 @@ service Lucle {
   rpc login (Credentials) returns (User);
   rpc create_user (UserCreation) returns (Empty);
   rpc register_update_server (UpdateServer) returns (Empty); 
+  rpc join_update_server (UpdateServer) returns (Empty);
   rpc is_database_created (Empty) returns (Empty);
   rpc forgot_password (ResetPassword) returns (Empty);
-  rpc ServerStreamingEcho (Empty) returns (stream Message);
+  rpc ServerStreamingEcho (stream Empty) returns (stream Message);
 }
 
 enum DatabaseType {

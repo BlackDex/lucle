@@ -91,6 +91,30 @@ pub async fn register_update_server(username: String, repository: String) -> Res
     };
 }
 
+pub async fn join_update_server(username: String, repository: String) -> Result<(), Error> {
+    let mut conn = POOL.get().await?;
+    match users::table
+        .filter(users::dsl::username.eq(username))
+        .select(User::as_select())
+        .first(&mut conn)
+        .await
+    {
+        Ok(val) => {
+            let users_repos = UsersRepositories {
+                user_id: val.id,
+                repository_name: repository,
+                permission: Permission::Pending,
+            };
+            diesel::insert_into(users_repositories::table)
+                .values(&users_repos)
+                .execute(&mut conn)
+                .await?;
+            return Ok(());
+        }
+        Err(err) => return Err(crate::errors::Error::QueryError(err)),
+    };
+}
+
 pub async fn login(username_or_email: String, password: String) -> Result<LucleUser, Error> {
     let mut conn = POOL.get().await?;
     match users::table
@@ -108,9 +132,12 @@ pub async fn login(username_or_email: String, password: String) -> Result<LucleU
                 .await
                 .optional()
             {
-                Ok(Some(repo_value)) => {
-                    println!("12 : {:?}", repo_value);
-                    login_user(val.username, val.password, password, val.email, Vec::new())
+                Ok(Some(list_repo)) => {
+                    let mut user_repo: Vec<String> = Vec::new();
+                    for repo in list_repo {
+                        user_repo.push(repo.repository_name);
+                    }
+                    login_user(val.username, val.password, password, val.email, user_repo)
                 }
                 Ok(None) => {
                     //		println!("13 : {:?}", repo_value);

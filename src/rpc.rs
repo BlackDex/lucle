@@ -1,7 +1,7 @@
 use super::diesel;
 use super::surrealdb;
 use super::user;
-use crate::errors::Error;
+use crate::errors::Error as LucleError;
 use email_address_parser::EmailAddress;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
@@ -9,13 +9,13 @@ use luclerpc::{
     UserCreation,
 };
 use std::pin::Pin;
-use std::{fs::File, io::BufReader};
+use std::{error::Error, fs::File, io::BufReader, io::ErrorKind};
 use tokio::sync::mpsc;
-use tokio_stream::{wrappers::ReceiverStream, Stream};
+use tokio_stream::{wrappers::ReceiverStream, Stream, StreamExt};
 use tonic::{
     service::RoutesBuilder,
     transport::{server::Router, Server},
-    Request, Response, Status,
+    Request, Response, Status, Streaming,
 };
 use tonic_web::GrpcWebLayer;
 use tower::layer::util::Stack;
@@ -27,6 +27,29 @@ pub mod luclerpc {
 
 type ResponseStream = Pin<Box<dyn Stream<Item = Result<Message, Status>> + Send>>;
 type StreamResult<T> = Result<Response<T>, Status>;
+
+fn match_for_io_error(err_status: &Status) -> Option<&std::io::Error> {
+    let mut err: &(dyn Error + 'static) = err_status;
+
+    loop {
+        if let Some(io_err) = err.downcast_ref::<std::io::Error>() {
+            return Some(io_err);
+        }
+
+        // h2::Error do not expose std::io::Error with `source()`
+        // https://github.com/hyperium/h2/pull/462
+        if let Some(h2_err) = err.downcast_ref::<h2::Error>() {
+            if let Some(io_err) = h2_err.get_io() {
+                return Some(io_err);
+            }
+        }
+
+        err = match err.source() {
+            Some(err) => err,
+            None => return None,
+        };
+    }
+}
 
 #[derive(Default)]
 pub struct LucleApi {}
@@ -110,6 +133,26 @@ impl Lucle for LucleApi {
         };
     }
 
+    async fn join_update_server(
+        &self,
+        request: Request<UpdateServer>,
+    ) -> Result<Response<Empty>, Status> {
+        let inner = request.into_inner();
+        let username = inner.username;
+        let path = inner.path;
+        let reply = Empty {};
+        match user::join_update_server(username.clone(), path.clone()).await {
+            Ok(()) => {
+                tracing::info!("User {} ask to join {} repository", username, path);
+                return Ok(Response::new(reply));
+            }
+            Err(err) => {
+                tracing::error!("{}", err);
+                return Err(Status::internal(err.to_string()));
+            }
+        };
+    }
+
     async fn login(&self, request: Request<Credentials>) -> Result<Response<User>, Status> {
         let inner = request.into_inner();
         let username_or_email = inner.username_or_email;
@@ -164,7 +207,7 @@ impl Lucle for LucleApi {
 
     async fn server_streaming_echo(
         &self,
-        req: Request<Empty>,
+        req: Request<Streaming<Empty>>,
     ) -> StreamResult<Self::ServerStreamingEchoStream> {
         tracing::info!("client connected from {:?}", req.remote_addr().unwrap());
 
@@ -172,13 +215,31 @@ impl Lucle for LucleApi {
             plugin: "allo".to_string(),
         };
 
+        let mut in_stream = req.into_inner();
         let (tx, rx) = mpsc::channel(128);
+
         tokio::spawn(async move {
-            match tx.send(Result::<_, Status>::Ok(message)).await {
-                Ok(_) => (),
-                Err(_item) => (),
+            while let Some(result) = in_stream.next().await {
+                match result {
+                    Ok(v) => tx
+                        .send(Result::<_, Status>::Ok(message.clone()))
+                        .await
+                        .expect("working rx"),
+                    Err(err) => {
+                        if let Some(io_err) = match_for_io_error(&err) {
+                            if io_err.kind() == ErrorKind::BrokenPipe {
+                                tracing::error!("client disconnected: broken pipe");
+                                break;
+                            }
+                        }
+                        match tx.send(Err(err)).await {
+                            Ok(_) => (),
+                            Err(_err) => break,
+                        }
+                    }
+                }
             }
-            tracing::info!("client disconnected from {:?}", req.remote_addr().unwrap());
+            tracing::info!("stream ended");
         });
 
         let output_stream = ReceiverStream::new(rx);

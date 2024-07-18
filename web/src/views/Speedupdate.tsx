@@ -80,6 +80,7 @@ const DisplaySizeUnit = (TotalSize: number) => {
 };
 
 function Speedupdate() {
+  const [currentRepo, setCurrentRepo] = useState<String>();
   const [currentVersion, getCurrentVersion] = useState<string>("");
   const [size, setSize] = useState<number>();
   const [version, setVersion] = useState<any>();
@@ -141,7 +142,7 @@ function Speedupdate() {
     async function Status() {
       const call = client.status(
         {
-          path: auth.repository,
+          path: currentRepo,
         },
         { headers: headers },
       );
@@ -209,7 +210,7 @@ function Speedupdate() {
 
   const RegisterPackages = () => {
     selectedPackagesValues.forEach((pack) => {
-      registerPackage(client, path, pack);
+      registerPackage(client, currentRepo, pack);
     });
     setSelectedPackages([]);
     setSelectedPackagesValues([]);
@@ -218,7 +219,7 @@ function Speedupdate() {
 
   const UnregisterPackages = () => {
     selectedPackagesValues.forEach((pack) => {
-      unregisterPackage(client, path, pack);
+      unregisterPackage(client, currentRepo, pack);
     });
     setSelectedPackages([]);
     setSelectedPackagesValues([]);
@@ -227,14 +228,14 @@ function Speedupdate() {
 
   const DeleteVersion = () => {
     selectedVersions.forEach((version) => {
-      unregisterVersion(client, path, version);
+      unregisterVersion(client, currentRepo, version);
     });
   };
 
   const DeletePackages = () => {
     selectedPackages.forEach((row) => {
       if (listPackages[row].published) {
-        unregisterPackage(client, path, listPackages[row].name);
+        unregisterPackage(client, currentRepo, listPackages[row].name);
       }
       fileToDelete(client, listPackages[row].name);
       setSelectedPackages([]);
@@ -308,18 +309,22 @@ function Speedupdate() {
   if (repoState === RepoState.NotInitialized) {
     speedupdatecomponent = (
       <div>
-        {auth.repository ? (
+        {auth.repositories.map((repo_name, index) => (
           <Button
+            key={index}
             variant="contained"
             onClick={() => {
-              isInit(client, auth.repository)
-                .then(() => setRepoState(RepoState.Initialized))
+              isInit(client, repo_name)
+                .then(() => {
+                  setRepoState(RepoState.Initialized);
+                  setCurrentRepo(repo_name);
+                })
                 .catch((err) => setError(err.rawMessage));
             }}
           >
-            {auth.repository}
+            {repo_name}
           </Button>
-        ) : null}
+        ))}
         <Grid item xs={1}>
           <TextField
             id="join-update-server"
@@ -346,11 +351,18 @@ function Speedupdate() {
             variant="contained"
             onClick={() =>
               init(client, path)
-                .then(() => {
-                  registerUpdateServer(lucleClient, auth.username, path)
-                    .then(() => setRepoState(RepoState.Initialized))
-                    .catch((err) => setError(err.rawMessage));
-                })
+                .then(() =>
+                  isInit(client, path)
+                    .then(() =>
+                      registerUpdateServer(lucleClient, auth.username, path)
+                        .then(() => {
+                          setCurrentRepo(path);
+                          setRepoState(RepoState.Initialized);
+                        })
+                        .catch((err) => setError(err.rawMessage)),
+                    )
+                    .catch((err) => setError(err.rawMessage)),
+                )
                 .catch((err) => setError(err.rawMessage))
             }
           >
@@ -370,7 +382,10 @@ function Speedupdate() {
             <p>
               <IconButton
                 size="large"
-                onClick={() => setRepoState(RepoState.NotInitialized)}
+                onClick={() => {
+                  setRepoState(RepoState.NotInitialized);
+                  setCurrentRepo("");
+                }}
               >
                 <ExitToAppIcon />
               </IconButton>
@@ -478,7 +493,9 @@ function Speedupdate() {
                         endAdornment: (
                           <InputAdornment
                             onClick={() => {
-                              registerVersion(client, auth.repository, version);
+                              registerVersion(client, currentRepo, version)
+                                .then(() => console.log("ok"))
+                                .catch((err) => console.log("30 : ", err));
                               setVersion("");
                             }}
                             position="end"

@@ -12,8 +12,8 @@ const AuthContext = createContext();
 const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [username, setUsername] = useState(localStorage.getItem("username"));
-  const [repository, setRepository] = useState(
-    localStorage.getItem("repository"),
+  const [repositories, setRepositories] = useState(
+    localStorage.getItem("repositories"),
   );
   const navigate = useNavigate();
   const client = useContext(LucleRPC);
@@ -26,11 +26,11 @@ const AuthProvider = ({ children }) => {
           setToken(user.token);
           localStorage.setItem("token", user.token);
           localStorage.setItem("username", user.username);
-          if (user.repository) {
-            setRepository(user.repository);
-            localStorage.setItem("repository", user.repository);
+          if (user.repositories) {
+            setRepositories(user.repositories);
+            localStorage.setItem("repositories", user.repositories);
           }
-          navigate("/admin");
+          navigate("/admin/speedupdate");
         })
         .catch((err) => reject(err));
     });
@@ -40,14 +40,14 @@ const AuthProvider = ({ children }) => {
     setToken("");
     setUsername("");
     localStorage.removeItem("token");
-    localStorage.removeItem("repository");
+    localStorage.removeItem("repositories");
     localStorage.removeItem("username");
     navigate("/login");
   };
 
   return (
     <AuthContext.Provider
-      value={{ username, token, repository, Login, Logout }}
+      value={{ username, token, repositories, Login, Logout }}
     >
       {children}
     </AuthContext.Provider>
