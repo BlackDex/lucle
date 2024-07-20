@@ -56,12 +56,13 @@ export const registerVersion = async (
   version: string,
 ) => {
   return new Promise((resolve, reject) => {
+    console.log("11");
     client
       .register_version({
         path,
         version,
       })
-      .then(() => resolve())
+      .then(() => console.log("12")) //resolve())
       .catch((error: string) => reject(error));
   });
 };

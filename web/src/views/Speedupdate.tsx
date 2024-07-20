@@ -45,7 +45,7 @@ import {
   unregisterPackage,
   fileToDelete,
 } from "utils/speedupdaterpc";
-import { registerUpdateServer } from "utils/rpc";
+import { registerUpdateServer, listRepositories } from "utils/rpc";
 
 // Context
 import { useAuth } from "context/Auth";
@@ -88,6 +88,7 @@ function Speedupdate() {
   const [listPackages, setListPackages] = useState<String[]>([]);
   const [availableBinaries, setAvailableBinaries] = useState<String[]>([]);
   const [listVersions, setListVersions] = useState<any>();
+  const [listRepo, setListRepo] = useState<any>();
   const [selectedVersionsValues, setSelectedVersionsValues] = useState<
     string[]
   >([]);
@@ -189,13 +190,18 @@ function Speedupdate() {
       );
     }
 
+    if (auth.repositories) {
+      setListRepo(auth.repositories);
+    }
+    alert("12 : " + listRepo);
+
     if (repoState === RepoState.Initialized) {
       Status().catch((err) => {
         console.log("121 : ", err);
         setError(err.rawMessage);
       });
     }
-  }, [auth, repoState]);
+  }, [repoState, listRepo]);
 
   const uploadFile = () => {
     let formData = new FormData();
@@ -309,22 +315,24 @@ function Speedupdate() {
   if (repoState === RepoState.NotInitialized) {
     speedupdatecomponent = (
       <div>
-        {auth.repositories.map((repo_name, index) => (
-          <Button
-            key={index}
-            variant="contained"
-            onClick={() => {
-              isInit(client, repo_name)
-                .then(() => {
-                  setRepoState(RepoState.Initialized);
-                  setCurrentRepo(repo_name);
-                })
-                .catch((err) => setError(err.rawMessage));
-            }}
-          >
-            {repo_name}
-          </Button>
-        ))}
+        {listRepo
+          ? listRepo.map((repo_name, index) => (
+              <Button
+                key={index}
+                variant="contained"
+                onClick={() => {
+                  isInit(client, repo_name)
+                    .then(() => {
+                      setRepoState(RepoState.Initialized);
+                      setCurrentRepo(repo_name);
+                    })
+                    .catch((err) => setError(err.rawMessage));
+                }}
+              >
+                {repo_name}
+              </Button>
+            ))
+          : null}
         <Grid item xs={1}>
           <TextField
             id="join-update-server"
@@ -349,7 +357,7 @@ function Speedupdate() {
           />
           <Button
             variant="contained"
-            onClick={() =>
+            onClick={() => {
               init(client, path)
                 .then(() =>
                   isInit(client, path)
@@ -363,8 +371,11 @@ function Speedupdate() {
                     )
                     .catch((err) => setError(err.rawMessage)),
                 )
-                .catch((err) => setError(err.rawMessage))
-            }
+                .catch((err) => setError(err.rawMessage));
+              listRepositories(lucleClient, auth.username).then((list) =>
+                setListRepo(list),
+              );
+            }}
           >
             Create new repository
           </Button>

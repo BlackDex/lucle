@@ -8,6 +8,7 @@ service Lucle {
   rpc create_user (UserCreation) returns (Empty);
   rpc register_update_server (UpdateServer) returns (Empty); 
   rpc join_update_server (UpdateServer) returns (Empty);
+  rpc list_update_server_by_user (Username) returns (ListUpdateServer);
   rpc is_database_created (Empty) returns (Empty);
   rpc forgot_password (ResetPassword) returns (Empty);
   rpc ServerStreamingEcho (stream Empty) returns (stream Message);
@@ -28,6 +29,14 @@ message Database {
 message UpdateServer {
   string path = 1;
   string username = 2;
+}
+
+message Username {
+  string username = 1;
+}
+
+message ListUpdateServer {
+  repeated string repositories =1;
 }
 
 message Credentials {

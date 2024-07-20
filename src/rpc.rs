@@ -5,8 +5,8 @@ use crate::errors::Error as LucleError;
 use email_address_parser::EmailAddress;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
-    Credentials, Database, DatabaseType, Empty, Message, ResetPassword, UpdateServer, User,
-    UserCreation,
+    Credentials, Database, DatabaseType, Empty, ListUpdateServer, Message, ResetPassword,
+    UpdateServer, User, UserCreation, Username,
 };
 use std::pin::Pin;
 use std::{error::Error, fs::File, io::BufReader, io::ErrorKind};
@@ -151,6 +151,24 @@ impl Lucle for LucleApi {
                 return Err(Status::internal(err.to_string()));
             }
         };
+    }
+
+    async fn list_update_server_by_user(
+        &self,
+        request: Request<Username>,
+    ) -> Result<Response<ListUpdateServer>, Status> {
+        let inner = request.into_inner();
+        let username = inner.username;
+        match user::list_update_server_by_user(username).await {
+            Ok(list) => {
+                let reply = ListUpdateServer { repositories: list };
+                Ok(Response::new(reply))
+            }
+            Err(err) => {
+                tracing::error!("{}", err);
+                return Err(Status::internal(err.to_string()));
+            }
+        }
     }
 
     async fn login(&self, request: Request<Credentials>) -> Result<Response<User>, Status> {

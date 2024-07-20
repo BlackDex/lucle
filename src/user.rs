@@ -91,6 +91,39 @@ pub async fn register_update_server(username: String, repository: String) -> Res
     };
 }
 
+pub async fn list_update_server_by_user(username: String) -> Result<Vec<String>, Error> {
+    let mut conn = POOL.get().await?;
+    match users::table
+        .filter(users::dsl::username.eq(username.clone()))
+        .select(User::as_select())
+        .first(&mut conn)
+        .await
+        .optional()
+    {
+        Ok(Some(val)) => {
+            match users_repositories::table
+                .filter(users_repositories::dsl::user_id.eq(val.id))
+                .select(UsersRepositories::as_select())
+                .load(&mut conn)
+                .await
+                .optional()
+            {
+                Ok(Some(list_repo)) => {
+                    let mut user_repo: Vec<String> = Vec::new();
+                    for repo in list_repo {
+                        user_repo.push(repo.repository_name);
+                    }
+                    return Ok(user_repo);
+                }
+                Ok(None) => Ok(Vec::new()),
+                Err(err) => Err(crate::errors::Error::QueryError(err)),
+            }
+        }
+        Ok(None) => Err(crate::errors::Error::UserNotFound),
+        Err(err) => Err(crate::errors::Error::QueryError(err)),
+    }
+}
+
 pub async fn join_update_server(username: String, repository: String) -> Result<(), Error> {
     let mut conn = POOL.get().await?;
     match users::table
@@ -139,11 +172,7 @@ pub async fn login(username_or_email: String, password: String) -> Result<LucleU
                     }
                     login_user(val.username, val.password, password, val.email, user_repo)
                 }
-                Ok(None) => {
-                    //		println!("13 : {:?}", repo_value);
-
-                    login_user(val.username, val.password, password, val.email, Vec::new())
-                }
+                Ok(None) => login_user(val.username, val.password, password, val.email, Vec::new()),
                 Err(err) => Err(crate::errors::Error::QueryError(err)),
             }
         }
@@ -163,8 +192,12 @@ pub async fn login(username_or_email: String, password: String) -> Result<LucleU
                         .await
                         .optional()
                     {
-                        Ok(Some(repo_value)) => {
-                            login_user(val.username, val.password, password, val.email, Vec::new())
+                        Ok(Some(list_repo)) => {
+                            let mut user_repo: Vec<String> = Vec::new();
+                            for repo in list_repo {
+                                user_repo.push(repo.repository_name);
+                            }
+                            login_user(val.username, val.password, password, val.email, user_repo)
                         }
                         Ok(None) => {
                             login_user(val.username, val.password, password, val.email, Vec::new())

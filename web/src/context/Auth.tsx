@@ -26,10 +26,11 @@ const AuthProvider = ({ children }) => {
           setToken(user.token);
           localStorage.setItem("token", user.token);
           localStorage.setItem("username", user.username);
-          if (user.repositories) {
-            setRepositories(user.repositories);
-            localStorage.setItem("repositories", user.repositories);
-          }
+          console.log("12 : ", user.repositories);
+          //          if (user.repositories) {
+          setRepositories(user.repositories);
+          localStorage.setItem("repositories", user.repositories);
+          //        }
           navigate("/admin/speedupdate");
         })
         .catch((err) => reject(err));
@@ -39,6 +40,7 @@ const AuthProvider = ({ children }) => {
   const Logout = () => {
     setToken("");
     setUsername("");
+    setRepositories("");
     localStorage.removeItem("token");
     localStorage.removeItem("repositories");
     localStorage.removeItem("username");

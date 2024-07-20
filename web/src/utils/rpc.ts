@@ -80,3 +80,14 @@ export const registerUpdateServer = async (
       .catch((err) => reject(err));
   });
 };
+
+export const listRepositories = async (client: any, username: string) => {
+  return new Promise((resolve, reject) => {
+    client
+      .list_update_server_by_user({
+        username: username,
+      })
+      .then((list) => resolve(list))
+      .catch((err) => reject(err));
+  });
+};
