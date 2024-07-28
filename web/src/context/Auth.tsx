@@ -13,7 +13,7 @@ const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [username, setUsername] = useState(localStorage.getItem("username"));
   const [repositories, setRepositories] = useState(
-    localStorage.getItem("repositories"),
+    JSON.parse(localStorage.getItem("repositories")),
   );
   const navigate = useNavigate();
   const client = useContext(LucleRPC);
@@ -26,11 +26,11 @@ const AuthProvider = ({ children }) => {
           setToken(user.token);
           localStorage.setItem("token", user.token);
           localStorage.setItem("username", user.username);
-          console.log("12 : ", user.repositories);
-          //          if (user.repositories) {
           setRepositories(user.repositories);
-          localStorage.setItem("repositories", user.repositories);
-          //        }
+          localStorage.setItem(
+            "repositories",
+            JSON.stringify(user.repositories),
+          );
           navigate("/admin/speedupdate");
         })
         .catch((err) => reject(err));

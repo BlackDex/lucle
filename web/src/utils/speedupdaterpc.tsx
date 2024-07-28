@@ -41,28 +41,38 @@ export const setCurrentVersion = async (
   path: string,
   version: string,
 ) => {
-  client.set_current_version(
-    {
-      path,
-      version,
-    },
-    { headers: headers },
-  );
+  return new Promise((resolve, reject) => {
+    client
+      .set_current_version(
+        {
+          path,
+          version,
+        },
+        { headers: headers },
+      )
+      .then(() => {
+        resolve();
+      })
+      .catch((error: string) => {
+        reject(error);
+      });
+  });
 };
 
 export const registerVersion = async (
   client: any,
   path: string,
   version: string,
+  description: string,
 ) => {
   return new Promise((resolve, reject) => {
-    console.log("11");
     client
       .register_version({
         path,
         version,
+        description,
       })
-      .then(() => console.log("12")) //resolve())
+      .then(() => resolve())
       .catch((error: string) => reject(error));
   });
 };
@@ -72,13 +82,18 @@ export const unregisterVersion = async (
   path: string,
   version: string,
 ) => {
-  client.unregister_version(
-    {
-      path,
-      version,
-    },
-    { headers: headers },
-  );
+  return new Promise((resolve, reject) => {
+    client
+      .unregister_version(
+        {
+          path,
+          version,
+        },
+        { headers: headers },
+      )
+      .then(() => resolve())
+      .catch((error: string) => reject(error));
+  });
 };
 
 export const registerPackage = async (
@@ -86,13 +101,18 @@ export const registerPackage = async (
   path: string,
   name: string,
 ) => {
-  client.register_package(
-    {
-      path,
-      name,
-    },
-    { headers: headers },
-  );
+  return new Promise((resolve, reject) => {
+    client
+      .register_package(
+        {
+          path,
+          name,
+        },
+        { headers: headers },
+      )
+      .then(() => resolve())
+      .catch((error: string) => reject(error));
+  });
 };
 
 export const unregisterPackage = async (
@@ -100,17 +120,27 @@ export const unregisterPackage = async (
   path: string,
   name: string,
 ) => {
-  client.unregister_package(
-    {
-      path,
-      name,
-    },
-    { headers: headers },
-  );
+  return new Promise((resolve, reject) => {
+    client
+      .unregister_package(
+        {
+          path,
+          name,
+        },
+        { headers: headers },
+      )
+      .then(() => resolve())
+      .catch((error: string) => reject(error));
+  });
 };
 
 export const fileToDelete = async (client: any, file: string) => {
-  client.delete_file({
-    file: file,
+  return new Promise((resolve, reject) => {
+    client
+      .delete_file({
+        file: file,
+      })
+      .then(() => resolve())
+      .catch((error: string) => reject(error));
   });
 };

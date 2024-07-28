@@ -9,6 +9,7 @@ import TableBody from "@mui/material/TableBody";
 import TablePagination from "@mui/material/TablePagination";
 import TableContainer from "@mui/material/TableContainer";
 import { green } from "@mui/material/colors";
+import Divider from "@mui/material/Divider";
 import InputAdornment from "@mui/material/InputAdornment";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
@@ -22,6 +23,7 @@ import { alpha } from "@mui/material/styles";
 import { DropzoneArea } from "mui2-file-dropzone";
 
 // Icons
+import WarningIcon from "@mui/icons-material/Warning";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckIcon from "@mui/icons-material/Check";
@@ -88,7 +90,7 @@ function Speedupdate() {
   const [listPackages, setListPackages] = useState<String[]>([]);
   const [availableBinaries, setAvailableBinaries] = useState<String[]>([]);
   const [listVersions, setListVersions] = useState<any>();
-  const [listRepo, setListRepo] = useState<any>();
+  const [listRepo, setListRepo] = useState<string[]>([]);
   const [selectedVersionsValues, setSelectedVersionsValues] = useState<
     string[]
   >([]);
@@ -108,6 +110,7 @@ function Speedupdate() {
     RepoState.NotInitialized,
   );
   const [error, setError] = useState<String>("");
+  const [description, setDescription] = useState<String>("");
   const [selectedVersions, setSelectedVersions] = useState<readonly number[]>(
     [],
   );
@@ -193,15 +196,11 @@ function Speedupdate() {
     if (auth.repositories) {
       setListRepo(auth.repositories);
     }
-    alert("12 : " + listRepo);
 
     if (repoState === RepoState.Initialized) {
-      Status().catch((err) => {
-        console.log("121 : ", err);
-        setError(err.rawMessage);
-      });
+      Status().catch((err) => setError(err.rawMessage));
     }
-  }, [repoState, listRepo]);
+  });
 
   const uploadFile = () => {
     let formData = new FormData();
@@ -216,7 +215,9 @@ function Speedupdate() {
 
   const RegisterPackages = () => {
     selectedPackagesValues.forEach((pack) => {
-      registerPackage(client, currentRepo, pack);
+      registerPackage(client, currentRepo, pack).catch((err) =>
+        setError(err.rawMessage),
+      );
     });
     setSelectedPackages([]);
     setSelectedPackagesValues([]);
@@ -225,7 +226,9 @@ function Speedupdate() {
 
   const UnregisterPackages = () => {
     selectedPackagesValues.forEach((pack) => {
-      unregisterPackage(client, currentRepo, pack);
+      unregisterPackage(client, currentRepo, pack).catch((err) =>
+        setError(err.rawMessage),
+      );
     });
     setSelectedPackages([]);
     setSelectedPackagesValues([]);
@@ -234,16 +237,22 @@ function Speedupdate() {
 
   const DeleteVersion = () => {
     selectedVersions.forEach((version) => {
-      unregisterVersion(client, currentRepo, version);
+      unregisterVersion(client, currentRepo, version).catch((err) =>
+        setError(err.rawMessage),
+      );
     });
   };
 
   const DeletePackages = () => {
     selectedPackages.forEach((row) => {
       if (listPackages[row].published) {
-        unregisterPackage(client, currentRepo, listPackages[row].name);
+        unregisterPackage(client, currentRepo, listPackages[row].name).catch(
+          (err) => setError(err.rawMessage),
+        );
       }
-      fileToDelete(client, listPackages[row].name);
+      fileToDelete(client, listPackages[row].name).catch((err) =>
+        setError(err.rawMessage),
+      );
       setSelectedPackages([]);
     });
   };
@@ -306,7 +315,7 @@ function Speedupdate() {
     }
 
     setSelectedPackages(newSelected);
-    setCanBePublished(newPublished);
+    setCanBePublished(anewPublished);
     setSelectedPackagesValues(packagesValues);
   };
 
@@ -391,6 +400,12 @@ function Speedupdate() {
             <p>Current version: {currentVersion}</p>
             Total packages size : {size + DisplaySizeUnit(size)}
             <p>
+              {error !== "" ? (
+                <div>
+                  <WarningIcon />
+                  {error}
+                </div>
+              ) : null}
               <IconButton
                 size="large"
                 onClick={() => {
@@ -429,6 +444,7 @@ function Speedupdate() {
                 <Typography
                   sx={{ flex: "1 1 100%" }}
                   variant="h6"
+                  a
                   id="tableTitle"
                   component="div"
                 >
@@ -441,7 +457,7 @@ function Speedupdate() {
                     onClick={() => {
                       setCurrentVersion(
                         client,
-                        auth.repository,
+                        auth.repaository,
                         selectedVersions[0],
                       );
                       //setVersionsSelected([]);
@@ -461,64 +477,92 @@ function Speedupdate() {
             </Toolbar>
             <TableContainer>
               <Table sx={{ width: "100%" }}>
-                {visibleVersions
-                  ? visibleVersions.map((current_version, index) => {
-                      const isItemSelected = isVersionsSelected(index + 1);
-                      const labelId = `enhanced-table-checkbox-${index}`;
-                      return (
-                        <TableRow
-                          hover
-                          onClick={() =>
-                            versionsSelection(index + 1, current_version)
-                          }
-                          role="checkbox"
-                          aria-checked={isItemSelected}
-                          tabIndex={-1}
-                          key={index + 1}
-                          selected={isItemSelected}
-                          sx={{ cursor: "pointer" }}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              color="primary"
-                              checked={isItemSelected}
-                              inputProps={{
-                                "aria-labelledby": labelId,
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell>{current_version}</TableCell>
-                        </TableRow>
-                      );
-                    })
-                  : null}
-                <TableRow>
-                  <TableCell colSpan={3}>
-                    <TextField
-                      fullWidth
-                      id="input-with-icon-textfield"
-                      label="Add new version"
-                      value={version}
-                      onChange={(e: any) => setVersion(e.currentTarget.value)}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment
+                <TableHead>
+                  <TableRow>
+                    <TableCell></TableCell>
+                    <TableCell>Revision</TableCell>
+                    <TableCell>Description</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {visibleVersions
+                    ? visibleVersions.map((current_version, index) => {
+                        const isItemSelected = isVersionsSelected(index + 1);
+                        const labelId = `enhanced-table-checkbox-${index}`;
+                        return (
+                          <TableRow
+                            hover
+                            onClick={() =>
+                              versionsSelection(index + 1, current_version)
+                            }
+                            role="checkbox"
+                            aria-checked={isItemSelected}
+                            tabIndex={-1}
+                            key={index + 1}
+                            selected={isItemSelected}
+                            sx={{ cursor: "pointer" }}
+                          >
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                color="primary"
+                                checked={isItemSelected}
+                                inputProps={{
+                                  "aria-labelledby": labelId,
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>{current_version.revision}</TableCell>
+                            <TableCell>{current_version.description}</TableCell>
+                          </TableRow>
+                        );
+                      })
+                    : null}
+                  <TableRow>
+                    <TableCell colSpan={3}>
+                      <Grid container spacing={0}>
+                        <Grid item xs={4}>
+                          <TextField
+                            required
+                            id="input-with-icon-textfield"
+                            label="New version"
+                            value={version}
+                            onChange={(e: any) =>
+                              setVersion(e.currentTarget.value)
+                            }
+                            variant="standard"
+                          />
+                        </Grid>
+                        <Grid item xs={7}>
+                          <TextField
+                            id="description"
+                            label="Description"
+                            variant="standard"
+                            value={description}
+                            onChange={(event) =>
+                              setDescription(event.currentTarget.value)
+                            }
+                          />
+                        </Grid>
+                        <Grid item xs={1}>
+                          <IconButton
                             onClick={() => {
-                              registerVersion(client, currentRepo, version)
-                                .then(() => console.log("ok"))
-                                .catch((err) => console.log("30 : ", err));
+                              registerVersion(
+                                client,
+                                currentRepo,
+                                version,
+                                description,
+                              ).catch((err) => setStatusError(err.rawMessage));
                               setVersion("");
+                              setDescription("");
                             }}
-                            position="end"
                           >
                             <AddCircleIcon fontSize="large" color="success" />
-                          </InputAdornment>
-                        ),
-                      }}
-                      variant="standard"
-                    />
-                  </TableCell>
-                </TableRow>
+                          </IconButton>
+                        </Grid>
+                      </Grid>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
               </Table>
             </TableContainer>
             {listVersions ? (
