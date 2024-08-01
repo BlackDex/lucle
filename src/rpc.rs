@@ -36,8 +36,6 @@ fn match_for_io_error(err_status: &Status) -> Option<&std::io::Error> {
             return Some(io_err);
         }
 
-        // h2::Error do not expose std::io::Error with `source()`
-        // https://github.com/hyperium/h2/pull/462
         if let Some(h2_err) = err.downcast_ref::<h2::Error>() {
             if let Some(io_err) = h2_err.get_io() {
                 return Some(io_err);
@@ -59,6 +57,7 @@ impl Lucle for LucleApi {
     async fn create_db(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
         let db_type = inner.db_type;
+        let db_name = inner.db_name.unwrap_or("lucle".to_string());
         match DatabaseType::try_from(db_type) {
             Ok(DatabaseType::Sqlite) => {
                 if let Err(err) = diesel::create_database("lucle.db").await {
@@ -67,9 +66,24 @@ impl Lucle for LucleApi {
                 }
             }
             Ok(DatabaseType::Mysql) => {
-                if let Err(err) = diesel::create_database("mysql://").await {
-                    tracing::error!("Unable to create database : {}", err);
-                    return Err(Status::internal(err.to_string()));
+                if let Some(db_connection) = inner.db_connection {
+                    if let Err(err) = diesel::create_database(
+                        &("mysql://".to_owned()
+                            + &db_connection.username
+                            + ":"
+                            + &db_connection.password
+                            + "@"
+                            + &db_connection.hostname
+                            + ":"
+                            + &db_connection.port.to_string()
+                            + "/"
+                            + &db_name),
+                    )
+                    .await
+                    {
+                        tracing::error!("Unable to create database : {}", err);
+                        return Err(Status::internal(err.to_string()));
+                    }
                 }
             }
             Ok(DatabaseType::Postgresql) => {

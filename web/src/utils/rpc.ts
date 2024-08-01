@@ -5,19 +5,24 @@ import { Lucle } from "gen/lucle_connect";
 export const checkIfInstalled = async (client: any) => {
   return new Promise((resolve, reject) => {
     client
-      .is_created_user({
-        dbType: 2,
-      })
-      .then((install) => resolve(true))
+      .is_database_created()
+      .then(() => resolve())
       .catch((err) => reject(err));
   });
 };
 
-export const createDB = async (client: any, db: number) => {
+export const createDB = async (
+  client: any,
+  db: number,
+  db_name: string,
+  infos_connection: any,
+) => {
   return new Promise((resolve, reject) => {
     client
       .create_db({
         dbType: db,
+        db_name: db_name,
+        db_connection: infos_connection,
       })
       .then(() => resolve())
       .catch((err) => reject(err));

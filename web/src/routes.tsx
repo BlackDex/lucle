@@ -16,7 +16,6 @@ function PrivateRoutes() {
 }
 
 function InstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
-  console.log(isInstalled);
   return isInstalled ? <Outlet /> : <Navigate to="/install" replace />;
 }
 
@@ -27,7 +26,7 @@ function UninstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
 const routes = (isInstalled: boolean) => [
   { path: "/", element: <Landing /> },
   {
-    //    element: <InstalledRoutes isInstalled={isInstalled} />,
+    element: <InstalledRoutes isInstalled={isInstalled} />,
     children: [
       { path: "/login", element: <Login /> },
       { path: "/forgot", element: <ForgotPassword /> },

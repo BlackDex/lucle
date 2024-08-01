@@ -21,9 +21,17 @@ enum DatabaseType {
   SURREALDB = 3;
 }
 
+message Database_Connection {
+  string hostname = 3;
+  int32 port = 4;
+  string username = 5;
+  string password = 6;
+}
+
 message Database {
   DatabaseType db_type = 1;
   optional string db_name = 2;
+  optional Database_Connection db_connection = 4; 
 }
 
 message UpdateServer {

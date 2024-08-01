@@ -9,6 +9,8 @@ pub enum Error {
     QueryError(#[from] diesel::result::Error),
     #[error("User not found")]
     UserNotFound,
+    #[error("No user created")]
+    UserNotCreated,
     #[error("Email not found")]
     EmailNotFound,
     #[error("Email not valid")]

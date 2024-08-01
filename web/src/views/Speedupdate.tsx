@@ -55,11 +55,6 @@ import { LucleRPC } from "context";
 
 //import { uploadFile } from "utils/minio";
 
-enum RepoState {
-  NotInitialized,
-  Initialized,
-}
-
 const transport = createGrpcWebTransport({
   baseUrl: "http://0.0.0.0:3000",
 });
@@ -82,7 +77,9 @@ const DisplaySizeUnit = (TotalSize: number) => {
 };
 
 function Speedupdate() {
-  const [currentRepo, setCurrentRepo] = useState<String>();
+  const [currentRepo, setCurrentRepo] = useState<String>(
+    localStorage.getItem("current_repo"),
+  );
   const [currentVersion, getCurrentVersion] = useState<string>("");
   const [size, setSize] = useState<number>();
   const [version, setVersion] = useState<any>();
@@ -106,9 +103,6 @@ function Speedupdate() {
   const [packagesPerPage, setPackagesPerPage] = useState(5);
   const [versionsPerPage, setVersionsPerPage] = useState(5);
   const [binariesPerPage, setBinariesPerPage] = useState(5);
-  const [repoState, setRepoState] = useState<RepoState>(
-    RepoState.NotInitialized,
-  );
   const [error, setError] = useState<String>("");
   const [description, setDescription] = useState<String>("");
   const [selectedVersions, setSelectedVersions] = useState<readonly number[]>(
@@ -197,10 +191,10 @@ function Speedupdate() {
       setListRepo(auth.repositories);
     }
 
-    if (repoState === RepoState.Initialized) {
+    if (currentRepo) {
       Status().catch((err) => setError(err.rawMessage));
     }
-  });
+  }, [currentRepo]);
 
   const uploadFile = () => {
     let formData = new FormData();
@@ -321,7 +315,7 @@ function Speedupdate() {
 
   let speedupdatecomponent;
 
-  if (repoState === RepoState.NotInitialized) {
+  if (!currentRepo) {
     speedupdatecomponent = (
       <div>
         {listRepo
@@ -332,8 +326,8 @@ function Speedupdate() {
                 onClick={() => {
                   isInit(client, repo_name)
                     .then(() => {
-                      setRepoState(RepoState.Initialized);
                       setCurrentRepo(repo_name);
+                      localStorage.setItem("current_repo", repo_name);
                     })
                     .catch((err) => setError(err.rawMessage));
                 }}
@@ -374,7 +368,7 @@ function Speedupdate() {
                       registerUpdateServer(lucleClient, auth.username, path)
                         .then(() => {
                           setCurrentRepo(path);
-                          setRepoState(RepoState.Initialized);
+                          localStorage.setItem("current_repo", path);
                         })
                         .catch((err) => setError(err.rawMessage)),
                     )
@@ -393,7 +387,7 @@ function Speedupdate() {
       </div>
     );
   } else {
-    if (repoState == RepoState.Initialized) {
+    if (currentRepo) {
       speedupdatecomponent = (
         <Box sx={{ width: "100%" }}>
           <Paper sx={{ width: "100%", mb: 2 }}>
@@ -409,8 +403,8 @@ function Speedupdate() {
               <IconButton
                 size="large"
                 onClick={() => {
-                  setRepoState(RepoState.NotInitialized);
                   setCurrentRepo("");
+                  localStorage.removeItem("current_repo");
                 }}
               >
                 <ExitToAppIcon />

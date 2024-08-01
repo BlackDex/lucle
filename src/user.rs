@@ -216,7 +216,13 @@ pub async fn login(username_or_email: String, password: String) -> Result<LucleU
 pub async fn is_table_and_user_created() -> Result<(), Error> {
     let mut conn = POOL.get().await?;
     match users::table.count().get_result::<i64>(&mut conn).await {
-        Ok(_) => Ok(()),
+        Ok(user_count) => {
+            if user_count > 0 {
+                Ok(())
+            } else {
+                Err(crate::errors::Error::UserNotCreated)
+            }
+        }
         Err(err) => Err(crate::errors::Error::QueryError(err)),
     }
 }

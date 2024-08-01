@@ -1,18 +1,3 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import { useState, useEffect, useContext } from "react";
 
 // react-router components
@@ -43,7 +28,6 @@ import AuthProvider from "context/Auth";
 
 export default function App() {
   const [isInstalled, setIsInstalled] = useState<boolean>();
-  const content = useRoutes(routes(isInstalled));
   const client = useContext(LucleRPC);
   const [controller, dispatch] = useMaterialUIController();
   const { darkMode } = controller;
@@ -57,7 +41,17 @@ export default function App() {
   return (
     <ThemeProvider theme={darkMode ? themeDark : theme}>
       <CssBaseline />
-      <AuthProvider>{content}</AuthProvider>
+      <AuthProvider>
+        {isInstalled !== undefined ? (
+          <LucleRoutes isInstalled={isInstalled} />
+        ) : null}
+      </AuthProvider>
     </ThemeProvider>
   );
+}
+
+function LucleRoutes(props) {
+  const { isInstalled } = props;
+  const content = useRoutes(routes(isInstalled));
+  return <div>{content}</div>;
 }

@@ -28,10 +28,19 @@ function InstallStep(
   setConfirmPassword: (confirmPass: string) => void,
   setPasswordStrengh: (strengh: number) => void,
   setEmail: (email: string) => void,
+  dbInfos: any,
+  setDBInfos: (infos: any) => void,
 ) {
   switch (step) {
     case 1:
-      return <CreateDB setSelectedDB={handleDBtype} selectedDB={selectedDB} />;
+      return (
+        <CreateDB
+          dbInfos={dbInfos}
+          setDBInfos={(infos) => setDBInfos(infos)}
+          setSelectedDB={handleDBtype}
+          selectedDB={selectedDB}
+        />
+      );
     case 2:
       return (
         <CreateDefaultUser
@@ -54,8 +63,9 @@ export default function Install() {
   const [passwordStrengh, setPasswordStrengh] = useState(0);
   const [email, setEmail] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [dbInfos, setDBInfos] = useState<any>();
   const [activeStep, setActiveStep] = useState<number>(0);
-  const [selectedDB, setSelectedDB] = useState<number>(2);
+  const [selectedDB, setSelectedDB] = useState<number>(0);
   const navigate = useNavigate();
   const client = useContext(LucleRPC);
 
@@ -78,10 +88,7 @@ export default function Install() {
           }
           return (
             <Step key={label}>
-              <StepLabel
-                completed={stepProps.completed}
-                error={stepProps.error}
-              >
+              <StepLabel completed={stepProps.completed} error={false}>
                 {label}
               </StepLabel>
             </Step>
@@ -109,6 +116,8 @@ export default function Install() {
             setConfirmPassword,
             setPasswordStrengh,
             setEmail,
+            dbInfos,
+            setDBInfos,
           )}
           <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
             <Button
@@ -127,11 +136,13 @@ export default function Install() {
               onClick={() => {
                 switch (activeStep) {
                   case 0:
-                    createDB(client, selectedDB)
-                      .then(() =>
-                        setActiveStep((prevActiveStep) => prevActiveStep + 1),
-                      )
-                      .catch((err) => console.log(err)); //setError(err.rawMessage));
+                    {
+                      createDB(client, selectedDB, dbInfos.dbName, dbInfos)
+                        .then(() =>
+                          setActiveStep((prevActiveStep) => prevActiveStep + 1),
+                        )
+                        .catch((err) => console.log(err)); //setError(err.rawMessage));
+                    }
                     break;
                   case steps.length - 1:
                     if (password == confirmPassword && password) {

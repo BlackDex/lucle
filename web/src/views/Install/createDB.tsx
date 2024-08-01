@@ -5,14 +5,18 @@ import TextField from "@mui/material/TextField";
 import Select from "@mui/material/Select";
 
 // Components
-import DatabaseURL from "components/DatabaseURL";
+import DatabaseInfo from "components/DatabaseInfo";
 
 function CreateDB({
   selectedDB,
   setSelectedDB,
+  dbInfos,
+  setDBInfos,
 }: {
   selectedDB: any;
   setSelectedDB: any;
+  dbInfos: any;
+  setDBInfos: any;
 }) {
   return (
     <Box sx={{ minWidth: 120 }}>
@@ -34,7 +38,12 @@ function CreateDB({
         <TextField id="filled-basic" label="Filled" variant="filled" />
       ) : null}
 
-      {selectedDB !== 2 ? <DatabaseURL /> : null}
+      {selectedDB !== 2 ? (
+        <DatabaseInfo
+          setDBInfos={(infos) => setDBInfos(infos)}
+          dbInfos={dbInfos}
+        />
+      ) : null}
     </Box>
   );
 }
