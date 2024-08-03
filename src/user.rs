@@ -22,7 +22,7 @@ pub struct LucleUser {
 
 static POOL: Lazy<Pool<AsyncMysqlConnection>> = Lazy::new(|| {
     let config = AsyncDieselConnectionManager::<diesel_async::AsyncMysqlConnection>::new(
-        "mysql://root:swp@localhost/lucle",
+        "mysql://root:swp@127.0.0.1/lucle",
     );
     Pool::builder(config).build().unwrap()
 });
@@ -85,9 +85,9 @@ pub async fn register_update_server(username: String, repository: String) -> Res
                 .values(&users_repos)
                 .execute(&mut conn)
                 .await?;
-            return Ok(());
+            Ok(())
         }
-        Err(err) => return Err(crate::errors::Error::QueryError(err)),
+        Err(err) => Err(crate::errors::Error::QueryError(err)),
     };
 }
 
@@ -113,7 +113,7 @@ pub async fn list_update_server_by_user(username: String) -> Result<Vec<String>,
                     for repo in list_repo {
                         user_repo.push(repo.repository_name);
                     }
-                    return Ok(user_repo);
+                    Ok(user_repo)
                 }
                 Ok(None) => Ok(Vec::new()),
                 Err(err) => Err(crate::errors::Error::QueryError(err)),
@@ -142,9 +142,9 @@ pub async fn join_update_server(username: String, repository: String) -> Result<
                 .values(&users_repos)
                 .execute(&mut conn)
                 .await?;
-            return Ok(());
+            Ok(())
         }
-        Err(err) => return Err(crate::errors::Error::QueryError(err)),
+        Err(err) => Err(crate::errors::Error::QueryError(err)),
     };
 }
 

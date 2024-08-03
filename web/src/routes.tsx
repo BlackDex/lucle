@@ -16,6 +16,7 @@ function PrivateRoutes() {
 }
 
 function InstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
+console.log("12: ", isInstalled);
   return isInstalled ? <Outlet /> : <Navigate to="/install" replace />;
 }
 

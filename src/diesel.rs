@@ -2,9 +2,15 @@ use super::query_helper;
 
 use diesel::result;
 use diesel::sqlite::SqliteConnection;
-use diesel_async::sync_connection_wrapper::SyncConnectionWrapper;
+use diesel_async::{
+    async_connection_wrapper::AsyncConnectionWrapper,
+    sync_connection_wrapper::SyncConnectionWrapper,
+};
 use diesel_async::{AsyncConnection, AsyncMysqlConnection, AsyncPgConnection, RunQueryDsl};
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use url::Url;
+
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
 pub enum Backend {
     Pg,
@@ -32,6 +38,7 @@ impl Backend {
 }
 
 pub async fn create_database(database_url: &str) -> Result<(), crate::errors::Error> {
+    println!("12: {}", database_url.clone());
     match Backend::for_url(database_url) {
         Backend::Pg => {
             if AsyncPgConnection::establish(database_url).await.is_err() {
@@ -66,6 +73,7 @@ pub async fn create_database(database_url: &str) -> Result<(), crate::errors::Er
                 let (database, mysql_url) =
                     change_database_of_url(database_url, "information_schema")?;
                 tracing::info!("Creating database: {database}");
+
                 let mut conn =
                     AsyncMysqlConnection::establish(&mysql_url)
                         .await
@@ -73,9 +81,26 @@ pub async fn create_database(database_url: &str) -> Result<(), crate::errors::Er
                             error,
                             url: mysql_url,
                         })?;
-                query_helper::create_database(&database)
+                if let Err(err) = query_helper::create_database(&database)
                     .execute(&mut conn)
-                    .await?;
+                    .await
+                {
+                    tracing::error!("Unable to create database: {}", err);
+                } else {
+                    let mut async_wrapper: AsyncConnectionWrapper<AsyncMysqlConnection> =
+                        AsyncConnectionWrapper::from(conn);
+
+                    if let Err(err) = tokio::task::spawn_blocking(move || {
+                        if let Err(err) = async_wrapper.run_pending_migrations(MIGRATIONS) {
+                            tracing::error!("Unable to run migrations: {}", err);
+                        }
+                        tracing::info!("Running migrations");
+                    })
+                    .await
+                    {
+                        tracing::error!("Unable to join task: {} ", err);
+                    }
+                }
             }
         }
     }

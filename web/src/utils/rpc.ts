@@ -21,8 +21,8 @@ export const createDB = async (
     client
       .create_db({
         dbType: db,
-        db_name: db_name,
-        db_connection: infos_connection,
+        dbName: infos_connection.dbName,
+        dbConnection: infos_connection,
       })
       .then(() => resolve())
       .catch((err) => reject(err));

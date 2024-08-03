@@ -1,7 +1,6 @@
 use super::diesel;
 use super::surrealdb;
 use super::user;
-use crate::errors::Error as LucleError;
 use email_address_parser::EmailAddress;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
@@ -57,7 +56,7 @@ impl Lucle for LucleApi {
     async fn create_db(&self, request: Request<Database>) -> Result<Response<Empty>, Status> {
         let inner = request.into_inner();
         let db_type = inner.db_type;
-        let db_name = inner.db_name.unwrap_or("lucle".to_string());
+        let db_name = inner.clone().db_name.unwrap_or("lucle".to_string());
         match DatabaseType::try_from(db_type) {
             Ok(DatabaseType::Sqlite) => {
                 if let Err(err) = diesel::create_database("lucle.db").await {

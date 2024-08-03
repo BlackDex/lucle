@@ -54,7 +54,7 @@ h2 = "0.4"
 # Database
 diesel = { version = "2.2.0", features = ["chrono"] }
 diesel_migrations = "2.2.0"
-diesel-async = { version = "0.5", features = ["mysql", "postgres", "sqlite", "deadpool"]}
+diesel-async = { version = "0.5", features = ["async-connection-wrapper", "mysql", "postgres", "sqlite", "deadpool"]}
 mysql_async = { version = "0.34", default-features = false, features = ["default-rustls"]}
 diesel-derive-enum = { version = "2.1.0", features = ["mysql"] }
 libsqlite3-sys = { version = "0.28.0", features = ["bundled"] } 

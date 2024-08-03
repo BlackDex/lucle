@@ -23,7 +23,7 @@ enum DatabaseType {
 
 message Database_Connection {
   string hostname = 3;
-  int32 port = 4;
+  string port = 4;
   string username = 5;
   string password = 6;
 }

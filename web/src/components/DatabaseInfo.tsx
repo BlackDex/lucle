@@ -38,7 +38,7 @@ function DatabaseInfo({
           margin="normal"
           id="dbName"
           label="Database name"
-          onChange={(e) => handleChange(e)}
+          onChange={handleChange}
         />
         <TextField
           required

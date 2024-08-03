@@ -138,10 +138,10 @@ export default function Install() {
                   case 0:
                     {
                       createDB(client, selectedDB, dbInfos.dbName, dbInfos)
-                        .then(() =>
+                        .then(() => 
                           setActiveStep((prevActiveStep) => prevActiveStep + 1),
                         )
-                        .catch((err) => console.log(err)); //setError(err.rawMessage));
+                        .catch((err) => setError(err.rawMessage));
                     }
                     break;
                   case steps.length - 1:

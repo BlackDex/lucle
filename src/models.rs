@@ -2,9 +2,7 @@ use super::schema::{
     repositories, sql_types::UsersRepositoriesPermissionEnum, users, users_repositories,
 };
 use chrono::NaiveDateTime;
-use diesel::backend::Backend;
 use diesel::prelude::*;
-use diesel::sql_types::Text;
 use diesel::FromSqlRow;
 use diesel::{
     deserialize::{self, FromSql},

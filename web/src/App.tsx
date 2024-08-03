@@ -36,7 +36,7 @@ export default function App() {
     checkIfInstalled(client)
       .then(() => setIsInstalled(true))
       .catch(() => setIsInstalled(false));
-  });
+  }, []);
 
   return (
     <ThemeProvider theme={darkMode ? themeDark : theme}>
