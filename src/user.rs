@@ -266,8 +266,8 @@ fn login_user(
     Argon2::default().verify_password(password.as_bytes(), &parsed_hash)?;
     let token = utils::generate_jwt(username.clone(), email);
     Ok(LucleUser {
-        username: username,
-        token: token,
-        repositories: repositories,
+        username,
+        token,
+        repositories,
     })
 }

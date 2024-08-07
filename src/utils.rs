@@ -135,7 +135,7 @@ pub fn generate_jwt(username: String, email: String) -> String {
 
     let claims = Claims {
         sub: username,
-        email: email,
+        email,
         exp: get_current_timestamp(),
         scope: "test".to_string(),
     };
