@@ -27,19 +27,22 @@ pub async fn start_mail_server() -> std::io::Result<()> {
 
     // Init servers
     let (delivery_tx, delivery_rx) = mpsc::channel(IPC_CHANNEL_BUFFER);
-    let ipc = Ipc {
-        delivery_tx,
-        webhook_tx,
-    };
+    let ipc = Ipc { delivery_tx };
 
-    let smtp = SMTP::init(&mut config, core.clone(), ipc).await;
+    let smtp = SMTP::init(
+        &mut config,
+        core.clone(),
+        ipc,
+        init.servers.span_id_gen.clone(),
+    )
+    .await;
     let jmap = JMAP::init(&mut config, delivery_rx, core.clone(), smtp.inner.clone()).await;
     let imap = IMAP::init(&mut config, jmap.clone()).await;
     let gossiper = GossiperBuilder::try_parse(&mut config);
 
     // Log configuration errors
-    config.log_errors(init.guards.is_none());
-    config.log_warnings(init.guards.is_none());
+    config.log_errors();
+    config.log_warnings();
 
     // Spawn servers
     let (shutdown_tx, shutdown_rx) = init.servers.spawn(|server, acceptor, shutdown_rx| {
@@ -82,11 +85,7 @@ pub async fn start_mail_server() -> std::io::Result<()> {
     }
 
     // Wait for shutdown signal
-    wait_for_shutdown(&format!(
-        "Shutting down Stalwart Mail Server v{}...",
-        env!("CARGO_PKG_VERSION")
-    ))
-    .await;
+    wait_for_shutdown().await;
 
     // Stop services
     let _ = shutdown_tx.send(true);

@@ -38,7 +38,6 @@ impl Backend {
 }
 
 pub async fn create_database(database_url: &str) -> Result<(), crate::errors::Error> {
-    println!("12: {}", database_url.clone());
     match Backend::for_url(database_url) {
         Backend::Pg => {
             if AsyncPgConnection::establish(database_url).await.is_err() {

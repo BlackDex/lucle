@@ -88,7 +88,7 @@ pub async fn register_update_server(username: String, repository: String) -> Res
             Ok(())
         }
         Err(err) => Err(crate::errors::Error::QueryError(err)),
-    };
+    }
 }
 
 pub async fn list_update_server_by_user(username: String) -> Result<Vec<String>, Error> {
@@ -145,7 +145,7 @@ pub async fn join_update_server(username: String, repository: String) -> Result<
             Ok(())
         }
         Err(err) => Err(crate::errors::Error::QueryError(err)),
-    };
+    }
 }
 
 pub async fn login(username_or_email: String, password: String) -> Result<LucleUser, Error> {
@@ -244,7 +244,7 @@ pub async fn reset_password(email: String) -> Result<(), Error> {
                 .await
                 .is_ok()
             {
-                //                utils::send_mail(&email, &val.email, "test", "hi");
+                utils::send_mail(&email, &val.email, "test", "hi");
                 return Ok(());
             }
         }
