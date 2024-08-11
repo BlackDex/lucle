@@ -16,8 +16,8 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 mod diesel;
 mod errors;
 mod http;
-#[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
-mod mail;
+//#[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
+//mod mail;
 pub mod models;
 //mod multiplex_service;
 mod query_helper;
@@ -110,8 +110,8 @@ async fn main() {
         .with_single_cert(certs, private_key)
         .unwrap();
 
-    #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
-    tokio::spawn(async { mail::start_mail_server().await });
+//    #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
+//    tokio::spawn(async { mail::start_mail_server().await });
 
     //    let http = http::serve_dir().into_service();
     let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf, db); //.into_service();
