@@ -110,8 +110,8 @@ async fn main() {
         .with_single_cert(certs, private_key)
         .unwrap();
 
-//    #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
-//    tokio::spawn(async { mail::start_mail_server().await });
+    //    #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
+    //    tokio::spawn(async { mail::start_mail_server().await });
 
     //    let http = http::serve_dir().into_service();
     let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf, db); //.into_service();
