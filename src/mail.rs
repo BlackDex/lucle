@@ -1,7 +1,4 @@
-use common::{
-    config::server::ServerProtocol, manager::boot::BootManager,
-    webhooks::manager::spawn_webhook_manager, Ipc, IPC_CHANNEL_BUFFER,
-};
+use common::{config::server::ServerProtocol, manager::boot::BootManager, Ipc, IPC_CHANNEL_BUFFER};
 use imap::core::{ImapSessionManager, IMAP};
 use jmap::{api::JmapSessionManager, services::gossip::spawn::GossiperBuilder, JMAP};
 use managesieve::core::ManageSieveSessionManager;

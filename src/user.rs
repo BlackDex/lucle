@@ -87,7 +87,7 @@ pub async fn register_update_server(username: String, repository: String) -> Res
                 .await?;
             Ok(())
         }
-        Err(err) => Err(crate::errors::Error::QueryError(err)),
+        Err(err) => Err(crate::errors::Error::Query(err)),
     }
 }
 
@@ -116,11 +116,11 @@ pub async fn list_update_server_by_user(username: String) -> Result<Vec<String>,
                     Ok(user_repo)
                 }
                 Ok(None) => Ok(Vec::new()),
-                Err(err) => Err(crate::errors::Error::QueryError(err)),
+                Err(err) => Err(crate::errors::Error::Query(err)),
             }
         }
         Ok(None) => Err(crate::errors::Error::UserNotFound),
-        Err(err) => Err(crate::errors::Error::QueryError(err)),
+        Err(err) => Err(crate::errors::Error::Query(err)),
     }
 }
 
@@ -144,7 +144,7 @@ pub async fn join_update_server(username: String, repository: String) -> Result<
                 .await?;
             Ok(())
         }
-        Err(err) => Err(crate::errors::Error::QueryError(err)),
+        Err(err) => Err(crate::errors::Error::Query(err)),
     }
 }
 
@@ -173,7 +173,7 @@ pub async fn login(username_or_email: String, password: String) -> Result<LucleU
                     login_user(val.username, val.password, password, val.email, user_repo)
                 }
                 Ok(None) => login_user(val.username, val.password, password, val.email, Vec::new()),
-                Err(err) => Err(crate::errors::Error::QueryError(err)),
+                Err(err) => Err(crate::errors::Error::Query(err)),
             }
         }
         Ok(None) => {
@@ -202,14 +202,14 @@ pub async fn login(username_or_email: String, password: String) -> Result<LucleU
                         Ok(None) => {
                             login_user(val.username, val.password, password, val.email, Vec::new())
                         }
-                        Err(err) => Err(crate::errors::Error::QueryError(err)),
+                        Err(err) => Err(crate::errors::Error::Query(err)),
                     }
                 }
                 Ok(None) => Err(crate::errors::Error::UserNotFound),
-                Err(err) => Err(crate::errors::Error::QueryError(err)),
+                Err(err) => Err(crate::errors::Error::Query(err)),
             }
         }
-        Err(err) => Err(crate::errors::Error::QueryError(err)),
+        Err(err) => Err(crate::errors::Error::Query(err)),
     }
 }
 
@@ -223,7 +223,7 @@ pub async fn is_table_and_user_created() -> Result<(), Error> {
                 Err(crate::errors::Error::UserNotCreated)
             }
         }
-        Err(err) => Err(crate::errors::Error::QueryError(err)),
+        Err(err) => Err(crate::errors::Error::Query(err)),
     }
 }
 
@@ -249,7 +249,7 @@ pub async fn reset_password(email: String) -> Result<(), Error> {
             }
         }
         Ok(None) => return Err(crate::errors::Error::EmailNotFound),
-        Err(err) => return Err(crate::errors::Error::QueryError(err)),
+        Err(err) => return Err(crate::errors::Error::Query(err)),
     }
 
     Ok(())

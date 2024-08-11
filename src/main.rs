@@ -1,7 +1,15 @@
 //use self::multiplex_service::MultiplexService;
+use diesel_async::pooled_connection::deadpool::Pool;
+use diesel_async::AsyncMysqlConnection;
+use once_cell::sync::Lazy;
 use rustls_pemfile::certs;
+use serde::Deserialize;
 use std::path::Path;
-use std::{fs::File, io::BufReader, sync::Arc};
+use std::{
+    fs::{self, File},
+    io::BufReader,
+    sync::Arc,
+};
 use tokio_rustls::rustls::ServerConfig;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -19,6 +27,22 @@ mod surrealdb;
 mod user;
 mod utils;
 
+#[derive(Debug, Deserialize)]
+struct LucleConfig {
+    database: DatabaseConfig,
+}
+
+#[derive(Debug, Deserialize)]
+struct DatabaseConfig {
+    database: String,
+}
+
+pub enum DbType {
+    Mysql(Lazy<Pool<AsyncMysqlConnection>>),
+    Surrealdb(i32),
+    NoDatabase,
+}
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
@@ -35,6 +59,20 @@ async fn main() {
                 .with_file(false),
         )
         .init();
+
+    let config_file = "config.toml";
+    let mut db = DbType::NoDatabase;
+    match fs::read_to_string(config_file) {
+        Ok(content) => {
+            let decoded: LucleConfig = toml::from_str(&content).unwrap();
+            match decoded.database.database.as_str() {
+                "mysql" => db = DbType::Mysql(diesel::create_pool()),
+                "surrealdb" => db = DbType::Surrealdb(12),
+                &_ => db = DbType::NoDatabase,
+            }
+        }
+        Err(err) => tracing::error!("Unable to get config: {}", err),
+    };
 
     if !Path::new(".tls/ca_cert.pem").exists()
         || !Path::new(".tls/server_cert.pem").exists()
@@ -76,7 +114,7 @@ async fn main() {
     tokio::spawn(async { mail::start_mail_server().await });
 
     //    let http = http::serve_dir().into_service();
-    let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf); //.into_service();
+    let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf, db); //.into_service();
     let addr = "0.0.0.0:8080".parse().unwrap();
     //  let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     tracing::info!("gRPC and HTTP server listening on {}", addr);

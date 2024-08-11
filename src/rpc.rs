@@ -1,6 +1,7 @@
 use super::diesel;
 use super::surrealdb;
 use super::user;
+use crate::DbType;
 use email_address_parser::EmailAddress;
 use luclerpc::{
     lucle_server::{Lucle, LucleServer},
@@ -122,7 +123,10 @@ impl Lucle for LucleApi {
                 }
             }
         } else {
-            return Err(Status::internal("Email not valid".to_string()));
+            tracing::error!("Email is not valid");
+            return Err(Status::internal(
+                crate::errors::Error::EmailNotValid.to_string(),
+            ));
         }
     }
 
@@ -283,6 +287,7 @@ impl Lucle for LucleApi {
 pub fn rpc_api(
     _cert: &mut BufReader<File>,
     _key: &mut BufReader<File>,
+    db: DbType,
 ) -> Router<Stack<GrpcWebLayer, Stack<CorsLayer, tower::layer::util::Identity>>> {
     let api = LucleApi::default();
     let api = LucleServer::new(api);
