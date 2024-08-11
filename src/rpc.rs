@@ -256,7 +256,7 @@ impl Lucle for LucleApi {
         tokio::spawn(async move {
             while let Some(result) = in_stream.next().await {
                 match result {
-                    Ok(v) => tx
+                    Ok(_) => tx
                         .send(Result::<_, Status>::Ok(message.clone()))
                         .await
                         .expect("working rx"),
