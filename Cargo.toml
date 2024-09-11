@@ -76,4 +76,4 @@ libsqlite3-sys = { version = "0.30", features = ["bundled"] }
 [build-dependencies]
 tonic-build = { version = "0.12.0", features = ["prost"] } 
 prost-build = "0.13"
-protox = "0.5.1"
+protox = "0.7.1"
