@@ -1,7 +1,7 @@
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 
-let dbInfos = {
+const dbInfos = {
   dbName: "",
   hostname: "",
   port: 0,

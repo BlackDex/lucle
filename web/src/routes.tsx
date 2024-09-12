@@ -16,7 +16,7 @@ function PrivateRoutes() {
 }
 
 function InstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
-console.log("12: ", isInstalled);
+  console.log("12: ", isInstalled);
   return isInstalled ? <Outlet /> : <Navigate to="/install" replace />;
 }
 
@@ -40,7 +40,7 @@ const routes = (isInstalled: boolean) => [
             children: [
               { index: true, element: <AdminIndex /> },
               { path: "speedupdate", element: <Speedupdate /> },
-              //{ path: "tables", element: <Tables /> },
+              // { path: "tables", element: <Tables /> },
             ],
           },
         ],

@@ -53,7 +53,7 @@ import { registerUpdateServer, listRepositories } from "utils/rpc";
 import { useAuth } from "context/Auth";
 import { LucleRPC } from "context";
 
-//import { uploadFile } from "utils/minio";
+// import { uploadFile } from "utils/minio";
 
 const transport = createGrpcWebTransport({
   baseUrl: "http://0.0.0.0:3000",
@@ -135,20 +135,20 @@ function Speedupdate() {
 
   useEffect(() => {
     const headers = new Headers();
-    let token = auth.token;
-    headers.set("Authorization", "Bearer " + token);
+    const {token} = auth;
+    headers.set("Authorization", `Bearer ${  token}`);
     async function Status() {
       const call = client.status(
         {
           path: currentRepo,
         },
-        { headers: headers },
+        { headers },
       );
       for await (const repo of call) {
         setSize(repo.size);
         getCurrentVersion(repo.currentVersion);
         setListVersions(repo.versions);
-        let fullListPackages = [];
+        const fullListPackages = [];
         repo.packages.map((row) => {
           fullListPackages.push({ name: row, published: true });
         });
@@ -197,9 +197,9 @@ function Speedupdate() {
   }, [currentRepo]);
 
   const uploadFile = () => {
-    let formData = new FormData();
+    const formData = new FormData();
     formData.append("file", files[0]);
-    fetch("http://localhost:3000/file/" + files[0].name, {
+    fetch(`http://localhost:3000/file/${  files[0].name}`, {
       method: "POST",
       body: formData,
     })
@@ -340,12 +340,12 @@ function Speedupdate() {
           <TextField
             id="join-update-server"
             label="path"
-            //value={}
+            // value={}
             onChange={(e: any) => setPath(e.currentTarget.value)}
           />
           <Button
             variant="contained"
-            //onClick={() => ()}
+            // onClick={() => ()}
           >
             Join repository
           </Button>
@@ -386,8 +386,7 @@ function Speedupdate() {
         <p>{error}</p>
       </div>
     );
-  } else {
-    if (currentRepo) {
+  } else if (currentRepo) {
       speedupdatecomponent = (
         <Box sx={{ width: "100%" }}>
           <Paper sx={{ width: "100%", mb: 2 }}>
@@ -454,7 +453,7 @@ function Speedupdate() {
                         auth.repaository,
                         selectedVersions[0],
                       );
-                      //setVersionsSelected([]);
+                      // setVersionsSelected([]);
                     }}
                   >
                     <CheckIcon />
@@ -473,7 +472,7 @@ function Speedupdate() {
               <Table sx={{ width: "100%" }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell></TableCell>
+                    <TableCell />
                     <TableCell>Revision</TableCell>
                     <TableCell>Description</TableCell>
                   </TableRow>
@@ -635,7 +634,7 @@ function Speedupdate() {
                 <Table sx={{ width: "100%" }}>
                   <TableHead>
                     <TableRow>
-                      <TableCell></TableCell>
+                      <TableCell />
                       <TableCell>Name</TableCell>
                       <TableCell>Published</TableCell>
                     </TableRow>
@@ -746,9 +745,9 @@ function Speedupdate() {
                         return (
                           <TableRow
                             hover
-                            //onClick={() =>
+                            // onClick={() =>
                             //  versionsSelection(index + 1, current_version)
-                            //}
+                            // }
                             role="checkbox"
                             aria-checked={isItemSelected}
                             tabIndex={-1}
@@ -804,7 +803,6 @@ function Speedupdate() {
         </Box>
       );
     }
-  }
   return <div> {speedupdatecomponent} </div>;
 }
 

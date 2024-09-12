@@ -5,10 +5,10 @@
   "license": "Apache-2.0",
   "scripts": {
     "buf:generate": "buf generate ../proto",
-    "lint": "yarn buf:generate && eslint .",
+    "lint": "pnpm buf:generate && eslint .",
     "prettier": "prettier --check .",
-    "dev": "yarn buf:generate && vite",
-    "build": "yarn buf:generate && vite build",
+    "dev": "pnpm buf:generate && vite",
+    "build": "pnpm buf:generate && vite build",
     "serve": "protobuf && vite preview"
   },
   "dependencies": {
@@ -17,10 +17,10 @@
     "@emotion/cache": "^11.11.0",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^6.0.2",
-    "@mui/lab": "^6.0.0-beta.9",
-    "@mui/material": "^6.0.2",
-    "@mui/styles": "^6.0.2",
+    "@mui/icons-material": "^5.16.7",
+    "@mui/lab": "^5.0.0-alpha.172",
+    "@mui/material": "^5.16.7",
+    "@mui/styles": "^5.16.7",
     "@types/prop-types": "^15.7.5",
     "chart.js": "^4.4.1",
     "chroma-js": "^3.0.0",
@@ -44,16 +44,16 @@
     "vite-tsconfig-paths": "^5.0.1"
   },
   "devDependencies": {
-    "@bufbuild/protobuf": "^2.0.0",
-    "@bufbuild/protoc-gen-es": "^2.0.0",
+    "@bufbuild/protobuf": "^1.10.0",
+    "@bufbuild/protoc-gen-es": "^1.10.0",
     "@connectrpc/protoc-gen-connect-es": "^1.1.2",
     "@types/react": "^18.2.74",
     "@types/react-dom": "^18.2.18",
     "@types/regenerator-runtime": "^0",
-    "@typescript-eslint/eslint-plugin": "^8.0.1",
-    "@typescript-eslint/parser": "^8.0.1",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
+    "@typescript-eslint/parser": "^7.5.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "eslint": "^9.0.0",
+    "eslint": "^8.57",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-config-prettier": "^9.1.0",
@@ -66,5 +66,5 @@
     "typescript": "^5.3.3",
     "vite": "^5.0.11"
   },
-  "packageManager": "yarn@4.3.1"
+  "packageManager": "pnpm@9.10.0+sha512.73a29afa36a0d092ece5271de5177ecbf8318d454ecd701343131b8ebc0c1a91c487da46ab77c8e596d6acf1461e3594ced4becedf8921b074fbd8653ed7051c"
 }

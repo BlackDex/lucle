@@ -29,7 +29,7 @@ const tableContainer = {
       boxShadow: md,
       borderRadius: borderRadius.xl,
     },
-  },*/
+  }, */
 };
 
 export default tableContainer;
