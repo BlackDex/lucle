@@ -113,7 +113,7 @@ impl Lucle for LucleApi {
         let reply = Empty {};
         if EmailAddress::is_valid(&email.clone(), None) {
             match user::create_user(username.clone(), password, email).await {
-                Ok(()) => {
+p                Ok(()) => {
                     tracing::info!("user {} created", username);
                     return Ok(Response::new(reply));
                 }
@@ -287,7 +287,7 @@ impl Lucle for LucleApi {
 pub fn rpc_api(
     _cert: &mut BufReader<File>,
     _key: &mut BufReader<File>,
-    db: DbType,
+    _db: DbType,
 ) -> Router<Stack<GrpcWebLayer, Stack<CorsLayer, tower::layer::util::Identity>>> {
     let api = LucleApi::default();
     let api = LucleServer::new(api);
