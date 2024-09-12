@@ -87,6 +87,7 @@ pub async fn create_database(database_url: &str) -> Result<(), crate::errors::Er
                     .await
                 {
                     tracing::error!("Unable to create database: {}", err);
+                    return Err(crate::errors::Error::Query(err));
                 } else {
                     let mut async_wrapper: AsyncConnectionWrapper<AsyncMysqlConnection> =
                         AsyncConnectionWrapper::from(conn);
@@ -94,8 +95,11 @@ pub async fn create_database(database_url: &str) -> Result<(), crate::errors::Er
                     if let Err(err) = tokio::task::spawn_blocking(move || {
                         if let Err(err) = async_wrapper.run_pending_migrations(MIGRATIONS) {
                             tracing::error!("Unable to run migrations: {}", err);
+                            Err(crate::errors::Error::Migration(err))
+                        } else {
+                            tracing::info!("Running migrations");
+                            Ok(())
                         }
-                        tracing::info!("Running migrations");
                     })
                     .await
                     {

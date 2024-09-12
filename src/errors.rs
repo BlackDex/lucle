@@ -7,6 +7,8 @@ pub enum Error {
     },
     #[error("Failed to execute a database query: {0}")]
     Query(#[from] diesel::result::Error),
+    #[error("Failed to run migrations: {0}")]
+    Migration(Box<dyn std::error::Error + Send + Sync + 'static>),
     #[error("User not found")]
     UserNotFound,
     #[error("No user created")]
@@ -15,8 +17,6 @@ pub enum Error {
     EmailNotFound,
     #[error("Email not valid")]
     EmailNotValid,
-    #[error("Not allowed")]
-    NotAuthorized,
     #[error("Failed to hash password: {0}")]
     Argon2(#[from] argon2::password_hash::Error),
     #[error("Failed to create database connection")]
