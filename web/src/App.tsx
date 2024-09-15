@@ -20,7 +20,7 @@ import theme from "assets/theme";
 import themeDark from "assets/theme-dark";
 
 // Material Dashboard 2 React contexts
-import { useMaterialUIController, CLientConnectBuf } from "context";
+import { useMaterialUIController } from "context";
 
 // Context
 import { LucleRPC } from "context";
@@ -36,7 +36,7 @@ export default function App() {
     checkIfInstalled(client)
       .then(() => setIsInstalled(true))
       .catch(() => setIsInstalled(false));
-  }, []);
+  }, [client]);
 
   return (
     <ThemeProvider theme={darkMode ? themeDark : theme}>

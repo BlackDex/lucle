@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 // MUI
@@ -132,7 +132,7 @@ export default function Install() {
             </Button>
             <Box sx={{ flex: "1 1 auto" }} />
             <Button
-              disabled={activeStep == 1 && passwordStrengh < 3}
+              disabled={activeStep === 1 && passwordStrengh < 3}
               onClick={() => {
                 switch (activeStep) {
                   case 0:
@@ -145,7 +145,7 @@ export default function Install() {
                     }
                     break;
                   case steps.length - 1:
-                    if (password == confirmPassword && password) {
+                    if (password === confirmPassword && password) {
                       createUser(
                         client,
                         username,

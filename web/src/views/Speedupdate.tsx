@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import TableRow from "@mui/material/TableRow";
@@ -147,7 +147,7 @@ function Speedupdate() {
         { headers, signal: abortController.signal },
       );
 
-      let controller = new AbortController();
+      const controller = new AbortController();
       setAbortController(controller);
 
       for await (const repo of call) {
