@@ -18,7 +18,8 @@ function AuthProvider({ children }) {
   const navigate = useNavigate();
   const client = useContext(LucleRPC);
 
-  const Login = async (credentials) => new Promise((resolve, reject) => {
+  const Login = async (credentials) =>
+    new Promise((resolve, reject) => {
       connection(client, credentials.username, credentials.password)
         .then((user) => {
           setUsername(user.username);

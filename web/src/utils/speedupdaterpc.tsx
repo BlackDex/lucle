@@ -1,8 +1,9 @@
 const token = localStorage.getItem("token");
 const headers = new Headers();
-headers.set("Authorization", `Bearer ${  token}`);
+headers.set("Authorization", `Bearer ${token}`);
 
-export const init = async (client: any, path: string) => new Promise((resolve, reject) => {
+export const init = async (client: any, path: string) =>
+  new Promise((resolve, reject) => {
     client
       .init(
         {
@@ -16,7 +17,8 @@ export const init = async (client: any, path: string) => new Promise((resolve, r
       });
   });
 
-export const isInit = async (client: any, path: string) => new Promise((resolve, reject) => {
+export const isInit = async (client: any, path: string) =>
+  new Promise((resolve, reject) => {
     client
       .is_init(
         {
@@ -36,7 +38,8 @@ export const setCurrentVersion = async (
   client: any,
   path: string,
   version: string,
-) => new Promise((resolve, reject) => {
+) =>
+  new Promise((resolve, reject) => {
     client
       .set_current_version(
         {
@@ -58,7 +61,8 @@ export const registerVersion = async (
   path: string,
   version: string,
   description: string,
-) => new Promise((resolve, reject) => {
+) =>
+  new Promise((resolve, reject) => {
     client
       .register_version({
         path,
@@ -73,7 +77,8 @@ export const unregisterVersion = async (
   client: any,
   path: string,
   version: string,
-) => new Promise((resolve, reject) => {
+) =>
+  new Promise((resolve, reject) => {
     client
       .unregister_version(
         {
@@ -90,7 +95,8 @@ export const registerPackage = async (
   client: any,
   path: string,
   name: string,
-) => new Promise((resolve, reject) => {
+) =>
+  new Promise((resolve, reject) => {
     client
       .register_package(
         {
@@ -107,7 +113,8 @@ export const unregisterPackage = async (
   client: any,
   path: string,
   name: string,
-) => new Promise((resolve, reject) => {
+) =>
+  new Promise((resolve, reject) => {
     client
       .unregister_package(
         {
@@ -120,7 +127,8 @@ export const unregisterPackage = async (
       .catch((error: string) => reject(error));
   });
 
-export const fileToDelete = async (client: any, file: string) => new Promise((resolve, reject) => {
+export const fileToDelete = async (client: any, file: string) =>
+  new Promise((resolve, reject) => {
     client
       .delete_file({
         file,

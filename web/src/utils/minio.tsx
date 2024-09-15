@@ -17,10 +17,10 @@ export const uploadFile = async () => {
 
   const exists = await minioClient.bucketExists(bucket);
   if (exists) {
-    console.log(`Bucket ${  bucket  } exists.`);
+    console.log(`Bucket ${bucket} exists.`);
   } else {
     await minioClient.makeBucket(bucket, "localhost");
-    console.log(`Bucket ${  bucket  } created in "localhost".`);
+    console.log(`Bucket ${bucket} created in "localhost".`);
   }
 
   const metaData = {
@@ -31,13 +31,10 @@ export const uploadFile = async () => {
 
   minioClient
     .fPutObject(bucket, destinationObject, sourceFile, metaData)
-    .then((value) => console.log(`output : ${  value}`));
+    .then((value) => console.log(`output : ${value}`));
   console.log(
-    `File ${ 
-      sourceFile 
-      } uploaded as object ${ 
-      destinationObject 
-      } in bucket ${ 
-      bucket}`,
+    `File ${sourceFile} uploaded as object ${destinationObject} in bucket ${
+      bucket
+    }`,
   );
 };

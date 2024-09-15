@@ -113,7 +113,7 @@ impl Lucle for LucleApi {
         let reply = Empty {};
         if EmailAddress::is_valid(&email.clone(), None) {
             match user::create_user(username.clone(), password, email).await {
-p                Ok(()) => {
+                Ok(()) => {
                     tracing::info!("user {} created", username);
                     return Ok(Response::new(reply));
                 }

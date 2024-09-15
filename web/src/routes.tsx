@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 
-import Landing from "layouts/Landing";
+import Landing from "views/Landing";
 import Install from "layouts/Install";
 import ForgotPassword from "views/ForgotPassword";
 import AdminIndex from "views/AdminIndex";
@@ -16,7 +16,6 @@ function PrivateRoutes() {
 }
 
 function InstalledRoutes({ isInstalled }: { isInstalled: boolean }) {
-  console.log("12: ", isInstalled);
   return isInstalled ? <Outlet /> : <Navigate to="/install" replace />;
 }
 

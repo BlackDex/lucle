@@ -2,7 +2,8 @@ import { createPromiseClient } from "@connectrpc/connect";
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { Lucle } from "gen/lucle_connect";
 
-export const checkIfInstalled = async (client: any) => new Promise((resolve, reject) => {
+export const checkIfInstalled = async (client: any) =>
+  new Promise((resolve, reject) => {
     client
       .is_database_created()
       .then(() => resolve())
@@ -14,7 +15,8 @@ export const createDB = async (
   db: number,
   db_name: string,
   infos_connection: any,
-) => new Promise((resolve, reject) => {
+) =>
+  new Promise((resolve, reject) => {
     client
       .create_db({
         dbType: db,
@@ -36,7 +38,8 @@ export const connection = async (
   client: any,
   login: string,
   user_password: string,
-) => new Promise((resolve, reject) => {
+) =>
+  new Promise((resolve, reject) => {
     client
       .login({
         usernameOrEmail: login,
@@ -68,7 +71,8 @@ export const registerUpdateServer = async (
   client: any,
   username: string,
   repo: string,
-) => new Promise((resolve, reject) => {
+) =>
+  new Promise((resolve, reject) => {
     client
       .register_update_server({
         path: repo,
@@ -78,7 +82,8 @@ export const registerUpdateServer = async (
       .catch((err) => reject(err));
   });
 
-export const listRepositories = async (client: any, username: string) => new Promise((resolve, reject) => {
+export const listRepositories = async (client: any, username: string) =>
+  new Promise((resolve, reject) => {
     client
       .list_update_server_by_user({
         username,

@@ -1,18 +1,3 @@
-/*
-=========================================================
-* Material Kit 2 React - v2.1.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-kit-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 // react-router-dom components
 import { Link } from "react-router-dom";
 
@@ -26,10 +11,10 @@ import Badge from "components/Badge";
 import Typography from "components/Typography";
 
 // Presentation page components
-import ExampleCard from "pages/Presentation/components/ExampleCard";
+import ExampleCard from "components/Cards";
 
 // Data
-import data from "pages/Presentation/sections/data/designBlocksData";
+import data from "components/data/designBlocksData";
 
 function DesignBlocks() {
   const renderData = data.map(({ title, description, items }) => (
