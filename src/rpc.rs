@@ -14,7 +14,7 @@ use tokio::sync::mpsc;
 use tokio_stream::{wrappers::ReceiverStream, Stream, StreamExt};
 use tonic::{
     service::RoutesBuilder,
-    transport::{server::Router, Server},
+    transport::server::{Router, Server},
     Request, Response, Status, Streaming,
 };
 use tonic_web::GrpcWebLayer;
@@ -298,7 +298,7 @@ pub fn rpc_api(
         .expose_headers(Any);
 
     let mut routes_builder = RoutesBuilder::default();
-    routes_builder.add_service(api);
+    routes_builder.add_service(api.clone());
 
     Server::builder()
         .accept_http1(true)

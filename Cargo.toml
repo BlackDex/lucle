@@ -13,12 +13,13 @@ prost = "0.13"
 tokio = { version = "1.27", features = ["full"] }
 tokio-rustls = { version = "0.26.0", default-features = false, features = ["logging", "tls12", "ring"] }
 tonic = { version = "0.12", features = ["transport"] }
+axum_tonic = { git = "https://github.com/avsaase/axum-tonic", branch = "update-dependencies" }
 tonic-web = "0.12"
 tokio-stream = "0.1"
 heck = "0.5.0"
 hyper = "1.3"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "time"] }
-tower = "0.5"
+tower = { version = "0.5", features = ["make", "util"] }
 tower-http = { version = "0.5", features = ["fs", "trace", "cors", "add-extension", "util"] }
 tracing = "0.1"
 url = "2.2.2"
@@ -58,6 +59,7 @@ diesel-async = { version = "0.5", features = ["async-connection-wrapper", "mysql
 #mysql_async = { version = "0.34", default-features = false, features = ["default-rustls"]}
 diesel-derive-enum = { version = "2.1.0", features = ["mysql"] }
 libsqlite3-sys = { version = "0.30", features = ["bundled"] } 
+pin-project = "1.1.5"
 #mysqlclient-sys = { version = "0.4", features = ["bundled"] }
 #pq-sys = { version = "0.6.1", features = ["bundled"] } 
 

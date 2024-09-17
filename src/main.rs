@@ -1,4 +1,4 @@
-//use self::multiplex_service::MultiplexService;
+use axum_tonic::RestGrpcService;
 use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::AsyncMysqlConnection;
 use once_cell::sync::Lazy;
@@ -10,6 +10,7 @@ use std::{
     io::BufReader,
     sync::Arc,
 };
+use tokio::net::TcpListener;
 use tokio_rustls::rustls::ServerConfig;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -19,7 +20,6 @@ mod http;
 //#[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
 //mod mail;
 pub mod models;
-//mod multiplex_service;
 mod query_helper;
 mod rpc;
 pub mod schema;
@@ -113,14 +113,16 @@ async fn main() {
     //    #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
     //    tokio::spawn(async { mail::start_mail_server().await });
 
-    //    let http = http::serve_dir().into_service();
-    let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf, db); //.into_service();
-    let addr = "0.0.0.0:8080".parse().unwrap();
-    //  let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    tracing::info!("gRPC and HTTP server listening on {}", addr);
+    let http = http::serve_dir();
+    let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf, db).into_router();
 
-    //let service = MultiplexService::new(grpc, http);
-    grpc.serve(addr).await.unwrap();
+    let service = RestGrpcService::new(http, grpc).into_make_service();
 
-    //axum::serve(listener, tower::make::Shared::new(service));
+    let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    tracing::info!(
+        "gRPC and HTTP server listening on {}",
+        listener.local_addr().unwrap()
+    );
+
+    axum::serve(listener, service).await.unwrap();
 }
