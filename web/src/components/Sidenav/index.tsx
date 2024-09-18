@@ -44,7 +44,7 @@ import {
 
 import { useAuth } from "context/Auth";
 
-function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
+function Sidenav({ color = "info", brand = "", brandName, routes }) {
   const [openLoginMenu, setOpenLoginMenu] = useState();
   const [controller, dispatch] = useMaterialUIController();
   const {
