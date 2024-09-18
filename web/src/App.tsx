@@ -19,11 +19,8 @@ import theme from "assets/theme";
 // Material Dashboard 2 React Dark Mode themes
 import themeDark from "assets/theme-dark";
 
-// Material Dashboard 2 React contexts
-import { useMaterialUIController } from "context";
-
 // Context
-import { LucleRPC } from "context";
+import { LucleRPC, useMaterialUIController } from "context";
 import AuthProvider from "context/Auth";
 
 export default function App() {

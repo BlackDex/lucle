@@ -1,8 +1,5 @@
-import { Navigate } from "react-router-dom";
-
 import Icon from "@mui/material/Icon";
 import Speedupdate from "views/Speedupdate";
-import Dashboard from "layouts/Dashboard";
 
 const adminroutes = [
   {

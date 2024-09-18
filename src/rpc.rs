@@ -293,7 +293,7 @@ pub fn rpc_api(_cert: &mut BufReader<File>, _key: &mut BufReader<File>, _db: DbT
         .expose_headers(Any);
 
     let mut routes_builder = RoutesBuilder::default();
-    routes_builder.add_service(api.clone());
+    routes_builder.add_service(api);
 
     Server::builder()
         .accept_http1(true)
