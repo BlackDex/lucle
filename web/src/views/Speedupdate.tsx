@@ -266,10 +266,10 @@ function Speedupdate() {
     let newSelected: readonly number[] = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(SelectedVersions, id);
+      newSelected = newSelected.concat(selectedVersions, id);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selectedVersions.slice(1));
-    } else if (selectedIndex === versionSelected.length - 1) {
+    } else if (selectedIndex === selectedVersions.length - 1) {
       newSelected = newSelected.concat(selectedVersions.slice(0, -1));
     } else if (selectedIndex > 0) {
       newSelected = newSelected.concat(
