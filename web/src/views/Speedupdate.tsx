@@ -266,15 +266,15 @@ function Speedupdate() {
     let newSelected: readonly number[] = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(versionSelected, id);
+      newSelected = newSelected.concat(SelectedVersions, id);
     } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(versionSelected.slice(1));
+      newSelected = newSelected.concat(selectedVersions.slice(1));
     } else if (selectedIndex === versionSelected.length - 1) {
-      newSelected = newSelected.concat(versionSelected.slice(0, -1));
+      newSelected = newSelected.concat(selectedVersions.slice(0, -1));
     } else if (selectedIndex > 0) {
       newSelected = newSelected.concat(
-        versionSelected.slice(0, selectedIndex),
-        versionSelected.slice(selectedIndex + 1),
+        selectedVersions.slice(0, selectedIndex),
+        selectedVersions.slice(selectedIndex + 1),
       );
     }
 
@@ -455,7 +455,7 @@ function Speedupdate() {
                 Versions
               </Typography>
             )}
-            {numVersionsSelected == 1 ? (
+            {numVersionsSelected === 1 ? (
               <Tooltip title="SetVersion">
                 <IconButton
                   onClick={() => {
@@ -555,7 +555,7 @@ function Speedupdate() {
                               currentRepo,
                               version,
                               description,
-                            ).catch((err) => setStatusError(err.rawMessage));
+                            ).catch((err) => setError(err.rawMessage));
                             setVersion("");
                             setDescription("");
                           }}
