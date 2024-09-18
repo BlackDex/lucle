@@ -90,7 +90,7 @@ pub async fn create_database(database_url: &str) -> Result<(), crate::errors::Er
                     tracing::error!("Unable to create database: {}", err);
                     return Err(crate::errors::Error::Query(err));
                 } else {
-                    conn = AsyncMysqlConnection::establish(&database_url)
+                    conn = AsyncMysqlConnection::establish(database_url)
                         .await
                         .map_err(|error| crate::errors::Error::Connection {
                             error,

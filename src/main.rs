@@ -114,7 +114,7 @@ async fn main() {
     //    tokio::spawn(async { mail::start_mail_server().await });
 
     let http = http::serve_dir();
-    let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf, db).into_router();
+    let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf, db);
 
     let service = RestGrpcService::new(http, grpc).into_make_service();
 
