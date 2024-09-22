@@ -12,12 +12,12 @@ import SocialButton from "components/SocialButton";
 import FilledInfoCard from "examples/Cards/InfoCards/FilledInfoCard";
 
 // Presentation page sections
-import Counters from "components/Counters";
-import Information from "components/Information";
-import DesignBlocks from "components/DesignBlocks";
-import Pages from "components/Pages";
-import Testimonials from "components/Testimonials";
-import Download from "components/Download";
+import Counters from "pages/Presentation/sections/Counters";
+import Information from "pages/Presentation/sections/Information";
+import DesignBlocks from "pages/Presentation/sections/DesignBlocks";
+import Pages from "pages/Presentation/sections/Pages";
+import Testimonials from "pages/Presentation/sections/Testimonials";
+import Download from "pages/Presentation/sections/Download";
 
 // Presentation page components
 import BuiltByDevelopers from "components/BuiltByDevelopers";

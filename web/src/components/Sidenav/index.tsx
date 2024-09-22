@@ -1,3 +1,18 @@
+/**
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
 import { useEffect, useState } from "react";
 
 // react-router-dom components
@@ -23,6 +38,7 @@ import Collapse from "@mui/material/Collapse";
 // Material Dashboard 2 React components
 import Box from "components/Box";
 import Typography from "components/Typography";
+import Button from "components/Button";
 import Avatar from "components/Avatar";
 
 // Material Dashboard 2 React example components
@@ -44,7 +60,7 @@ import {
 
 import { useAuth } from "context/Auth";
 
-function Sidenav({ color = "info", brand = "", brandName, routes }) {
+function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
   const [openLoginMenu, setOpenLoginMenu] = useState();
   const [controller, dispatch] = useMaterialUIController();
   const {
@@ -159,6 +175,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes }) {
 
   return (
     <SidenavRoot
+      {...rest}
       variant="permanent"
       ownerState={{ transparentSidenav, whiteSidenav, miniSidenav, darkMode }}
     >

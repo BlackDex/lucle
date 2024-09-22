@@ -11,10 +11,10 @@ import Badge from "components/Badge";
 import Typography from "components/Typography";
 
 // Presentation page components
-import ExampleCard from "components/Cards";
+import Card from "components/Cards/Card";
 
 // Data
-import data from "components/data/designBlocksData";
+import data from "pages/Presentation/sections/data/designBlocksData";
 
 function DesignBlocks() {
   const renderData = data.map(({ title, description, items }) => (
@@ -40,12 +40,7 @@ function DesignBlocks() {
           {items.map(({ image, name, count, route, pro }) => (
             <Grid item xs={12} md={4} sx={{ mb: 2 }} key={name}>
               <Link to={pro ? "/" : route}>
-                <ExampleCard
-                  image={image}
-                  name={name}
-                  count={count}
-                  pro={pro}
-                />
+                <Card image={image} name={name} count={count} pro={pro} />
               </Link>
             </Grid>
           ))}

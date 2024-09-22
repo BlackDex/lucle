@@ -1,4 +1,4 @@
-import { useContext, createContext, useState } from "react";
+import { useEffect, useContext, createContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Context
@@ -9,7 +9,7 @@ import { connection } from "utils/rpc";
 
 const AuthContext = createContext();
 
-function AuthProvider({ children }) {
+const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [username, setUsername] = useState(localStorage.getItem("username"));
   const [repositories, setRepositories] = useState(
@@ -18,8 +18,8 @@ function AuthProvider({ children }) {
   const navigate = useNavigate();
   const client = useContext(LucleRPC);
 
-  const Login = async (credentials) =>
-    new Promise((resolve, reject) => {
+  const Login = async (credentials) => {
+    return new Promise((resolve, reject) => {
       connection(client, credentials.username, credentials.password)
         .then((user) => {
           setUsername(user.username);
@@ -35,6 +35,7 @@ function AuthProvider({ children }) {
         })
         .catch((err) => reject(err));
     });
+  };
 
   const Logout = () => {
     setToken("");
@@ -53,8 +54,10 @@ function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 export default AuthProvider;
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  return useContext(AuthContext);
+};

@@ -5,6 +5,5 @@
 .yarn/cache
 .pnp.*
 yarn.lock
-pnpm-lock.yaml
 
 src/gen/

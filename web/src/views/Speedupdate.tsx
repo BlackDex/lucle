@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useMemo, useEffect, useContext } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import TableRow from "@mui/material/TableRow";
@@ -8,6 +8,9 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TablePagination from "@mui/material/TablePagination";
 import TableContainer from "@mui/material/TableContainer";
+import { green } from "@mui/material/colors";
+import Divider from "@mui/material/Divider";
+import InputAdornment from "@mui/material/InputAdornment";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Checkbox from "@mui/material/Checkbox";
@@ -50,10 +53,10 @@ import { registerUpdateServer, listRepositories } from "utils/rpc";
 import { useAuth } from "context/Auth";
 import { LucleRPC } from "context";
 
-// import { uploadFile } from "utils/minio";
+//import { uploadFile } from "utils/minio";
 
 const transport = createGrpcWebTransport({
-  baseUrl: "http://127.0.0.1:3000",
+  baseUrl: "http://0.0.0.0:3000",
 });
 const client = createPromiseClient(Repo, transport);
 
@@ -74,8 +77,6 @@ const DisplaySizeUnit = (TotalSize: number) => {
 };
 
 function Speedupdate() {
-  const [abortController, setAbortController] =
-    useState<AbortController | null>(null);
   const [currentRepo, setCurrentRepo] = useState<String>(
     localStorage.getItem("current_repo"),
   );
@@ -134,24 +135,20 @@ function Speedupdate() {
 
   useEffect(() => {
     const headers = new Headers();
-    const { token } = auth;
-    headers.set("Authorization", `Bearer ${token}`);
+    let token = auth.token;
+    headers.set("Authorization", "Bearer " + token);
     async function Status() {
       const call = client.status(
         {
           path: currentRepo,
         },
-        { headers, signal: abortController.signal },
+        { headers: headers },
       );
-
-      const controller = new AbortController();
-      setAbortController(controller);
-
       for await (const repo of call) {
         setSize(repo.size);
         getCurrentVersion(repo.currentVersion);
         setListVersions(repo.versions);
-        const fullListPackages = [];
+        let fullListPackages = [];
         repo.packages.map((row) => {
           fullListPackages.push({ name: row, published: true });
         });
@@ -199,22 +196,15 @@ function Speedupdate() {
     }
   }, [currentRepo]);
 
-  const StopStatus = () => {
-    if (abortController) {
-      abortController.abort();
-      setAbortController(null);
-    }
-  };
-
   const uploadFile = () => {
-    const formData = new FormData();
+    let formData = new FormData();
     formData.append("file", files[0]);
-    fetch(`http://localhost:3000/file/${files[0].name}`, {
+    fetch("http://localhost:3000/file/" + files[0].name, {
       method: "POST",
       body: formData,
     })
-      .then((val) => setError(val))
-      .catch((err) => setError(err));
+      .then((val) => console.log("answer: ", val))
+      .catch((err) => console.log("error: ", err));
   };
 
   const RegisterPackages = () => {
@@ -266,15 +256,15 @@ function Speedupdate() {
     let newSelected: readonly number[] = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selectedVersions, id);
+      newSelected = newSelected.concat(versionsSelected, id);
     } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selectedVersions.slice(1));
-    } else if (selectedIndex === selectedVersions.length - 1) {
-      newSelected = newSelected.concat(selectedVersions.slice(0, -1));
+      newSelected = newSelected.concat(versionsSelected.slice(1));
+    } else if (selectedIndex === versionsSelected.length - 1) {
+      newSelected = newSelected.concat(versionsSelected.slice(0, -1));
     } else if (selectedIndex > 0) {
       newSelected = newSelected.concat(
-        selectedVersions.slice(0, selectedIndex),
-        selectedVersions.slice(selectedIndex + 1),
+        versionsSelected.slice(0, selectedIndex),
+        versionsSelected.slice(selectedIndex + 1),
       );
     }
 
@@ -319,7 +309,7 @@ function Speedupdate() {
     }
 
     setSelectedPackages(newSelected);
-    setCanBePublished(newPublished);
+    setCanBePublished(anewPublished);
     setSelectedPackagesValues(packagesValues);
   };
 
@@ -350,12 +340,12 @@ function Speedupdate() {
           <TextField
             id="join-update-server"
             label="path"
-            // value={}
+            //value={}
             onChange={(e: any) => setPath(e.currentTarget.value)}
           />
           <Button
             variant="contained"
-            // onClick={() => ()}
+            //onClick={() => ()}
           >
             Join repository
           </Button>
@@ -396,202 +386,37 @@ function Speedupdate() {
         <p>{error}</p>
       </div>
     );
-  } else if (currentRepo) {
-    speedupdatecomponent = (
-      <Box sx={{ width: "100%" }}>
-        <Paper sx={{ width: "100%", mb: 2 }}>
-          <p>Current version: {currentVersion}</p>
-          Total packages size : {size + DisplaySizeUnit(size)}
-          <p>
-            {error !== "" ? (
-              <div>
-                <WarningIcon />
-                {error}
-              </div>
-            ) : null}
-            <IconButton
-              size="large"
-              onClick={() => {
-                setCurrentRepo("");
-                localStorage.removeItem("current_repo");
-                StopStatus();
-              }}
-            >
-              <ExitToAppIcon />
-            </IconButton>
-          </p>
-        </Paper>
-        <Paper sx={{ width: "100%", mb: 2 }}>
-          <Toolbar
-            sx={{
-              pl: { sm: 2 },
-              pr: { xs: 1, sm: 1 },
-              ...(numVersionsSelected > 0 && {
-                bgcolor: (theme) =>
-                  alpha(
-                    theme.palette.primary.main,
-                    theme.palette.action.activatedOpacity,
-                  ),
-              }),
-            }}
-          >
-            {numVersionsSelected > 0 ? (
-              <Typography
-                sx={{ flex: "1 1 100%" }}
-                color="inherit"
-                variant="subtitle1"
-                component="div"
-              >
-                {numVersionsSelected} selected
-              </Typography>
-            ) : (
-              <Typography
-                sx={{ flex: "1 1 100%" }}
-                variant="h6"
-                a
-                id="tableTitle"
-                component="div"
-              >
-                Versions
-              </Typography>
-            )}
-            {numVersionsSelected === 1 ? (
-              <Tooltip title="SetVersion">
-                <IconButton
-                  onClick={() => {
-                    setCurrentVersion(
-                      client,
-                      auth.repaository,
-                      selectedVersions[0],
-                    );
-                    // setVersionsSelected([]);
-                  }}
-                >
-                  <CheckIcon />
-                </IconButton>
-              </Tooltip>
-            ) : null}
-            {numVersionsSelected > 0 ? (
-              <Tooltip title="Delete">
-                <IconButton onClick={DeleteVersion}>
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
-            ) : null}
-          </Toolbar>
-          <TableContainer>
-            <Table sx={{ width: "100%" }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell />
-                  <TableCell>Revision</TableCell>
-                  <TableCell>Description</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {visibleVersions
-                  ? visibleVersions.map((current_version, index) => {
-                      const isItemSelected = isVersionsSelected(index + 1);
-                      const labelId = `enhanced-table-checkbox-${index}`;
-                      return (
-                        <TableRow
-                          hover
-                          onClick={() =>
-                            versionsSelection(index + 1, current_version)
-                          }
-                          role="checkbox"
-                          aria-checked={isItemSelected}
-                          tabIndex={-1}
-                          key={index + 1}
-                          selected={isItemSelected}
-                          sx={{ cursor: "pointer" }}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              color="primary"
-                              checked={isItemSelected}
-                              inputProps={{
-                                "aria-labelledby": labelId,
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell>{current_version.revision}</TableCell>
-                          <TableCell>{current_version.description}</TableCell>
-                        </TableRow>
-                      );
-                    })
-                  : null}
-                <TableRow>
-                  <TableCell colSpan={3}>
-                    <Grid container spacing={0}>
-                      <Grid item xs={4}>
-                        <TextField
-                          required
-                          id="input-with-icon-textfield"
-                          label="New version"
-                          value={version}
-                          onChange={(e: any) =>
-                            setVersion(e.currentTarget.value)
-                          }
-                          variant="standard"
-                        />
-                      </Grid>
-                      <Grid item xs={7}>
-                        <TextField
-                          id="description"
-                          label="Description"
-                          variant="standard"
-                          value={description}
-                          onChange={(event) =>
-                            setDescription(event.currentTarget.value)
-                          }
-                        />
-                      </Grid>
-                      <Grid item xs={1}>
-                        <IconButton
-                          onClick={() => {
-                            registerVersion(
-                              client,
-                              currentRepo,
-                              version,
-                              description,
-                            ).catch((err) => setError(err.rawMessage));
-                            setVersion("");
-                            setDescription("");
-                          }}
-                        >
-                          <AddCircleIcon fontSize="large" color="success" />
-                        </IconButton>
-                      </Grid>
-                    </Grid>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
-          {listVersions ? (
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={listVersions.length}
-              rowsPerPage={versionsPerPage}
-              page={versionsPage}
-              labelRowsPerPage="Versions per page"
-              onPageChange={(event, newPage) => setVersionsPage(newPage)}
-              onRowsPerPageChange={(event) => {
-                setVersionsPerPage(parseInt(event.target.value, 10));
-                setVersionsPage(0);
-              }}
-            />
-          ) : null}
-        </Paper>
+  } else {
+    if (currentRepo) {
+      speedupdatecomponent = (
         <Box sx={{ width: "100%" }}>
+          <Paper sx={{ width: "100%", mb: 2 }}>
+            <p>Current version: {currentVersion}</p>
+            Total packages size : {size + DisplaySizeUnit(size)}
+            <p>
+              {error !== "" ? (
+                <div>
+                  <WarningIcon />
+                  {error}
+                </div>
+              ) : null}
+              <IconButton
+                size="large"
+                onClick={() => {
+                  setCurrentRepo("");
+                  localStorage.removeItem("current_repo");
+                }}
+              >
+                <ExitToAppIcon />
+              </IconButton>
+            </p>
+          </Paper>
           <Paper sx={{ width: "100%", mb: 2 }}>
             <Toolbar
               sx={{
                 pl: { sm: 2 },
                 pr: { xs: 1, sm: 1 },
-                ...(numPackagesSelected > 0 && {
+                ...(numVersionsSelected > 0 && {
                   bgcolor: (theme) =>
                     alpha(
                       theme.palette.primary.main,
@@ -600,42 +425,45 @@ function Speedupdate() {
                 }),
               }}
             >
-              {numPackagesSelected > 0 ? (
+              {numVersionsSelected > 0 ? (
                 <Typography
                   sx={{ flex: "1 1 100%" }}
                   color="inherit"
                   variant="subtitle1"
                   component="div"
                 >
-                  {numPackagesSelected} selected
+                  {numVersionsSelected} selected
                 </Typography>
               ) : (
                 <Typography
                   sx={{ flex: "1 1 100%" }}
                   variant="h6"
+                  a
                   id="tableTitle"
                   component="div"
                 >
-                  Packages
+                  Versions
                 </Typography>
               )}
-              {numPackagesSelected > 0 && !canBePublished.includes(false) ? (
-                <Tooltip title="Unpublish">
-                  <IconButton onClick={() => UnregisterPackages()}>
-                    <UnpublishedIcon />
+              {numVersionsSelected == 1 ? (
+                <Tooltip title="SetVersion">
+                  <IconButton
+                    onClick={() => {
+                      setCurrentVersion(
+                        client,
+                        auth.repaository,
+                        selectedVersions[0],
+                      );
+                      //setVersionsSelected([]);
+                    }}
+                  >
+                    <CheckIcon />
                   </IconButton>
                 </Tooltip>
               ) : null}
-              {numPackagesSelected > 0 && !canBePublished.includes(true) ? (
-                <Tooltip title="Publish">
-                  <IconButton onClick={() => RegisterPackages()}>
-                    <PublishIcon />
-                  </IconButton>
-                </Tooltip>
-              ) : null}
-              {numPackagesSelected > 0 ? (
+              {numVersionsSelected > 0 ? (
                 <Tooltip title="Delete">
-                  <IconButton onClick={DeletePackages}>
+                  <IconButton onClick={DeleteVersion}>
                     <DeleteIcon />
                   </IconButton>
                 </Tooltip>
@@ -645,30 +473,26 @@ function Speedupdate() {
               <Table sx={{ width: "100%" }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell />
-                    <TableCell>Name</TableCell>
-                    <TableCell>Published</TableCell>
+                    <TableCell></TableCell>
+                    <TableCell>Revision</TableCell>
+                    <TableCell>Description</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {visiblePackages
-                    ? visiblePackages.map((pack, index) => {
-                        const isItemSelected = isPackagesSelected(index);
+                  {visibleVersions
+                    ? visibleVersions.map((current_version, index) => {
+                        const isItemSelected = isVersionsSelected(index + 1);
                         const labelId = `enhanced-table-checkbox-${index}`;
                         return (
                           <TableRow
                             hover
                             onClick={() =>
-                              packagesSelection(
-                                index,
-                                pack.name,
-                                pack.published,
-                              )
+                              versionsSelection(index + 1, current_version)
                             }
                             role="checkbox"
                             aria-checked={isItemSelected}
                             tabIndex={-1}
-                            key={index}
+                            key={index + 1}
                             selected={isItemSelected}
                             sx={{ cursor: "pointer" }}
                           >
@@ -681,138 +505,305 @@ function Speedupdate() {
                                 }}
                               />
                             </TableCell>
-                            <TableCell>{pack.name}</TableCell>
-                            <TableCell>{pack.published.toString()}</TableCell>
+                            <TableCell>{current_version.revision}</TableCell>
+                            <TableCell>{current_version.description}</TableCell>
                           </TableRow>
                         );
                       })
                     : null}
+                  <TableRow>
+                    <TableCell colSpan={3}>
+                      <Grid container spacing={0}>
+                        <Grid item xs={4}>
+                          <TextField
+                            required
+                            id="input-with-icon-textfield"
+                            label="New version"
+                            value={version}
+                            onChange={(e: any) =>
+                              setVersion(e.currentTarget.value)
+                            }
+                            variant="standard"
+                          />
+                        </Grid>
+                        <Grid item xs={7}>
+                          <TextField
+                            id="description"
+                            label="Description"
+                            variant="standard"
+                            value={description}
+                            onChange={(event) =>
+                              setDescription(event.currentTarget.value)
+                            }
+                          />
+                        </Grid>
+                        <Grid item xs={1}>
+                          <IconButton
+                            onClick={() => {
+                              registerVersion(
+                                client,
+                                currentRepo,
+                                version,
+                                description,
+                              ).catch((err) => setStatusError(err.rawMessage));
+                              setVersion("");
+                              setDescription("");
+                            }}
+                          >
+                            <AddCircleIcon fontSize="large" color="success" />
+                          </IconButton>
+                        </Grid>
+                      </Grid>
+                    </TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={listPackages.length}
-              rowsPerPage={packagesPerPage}
-              page={packagesPage}
-              labelRowsPerPage="Packages per page"
-              onPageChange={(event, newPage) => setPackagesPage(newPage)}
-              onRowsPerPageChange={(event) => {
-                setPackagesPerPage(parseInt(event.target.value, 10));
-                setPackagesPage(0);
-              }}
-            />
+            {listVersions ? (
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={listVersions.length}
+                rowsPerPage={versionsPerPage}
+                page={versionsPage}
+                labelRowsPerPage="Versions per page"
+                onPageChange={(event, newPage) => setVersionsPage(newPage)}
+                onRowsPerPageChange={(event) => {
+                  setVersionsPerPage(parseInt(event.target.value, 10));
+                  setVersionsPage(0);
+                }}
+              />
+            ) : null}
           </Paper>
+          <Box sx={{ width: "100%" }}>
+            <Paper sx={{ width: "100%", mb: 2 }}>
+              <Toolbar
+                sx={{
+                  pl: { sm: 2 },
+                  pr: { xs: 1, sm: 1 },
+                  ...(numPackagesSelected > 0 && {
+                    bgcolor: (theme) =>
+                      alpha(
+                        theme.palette.primary.main,
+                        theme.palette.action.activatedOpacity,
+                      ),
+                  }),
+                }}
+              >
+                {numPackagesSelected > 0 ? (
+                  <Typography
+                    sx={{ flex: "1 1 100%" }}
+                    color="inherit"
+                    variant="subtitle1"
+                    component="div"
+                  >
+                    {numPackagesSelected} selected
+                  </Typography>
+                ) : (
+                  <Typography
+                    sx={{ flex: "1 1 100%" }}
+                    variant="h6"
+                    id="tableTitle"
+                    component="div"
+                  >
+                    Packages
+                  </Typography>
+                )}
+                {numPackagesSelected > 0 && !canBePublished.includes(false) ? (
+                  <Tooltip title="Unpublish">
+                    <IconButton onClick={() => UnregisterPackages()}>
+                      <UnpublishedIcon />
+                    </IconButton>
+                  </Tooltip>
+                ) : null}
+                {numPackagesSelected > 0 && !canBePublished.includes(true) ? (
+                  <Tooltip title="Publish">
+                    <IconButton onClick={() => RegisterPackages()}>
+                      <PublishIcon />
+                    </IconButton>
+                  </Tooltip>
+                ) : null}
+                {numPackagesSelected > 0 ? (
+                  <Tooltip title="Delete">
+                    <IconButton onClick={DeletePackages}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                ) : null}
+              </Toolbar>
+              <TableContainer>
+                <Table sx={{ width: "100%" }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell></TableCell>
+                      <TableCell>Name</TableCell>
+                      <TableCell>Published</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {visiblePackages
+                      ? visiblePackages.map((pack, index) => {
+                          const isItemSelected = isPackagesSelected(index);
+                          const labelId = `enhanced-table-checkbox-${index}`;
+                          return (
+                            <TableRow
+                              hover
+                              onClick={() =>
+                                packagesSelection(
+                                  index,
+                                  pack.name,
+                                  pack.published,
+                                )
+                              }
+                              role="checkbox"
+                              aria-checked={isItemSelected}
+                              tabIndex={-1}
+                              key={index}
+                              selected={isItemSelected}
+                              sx={{ cursor: "pointer" }}
+                            >
+                              <TableCell padding="checkbox">
+                                <Checkbox
+                                  color="primary"
+                                  checked={isItemSelected}
+                                  inputProps={{
+                                    "aria-labelledby": labelId,
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell>{pack.name}</TableCell>
+                              <TableCell>{pack.published.toString()}</TableCell>
+                            </TableRow>
+                          );
+                        })
+                      : null}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={listPackages.length}
+                rowsPerPage={packagesPerPage}
+                page={packagesPage}
+                labelRowsPerPage="Packages per page"
+                onPageChange={(event, newPage) => setPackagesPage(newPage)}
+                onRowsPerPageChange={(event) => {
+                  setPackagesPerPage(parseInt(event.target.value, 10));
+                  setPackagesPage(0);
+                }}
+              />
+            </Paper>
+          </Box>
+          <Box>
+            <Paper sx={{ width: "100%", mb: 2 }}>
+              <Toolbar
+                sx={{
+                  pl: { sm: 2 },
+                  pr: { xs: 1, sm: 1 },
+                  ...(numBinariesSelected > 0 && {
+                    bgcolor: (theme) =>
+                      alpha(
+                        theme.palette.primary.main,
+                        theme.palette.action.activatedOpacity,
+                      ),
+                  }),
+                }}
+              >
+                {numBinariesSelected > 0 ? (
+                  <Typography
+                    sx={{ flex: "1 1 100%" }}
+                    color="inherit"
+                    variant="subtitle1"
+                    component="div"
+                  >
+                    {numBinariesSelected} selected
+                  </Typography>
+                ) : (
+                  <Typography
+                    sx={{ flex: "1 1 100%" }}
+                    variant="h6"
+                    id="tableTitle"
+                    component="div"
+                  >
+                    Binaries
+                  </Typography>
+                )}
+                {numBinariesSelected > 0 ? (
+                  <Tooltip title="Delete">
+                    <IconButton>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                ) : null}
+              </Toolbar>
+              <TableContainer>
+                <Table sx={{ width: "100%" }}>
+                  {visibleBinaries
+                    ? visibleBinaries.map((binary, index) => {
+                        const isItemSelected = isBinariesSelected(index + 1);
+                        const labelId = `enhanced-table-checkbox-${index}`;
+                        return (
+                          <TableRow
+                            hover
+                            //onClick={() =>
+                            //  versionsSelection(index + 1, current_version)
+                            //}
+                            role="checkbox"
+                            aria-checked={isItemSelected}
+                            tabIndex={-1}
+                            key={index + 1}
+                            selected={isItemSelected}
+                            sx={{ cursor: "pointer" }}
+                          >
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                color="primary"
+                                checked={isItemSelected}
+                                inputProps={{
+                                  "aria-labelledby": labelId,
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>{binary}</TableCell>
+                          </TableRow>
+                        );
+                      })
+                    : null}
+                </Table>
+              </TableContainer>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={availableBinaries.length}
+                rowsPerPage={binariesPerPage}
+                page={binariesPage}
+                onPageChange={(event, newPage) => setBinariesPage(newPage)}
+                onRowsPerPageChange={(event) => {
+                  setBinariesPerPage(parseInt(event.target.value, 10));
+                  setBinariesPage(0);
+                }}
+              />
+            </Paper>
+          </Box>
+          Upload Binaries
+          <DropzoneArea
+            fileObjects={fileObjects}
+            onChange={(files) => setFiles(files)}
+          />
+          <Button
+            color="primary"
+            sx={{
+              position: "absolute",
+              right: "0",
+            }}
+            onClick={uploadFile}
+          >
+            Submit
+          </Button>
         </Box>
-        <Box>
-          <Paper sx={{ width: "100%", mb: 2 }}>
-            <Toolbar
-              sx={{
-                pl: { sm: 2 },
-                pr: { xs: 1, sm: 1 },
-                ...(numBinariesSelected > 0 && {
-                  bgcolor: (theme) =>
-                    alpha(
-                      theme.palette.primary.main,
-                      theme.palette.action.activatedOpacity,
-                    ),
-                }),
-              }}
-            >
-              {numBinariesSelected > 0 ? (
-                <Typography
-                  sx={{ flex: "1 1 100%" }}
-                  color="inherit"
-                  variant="subtitle1"
-                  component="div"
-                >
-                  {numBinariesSelected} selected
-                </Typography>
-              ) : (
-                <Typography
-                  sx={{ flex: "1 1 100%" }}
-                  variant="h6"
-                  id="tableTitle"
-                  component="div"
-                >
-                  Binaries
-                </Typography>
-              )}
-              {numBinariesSelected > 0 ? (
-                <Tooltip title="Delete">
-                  <IconButton>
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              ) : null}
-            </Toolbar>
-            <TableContainer>
-              <Table sx={{ width: "100%" }}>
-                {visibleBinaries
-                  ? visibleBinaries.map((binary, index) => {
-                      const isItemSelected = isBinariesSelected(index + 1);
-                      const labelId = `enhanced-table-checkbox-${index}`;
-                      return (
-                        <TableRow
-                          hover
-                          // onClick={() =>
-                          //  versionsSelection(index + 1, current_version)
-                          // }
-                          role="checkbox"
-                          aria-checked={isItemSelected}
-                          tabIndex={-1}
-                          key={index + 1}
-                          selected={isItemSelected}
-                          sx={{ cursor: "pointer" }}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              color="primary"
-                              checked={isItemSelected}
-                              inputProps={{
-                                "aria-labelledby": labelId,
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell>{binary}</TableCell>
-                        </TableRow>
-                      );
-                    })
-                  : null}
-              </Table>
-            </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={availableBinaries.length}
-              rowsPerPage={binariesPerPage}
-              page={binariesPage}
-              onPageChange={(event, newPage) => setBinariesPage(newPage)}
-              onRowsPerPageChange={(event) => {
-                setBinariesPerPage(parseInt(event.target.value, 10));
-                setBinariesPage(0);
-              }}
-            />
-          </Paper>
-        </Box>
-        Upload Binaries
-        <DropzoneArea
-          fileObjects={fileObjects}
-          onChange={(files) => setFiles(files)}
-        />
-        <Button
-          color="primary"
-          sx={{
-            position: "absolute",
-            right: "0",
-          }}
-          onClick={uploadFile}
-        >
-          Submit
-        </Button>
-      </Box>
-    );
+      );
+    }
   }
   return <div> {speedupdatecomponent} </div>;
 }

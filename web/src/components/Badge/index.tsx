@@ -1,3 +1,18 @@
+/**
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
 import { forwardRef } from "react";
 
 // prop-types is a library for typechecking of props
@@ -8,10 +23,21 @@ import BadgeRoot from "components/Badge/BadgeRoot";
 
 const Badge = forwardRef(
   (
-    { color, variant, size, circular, indicator, border, container, children },
+    {
+      color,
+      variant,
+      size,
+      circular,
+      indicator,
+      border,
+      container,
+      children,
+      ...rest
+    },
     ref,
   ) => (
     <BadgeRoot
+      {...rest}
       ownerState={{
         color,
         variant,

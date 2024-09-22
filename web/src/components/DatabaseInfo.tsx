@@ -1,19 +1,19 @@
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 
-type DbInformations = {
-  dbName: string,
-  hostname: string,
-  port: number,
-  username: string,
-  password: string,
+let dbInfos = {
+  dbName: "",
+  hostname: "",
+  port: 0,
+  username: "",
+  password: "",
 };
 
 function DatabaseInfo({
   dbInfos,
   setDBInfos,
 }: {
-  dbInfos: DbInformations;
+  dbInfos: dbInfos;
   setDBInfos: any;
 }) {
   const handleChange = (e) => {

@@ -19,8 +19,11 @@ import theme from "assets/theme";
 // Material Dashboard 2 React Dark Mode themes
 import themeDark from "assets/theme-dark";
 
+// Material Dashboard 2 React contexts
+import { useMaterialUIController, CLientConnectBuf } from "context";
+
 // Context
-import { LucleRPC, useMaterialUIController } from "context";
+import { LucleRPC } from "context";
 import AuthProvider from "context/Auth";
 
 export default function App() {
@@ -33,7 +36,7 @@ export default function App() {
     checkIfInstalled(client)
       .then(() => setIsInstalled(true))
       .catch(() => setIsInstalled(false));
-  }, [client]);
+  }, []);
 
   return (
     <ThemeProvider theme={darkMode ? themeDark : theme}>

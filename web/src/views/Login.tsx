@@ -1,10 +1,18 @@
 import { useState, useContext } from "react";
+import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
+import TextField from "@mui/material/TextField";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Grid from "@mui/material/Grid";
+import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import TabPanel from "@mui/lab/TabPanel";
 import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import Box from "@mui/material/Box";
+import { Link } from "react-router-dom";
+import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
@@ -21,6 +29,9 @@ const theme = createTheme();
 
 function Login() {
   const [tab, setTab] = useState("1");
+  const [login, setLogin] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [remember, setRemember] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [successfullSignup, setSuccessfullSignup] = useState<boolean>(false);
   const auth = useAuth();
@@ -33,7 +44,7 @@ function Login() {
       .catch((err) => setError(err.rawMessage));
   };
 
-  const handleSignin = (username, password, remember) => {
+  const handleSignin = (username, password, remenber) => {
     setError("");
     if (remember) {
       localStorage.setItem("username", username);

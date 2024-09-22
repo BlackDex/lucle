@@ -1,3 +1,23 @@
+/**
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
+/**
+  This file is used for controlling the global states of the components,
+  you can customize the states for the different components here.
+*/
+
 import { createContext, useContext, useReducer, useMemo } from "react";
 
 // prop-types is a library for typechecking of props
@@ -11,6 +31,7 @@ import { Lucle } from "gen/lucle_connect";
 // Material Dashboard 2 React main context
 const MaterialUI = createContext();
 const LucleRPC = createContext();
+const SpeedupdateRPC = createContext();
 
 // Setting custom name for the context which is visible on react dev tools
 MaterialUI.displayName = "MaterialUIContext";
@@ -78,7 +99,7 @@ function MaterialUIControllerProvider({ children }) {
 
 function LucleRPCProvider({ children }) {
   const transport = createGrpcWebTransport({
-    baseUrl: `http://127.0.0.1:8080`,
+    baseUrl: `http://0.0.0.0:8080`,
   });
   const client = createPromiseClient(Lucle, transport);
   return <LucleRPC.Provider value={client}>{children}</LucleRPC.Provider>;

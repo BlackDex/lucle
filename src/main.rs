@@ -1,4 +1,3 @@
-use axum_tonic::RestGrpcService;
 use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::AsyncMysqlConnection;
 use once_cell::sync::Lazy;
@@ -10,7 +9,6 @@ use std::{
     io::BufReader,
     sync::Arc,
 };
-use tokio::net::TcpListener;
 use tokio_rustls::rustls::ServerConfig;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -113,16 +111,12 @@ async fn main() {
     //    #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
     //    tokio::spawn(async { mail::start_mail_server().await });
 
-    let http = http::serve_dir();
-    let grpc = rpc::rpc_api(&mut cert_buf, &mut key_buf, db);
-
-    let service = RestGrpcService::new(http, grpc).into_make_service();
-
-    let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
-    tracing::info!(
-        "gRPC and HTTP server listening on {}",
-        listener.local_addr().unwrap()
-    );
-
-    axum::serve(listener, service).await.unwrap();
+    if let Err(err) = tokio::join!(
+        rpc::rpc_api(&mut cert_buf, &mut key_buf, db),
+        http::serve_dir()
+    )
+    .0
+    {
+        tracing::error!("GRPC and HTTP server doesn't start: {err}");
+    }
 }
