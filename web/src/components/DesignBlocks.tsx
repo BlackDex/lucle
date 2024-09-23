@@ -14,7 +14,7 @@ import Typography from "components/Typography";
 import Card from "components/Cards/Card";
 
 // Data
-import data from "pages/Presentation/sections/data/designBlocksData";
+import data from "components/data/designBlocksData";
 
 function DesignBlocks() {
   const renderData = data.map(({ title, description, items }) => (

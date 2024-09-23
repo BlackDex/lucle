@@ -16,7 +16,7 @@ const adminroutes = [
     name: "Speedupdate",
     key: "speedupdate",
     icon: <Icon fontSize="small">dashboard</Icon>,
-    //route: <Navigate to="/admin/speedupdate" />,
+    // route: <Navigate to="/admin/speedupdate" />,
     route: "speedupdate",
     component: <Speedupdate />,
   },

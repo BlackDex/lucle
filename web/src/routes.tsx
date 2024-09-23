@@ -40,7 +40,7 @@ const routes = (isInstalled: boolean) => [
             children: [
               { index: true, element: <AdminIndex /> },
               { path: "speedupdate", element: <Speedupdate /> },
-              //{ path: "tables", element: <Tables /> },
+              // { path: "tables", element: <Tables /> },
             ],
           },
         ],

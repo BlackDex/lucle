@@ -14,7 +14,7 @@ import Typography from "components/Typography";
 import Card from "components/Cards/Card";
 
 // Data
-import data from "pages/Presentation/sections/data/pagesData";
+import data from "components/data/pagesData";
 
 function Pages() {
   const renderData = data.map(({ image, name, route }) => (
