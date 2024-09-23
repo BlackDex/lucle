@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import TableRow from "@mui/material/TableRow";
@@ -8,9 +8,6 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TablePagination from "@mui/material/TablePagination";
 import TableContainer from "@mui/material/TableContainer";
-import { green } from "@mui/material/colors";
-import Divider from "@mui/material/Divider";
-import InputAdornment from "@mui/material/InputAdornment";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Checkbox from "@mui/material/Checkbox";
@@ -203,8 +200,8 @@ function Speedupdate() {
       method: "POST",
       body: formData,
     })
-      .then((val) => console.log("answer: ", val))
-      .catch((err) => console.log("error: ", err));
+      .then((val) => {})
+      .catch((err) => setError(err));
   };
 
   const RegisterPackages = () => {
@@ -256,15 +253,15 @@ function Speedupdate() {
     let newSelected: readonly number[] = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(versionsSelected, id);
+      newSelected = newSelected.concat(selectedVersions, id);
     } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(versionsSelected.slice(1));
-    } else if (selectedIndex === versionsSelected.length - 1) {
-      newSelected = newSelected.concat(versionsSelected.slice(0, -1));
+      newSelected = newSelected.concat(selectedVersions.slice(1));
+    } else if (selectedIndex === selectedVersions.length - 1) {
+      newSelected = newSelected.concat(selectedVersions.slice(0, -1));
     } else if (selectedIndex > 0) {
       newSelected = newSelected.concat(
-        versionsSelected.slice(0, selectedIndex),
-        versionsSelected.slice(selectedIndex + 1),
+        selectedVersions.slice(0, selectedIndex),
+        selectedVersions.slice(selectedIndex + 1),
       );
     }
 
@@ -309,7 +306,7 @@ function Speedupdate() {
     }
 
     setSelectedPackages(newSelected);
-    setCanBePublished(anewPublished);
+    setCanBePublished(newPublished);
     setSelectedPackagesValues(packagesValues);
   };
 
@@ -444,7 +441,7 @@ function Speedupdate() {
                 Versions
               </Typography>
             )}
-            {numVersionsSelected == 1 ? (
+            {numVersionsSelected === 1 ? (
               <Tooltip title="SetVersion">
                 <IconButton
                   onClick={() => {
@@ -544,7 +541,7 @@ function Speedupdate() {
                               currentRepo,
                               version,
                               description,
-                            ).catch((err) => setStatusError(err.rawMessage));
+                            ).catch((err) => setError(err.rawMessage));
                             setVersion("");
                             setDescription("");
                           }}
