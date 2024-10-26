@@ -1,8 +1,11 @@
 FROM --platform=$BUILDPLATFORM node as build-frontend 
 WORKDIR /opt/lucle
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 COPY . . 
-RUN cd web && yarn install --network-timeout 500000
-RUN cd web && yarn build
+RUN cd web && pnpm install
+RUN cd web && pnom build
 
 FROM --platform=$BUILDPLATFORM rust:alpine3.17 as alpine-builder-amd64
 RUN apk add --update mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev
