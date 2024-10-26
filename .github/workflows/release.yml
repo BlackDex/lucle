@@ -23,8 +23,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: |
-            ludea/lucle:0.1.0
-            ludea/lucle:latest
+          tags: ludea/lucle:0.1.0
           platforms: linux/amd64, linux/arm64
           target: alpine
