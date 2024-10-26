@@ -5,7 +5,7 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 COPY . . 
 RUN cd web && pnpm install
-RUN cd web && pnom build
+RUN cd web && pnpm build
 
 FROM --platform=$BUILDPLATFORM rust:alpine3.20 as alpine-builder-amd64
 RUN apk add --update mysql mysql-client mariadb-dev postgresql postgresql-client postgresql-dev sqlite sqlite-dev musl-dev
